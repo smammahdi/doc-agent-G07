@@ -1,6 +1,48 @@
 data/raw/
 data/interim/
-*.ckpt
-wandb/
-__pycache__/
+
+# Local credentials and environment files.
+.env
+.env.*
+!.env.example
+vertex-adc.json
+*service-account*.json
+
+# Python environments, caches, and generated packages.
 .venv/
+.venv-*/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+
+# Local experiment outputs and downloaded model weights.
+wandb/
+output/
+outputs/
+out/
+chandra_out/
+*.ckpt
+*.onnx
+*.pt
+*.pth
+*.safetensors
+
+# LaTeX build products; final PDFs remain trackable.
+build-*/
+*.aux
+*.fdb_latexmk
+*.fls
+*.nav
+*.snm
+*.synctex.gz
+*.toc
+*.xdv
+
+# Operating-system metadata.
+.DS_Store
