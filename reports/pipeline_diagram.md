@@ -1,46 +1,55 @@
 # Knowledge-base pipeline diagram
 
-This is the A2 design map. The boxes show the fixed stage order; implementation
-and evidence status are listed below. The diagram is not a claim that the full
-corpus has already run.
+This map shows the fixed A2 stage order and separates implemented adapters from
+real experiment outputs and pending evidence. The full corpus is not claimed
+to have completed the index or retrieval stages.
 
 ```mermaid
 flowchart LR
-    A["Pierce 1890 PDF\nsource image"] --> B["Loader\nPyMuPDF\nPage"]
-    B --> C["Preprocess\nclean / deskew"]
-    C --> D["Layout\nRegion boxes"]
-    D --> E["OCR\ntext + word boxes"]
-    E --> F["Chunk\npage provenance"]
-    F --> G["Embed\n384-d vectors"]
+    A["Pierce 1890 PDF\n1,034 pages\nsource of truth"] --> B["Loader\nPyMuPDF @ 300 DPI\nPage"]
+    B --> C["Preprocess\nidentity baseline"]
+    C --> D["Layout\nprojection default\nChandra blocks offline"]
+    D --> E["OCR\nTesseract default\nDocument AI reference offline"]
+    E --> F["Chunk\n256 tokens / 32 overlap\ntext + page IDs"]
+    F --> G["Embed\nMiniLM 384"]
     G --> H["Store\nFAISS HNSW"]
+    A -.-> R["EDA\nall 1,034 pages\n150-DPI measurements"]
+    X["Offline experiment outputs\nChandra: 8,544 blocks / 1,028 pages\nDocAI: 419,565 words / 1,016 pages"] -.-> D
+    X -.-> E
 
-    classDef done fill:#dff2d8,stroke:#4b7f3a,color:#173b12;
+    classDef implemented fill:#dff2d8,stroke:#4b7f3a,color:#173b12;
+    classDef measured fill:#fff1cc,stroke:#a66b00,color:#4a3000;
     classDef pending fill:#f4f4f4,stroke:#777,color:#333;
-    class B done;
-    class A,C,D,E,F,G,H pending;
+    class B,C,D,E,F implemented;
+    class A,R,X measured;
+    class G,H pending;
 ```
 
 ## Current status
 
-- **Baseline code present:** the loader, identity preprocessing, projection
-  layout, Tesseract OCR adapter, chunker, lazy embedder, FAISS store, and
-  `scripts/build_index.sh` now edit the named A2 stubs.
-- **Measured research:** figure-detector comparisons, an OCR bake-off harness,
-  and a paid Document OCR sweep exist under the private development workspace.
-  They are evidence for decisions only; detector votes and provider confidence
-  are not project accuracy metrics.
-- **Pending evidence:** a hand-labelled OCR score, full-corpus index statistics,
-  and one real retrieval from `kb_demo.ipynb`. The local environment currently
-  lacks the FAISS package and the embedding checkpoint, so no index result is
-  claimed here.
-- **Evidence rule:** the A2 form may report an OCR score or retrieval example
-  only after a hand-labelled sample and a reproducible notebook output exist.
-- **Scope rule:** no live web search is part of the retrieval pipeline. The
-  source is the declared corpus, and paid/cloud experiments remain baselines or
-  research notes rather than query-time dependencies.
+- **Real source and offline outputs:** the Pierce PDF has 1,034 pages; the
+  150-DPI EDA ran over all pages. The private Chandra output contains
+  8,544 blocks on 1,028 pages; Document AI reference OCR contains 419,565 words
+  on 1,016 word-bearing pages. These sidecars are not committed or publicly
+  fetchable.
+- **Implemented adapters:** PyMuPDF 300-DPI rendering, identity preprocessing,
+  projection layout, optional offline Chandra Regions, Tesseract, optional
+  Document AI reference mapping, and 256/32 Chunking are implemented. Reference
+  assignment covers 417,825/419,565 words; 1,740 words on 36 pages remain outside
+  every Chandra Region, so full reference coverage is not claimed.
+- **Evidence boundary:** Document AI and Chandra outputs are reference or
+  pre-annotation inputs, never ground truth. Word boxes are consumed for Region
+  mapping, but fixed `Chunk` keeps text and page IDs only. Hand GT, OCR accuracy,
+  full index statistics, and retrieval remain pending.
+- **Index status:** MiniLM-384 embedding and FAISS HNSW code exists, but no real
+  full-corpus index or retrieval result is claimed.
+- **Scope rule:** no live web search is part of the retrieval pipeline; answers
+  must remain grounded in the declared Pierce source.
 
 ## Contract path
 
-`Page -> Region -> OCR text and word geometry -> Chunk -> embedding -> vector
-store`. Page IDs and source coordinates must survive every boundary so a later
-agent can cite the scanned page and a human can verify it quickly.
+`Page -> Region -> OCR text -> Chunk -> embedding -> vector store` (Tesseract
+default; optional offline reference).
+Page IDs survive into each fixed `Chunk`, so a later agent can cite the scanned
+page. Coordinates are used at the layout/OCR seam but do not survive in the fixed
+`Chunk` contract.
