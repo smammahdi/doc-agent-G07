@@ -13,7 +13,7 @@ ingest:
 
 preprocess: {enabled: false, mode: "identity"}                         # measured baseline: preserve loader images
 enhance:    {enabled: false, model: "none", type: "none"}              # enhancement is optional and not yet measured
-layout:     {model: "projection", mode: "projection", score_thr: 0.5}
+layout:     {model: "projection", mode: "projection", score_thr: 0.5, blocks_path: null, missing_pages: "projection"}
 ocr:        {model: "tesseract5", mode: "tesseract", lang: "eng", tesseract_config: "--psm 6", finetune: false}
 embed:     {model: "sentence-transformers/all-MiniLM-L6-v2", dim: 384}
 index:     {type: "faiss:hnsw", path: "data/processed/index", chunk_tokens: 256, overlap: 32, hnsw_m: 32}
