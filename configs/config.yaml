@@ -11,11 +11,12 @@ ingest:
   quality: 80                     # deterministic RGB JPEG quality (1-100)
   page_limit: null                 # optional positive integer for bounded smoke runs
 
-enhance:   {enabled: true,  model: "unet_small", type: "diffusion"}   # or "vae" / "none"
-layout:    {model: "detectron2:layout", score_thr: 0.5}
-ocr:       {model: "microsoft/trocr-base-printed", finetune: true}    # BASELINE = pretrained OCR
+preprocess: {enabled: false, mode: "identity"}                         # measured baseline: preserve loader images
+enhance:    {enabled: false, model: "none", type: "none"}              # enhancement is optional and not yet measured
+layout:     {model: "projection", mode: "projection", score_thr: 0.5}
+ocr:        {model: "tesseract5", mode: "tesseract", lang: "eng", tesseract_config: "--psm 6", finetune: false}
 embed:     {model: "sentence-transformers/all-MiniLM-L6-v2", dim: 384}
-index:     {type: "faiss:hnsw", chunk_tokens: 256, overlap: 32}
+index:     {type: "faiss:hnsw", path: "data/processed/index", chunk_tokens: 256, overlap: 32, hnsw_m: 32}
 retrieve:  {k: 10, k_step: 10, k_max: 40, weak_threshold: 0.35, rerank: true, reranker: "cross-encoder/ms-marco-MiniLM-L6-v2"}   # k_step/k_max/weak_threshold drive evidence-gated re-search
 agent:     {max_steps: 8, autonomy: "act-with-approval", budget_usd: 0.05}
 rl:        {algo: "ppo", train_policy: false}                         # bonus: set true
