@@ -4,23 +4,23 @@
 # ONLY this file; it points to the rest. Build/run scripts and the eval
 # tasks are NAMED here, not copied, so they never go stale.
 
-project_id: ""              # your team id
+project_id: "G07"           # your team id
 
 axes:
-  domain: ""                # your corpus subject / real user (see Roster; one per team)
-  data_speciality: ""       # ONE hard property of your corpus you are handed (see Data-Speciality Catalog)
+  domain: "home-health historical medical reference"
+  data_speciality: "dirty-ocr" # ONE hard property of your corpus (see Data-Speciality Catalog)
                             #   e.g. bangla | arabic | code-switching | degraded-scans | multi-column |
                             #        handwritten | old-orthography | math-notation | dirty-ocr | ...
                             #   (English is not a speciality; if your corpus is English, pick a data condition.)
-  primary_nfr: ""           # ONE quality you optimise ABOVE baseline (see NFR sheet). Faithful &
+  primary_nfr: "explainable" # ONE quality you optimise ABOVE baseline (see NFR sheet). Faithful &
                             #   accurate are REQUIRED of everyone (baseline), so they are NOT choices.
-  nfr_target: ""            # the concrete target you commit to for that NFR, e.g. "p95 latency <= 300ms",
+  nfr_target: "100% page citations; each citation human-verifiable in <30 seconds"
                             #   "peak RAM <= 2GB", "ECE <= 0.05", "PII recall >= 0.98"
 
 corpus:
   path: data/raw/                   # where the scanned page-images live
-  pages: 0                          # total pages  (floor: >= 300)
-  words: 0                          # total words  (floor: >= 60000)
+  pages: 1034                       # extracted pages in the project PDF
+  words: 354367                     # formal A1 usable-word count
   provenance: data/provenance.md    # source + licence + counts
 
 heldout:
