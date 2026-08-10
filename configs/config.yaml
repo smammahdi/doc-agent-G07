@@ -2,6 +2,15 @@
 seed: 42
 device: cuda
 
+ingest:
+  source_pdf: data/raw/pierce-peoples-common-sense-medical-adviser-1890.pdf
+  doc_id: pierce-1890
+  output_dir: data/processed/pages         # loader appends doc_id and render settings
+  dpi: 300
+  format: jpeg
+  quality: 80                     # deterministic RGB JPEG quality (1-100)
+  page_limit: null                 # optional positive integer for bounded smoke runs
+
 enhance:   {enabled: true,  model: "unet_small", type: "diffusion"}   # or "vae" / "none"
 layout:    {model: "detectron2:layout", score_thr: 0.5}
 ocr:       {model: "microsoft/trocr-base-printed", finetune: true}    # BASELINE = pretrained OCR
