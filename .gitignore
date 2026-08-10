@@ -1,5 +1,6 @@
 data/raw/
 data/interim/
+data/processed/
 
 # Local credentials and environment files.
 .env
