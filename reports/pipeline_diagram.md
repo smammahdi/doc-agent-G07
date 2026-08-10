@@ -1,8 +1,8 @@
 # Knowledge-base pipeline diagram
 
-This is the A2 design map. A green box is implemented in the current starter;
-the other boxes are the next knowledge-base increments. The diagram is not a
-claim that every stage has already run.
+This is the A2 design map. The boxes show the fixed stage order; implementation
+and evidence status are listed below. The diagram is not a claim that the full
+corpus has already run.
 
 ```mermaid
 flowchart LR
@@ -22,15 +22,17 @@ flowchart LR
 
 ## Current status
 
-- **Implemented:** the loader renders the real Pierce PDF one page at a time,
-  with deterministic 300-DPI RGB JPEG settings and atomic cache writes.
+- **Baseline code present:** the loader, identity preprocessing, projection
+  layout, Tesseract OCR adapter, chunker, lazy embedder, FAISS store, and
+  `scripts/build_index.sh` now edit the named A2 stubs.
 - **Measured research:** figure-detector comparisons, an OCR bake-off harness,
   and a paid Document OCR sweep exist under the private development workspace.
   They are evidence for decisions only; detector votes and provider confidence
   are not project accuracy metrics.
-- **Pending runtime stages:** preprocess, layout adapter, OCR, chunking,
-  embeddings, persistent store, `scripts/build_index.sh`, and the real
-  `notebooks/kb_demo.ipynb` run.
+- **Pending evidence:** a hand-labelled OCR score, full-corpus index statistics,
+  and one real retrieval from `kb_demo.ipynb`. The local environment currently
+  lacks the FAISS package and the embedding checkpoint, so no index result is
+  claimed here.
 - **Evidence rule:** the A2 form may report an OCR score or retrieval example
   only after a hand-labelled sample and a reproducible notebook output exist.
 - **Scope rule:** no live web search is part of the retrieval pipeline. The
