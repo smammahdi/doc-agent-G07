@@ -71,7 +71,7 @@ verified transcriptions.
 ### GPU execution
 
 The full-book run is prepared as a private Kaggle kernel:
-[`g07-full-book-trocr-outputs-from-existing-layouts`](https://www.kaggle.com/code/cruelangelssprint/g07-full-book-trocr-outputs-from-existing-layouts).
+[`g07-t4-full-book-trocr`](https://www.kaggle.com/code/cruelangelssprint/g07-t4-full-book-trocr).
 It attaches the Pierce PDF dataset and the existing layout-artifact dataset,
 clones the `a2/trocr-layout-comparison` branch, and runs the same exporter
 twice on CUDA. The kernel writes independent `chandra/` and

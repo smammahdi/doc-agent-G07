@@ -18,6 +18,9 @@ No A2 release tag has been created yet.
   Pierce book. It keeps Chandra and DocLayout-YOLO outputs separate, does not
   rerun either layout model, and requires 1,028 observed Chandra pages plus
   six layout-missing pages and all 1,034 DLY pages before acceptance.
+- The first two submissions were rejected by Kaggle's P100 runtime because its
+  installed PyTorch build does not support sm_60. The active submission uses
+  the explicit `NvidiaTeslaT4` accelerator and aborts before OCR on older GPUs.
 
 ### Layout artifact package
 
