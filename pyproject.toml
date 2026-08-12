@@ -19,6 +19,9 @@ dependencies = [
   "pyyaml>=6.0,<7.0",
   "pydantic-settings>=2.2,<3.0",
   "PyMuPDF>=1.25.5,<1.26",
+  "opencv-python-headless>=4.10,<5.0",
+  "onnxruntime>=1.18,<2.0",
+  "pytesseract>=0.3.13,<0.4",
 ]
 
 [project.optional-dependencies]
