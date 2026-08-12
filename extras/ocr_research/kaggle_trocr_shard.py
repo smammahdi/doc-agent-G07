@@ -11,11 +11,14 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-from run_kaggle_layout_trocr import _discover
+REPOSITORY = "https://github.com/smammahdi/doc-agent-G07.git"
+BRANCH = "a2/trocr-layout-comparison"
+REPO = Path("/kaggle/working/doc-agent-G07")
 
 
 def _pages(value: str) -> str:
@@ -33,7 +36,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--layout", choices=("chandra", "doclayout_yolo"), required=True)
     parser.add_argument("--pages", required=True, type=_pages, help="inclusive START:END")
     parser.add_argument("--input-root", type=Path, default=Path("/kaggle/input"))
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--output", type=Path, default=Path("/kaggle/working/trocr_shard_output"))
     parser.add_argument("--cache-dir", type=Path, default=Path("/kaggle/working/trocr_page_cache"))
     parser.add_argument("--model", default="microsoft/trocr-base-printed")
     parser.add_argument("--device", choices=("auto", "cpu", "cuda", "mps"), default="cuda")
@@ -43,10 +46,57 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _run(command: list[str]) -> None:
+    print("$", " ".join(command), flush=True)
+    subprocess.run(command, check=True)
+
+
+def _prepare_runtime() -> Path:
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-q",
+            "pymupdf>=1.25.5,<1.26",
+            "pillow>=10,<12",
+            "transformers>=4.40,<5",
+            "sentencepiece>=0.2,<1",
+            "opencv-python-headless>=4.10,<5",
+        ]
+    )
+    import torch
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("a CUDA GPU is required for a TrOCR shard")
+    capability = torch.cuda.get_device_capability(0)
+    if capability < (7, 0):
+        raise RuntimeError(f"unsupported GPU sm_{capability[0]}{capability[1]}; need sm_70+")
+    print(
+        "GPU:",
+        torch.cuda.get_device_name(0),
+        f"sm_{capability[0]}{capability[1]}",
+        flush=True,
+    )
+    if not REPO.exists():
+        _run(["git", "clone", "--branch", BRANCH, "--depth", "1", REPOSITORY, str(REPO)])
+    else:
+        _run(["git", "-C", str(REPO), "fetch", "origin", BRANCH, "--depth", "1"])
+        _run(["git", "-C", str(REPO), "checkout", "--force", "FETCH_HEAD"])
+    print("repository:", end=" ", flush=True)
+    _run(["git", "-C", str(REPO), "rev-parse", "HEAD"])
+    return REPO
+
+
 def run(args: argparse.Namespace) -> None:
+    repo = _prepare_runtime()
+    sys.path.insert(0, str(repo / "extras" / "ocr_research"))
+    from run_kaggle_layout_trocr import _discover
+
     source_pdf, layouts = _discover(args.input_root)
     selected = next(layout for layout in layouts if layout.name == args.layout)
-    runner = Path(__file__).with_name("run_layout_trocr.py")
+    runner = repo / "extras" / "ocr_research" / "run_layout_trocr.py"
     repository_src = runner.resolve().parents[2] / "src"
     environment = os.environ.copy()
     environment["PYTHONPATH"] = os.pathsep.join(
@@ -80,6 +130,13 @@ def run(args: argparse.Namespace) -> None:
     ]
     print(f"Saving {selected.name} TrOCR pages {args.pages}", flush=True)
     subprocess.run(command, check=True, env=environment)
+    archive = shutil.make_archive(
+        str(Path("/kaggle/working") / f"trocr_{selected.name}_{args.pages.replace(',', '-') }"),
+        "zip",
+        args.output,
+    )
+    print("canonical output:", args.output, flush=True)
+    print("downloadable archive:", archive, flush=True)
 
 
 if __name__ == "__main__":
