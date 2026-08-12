@@ -44,3 +44,26 @@ boxes, confidence, and engine provenance. It is a strong silver reference and
 a useful transcription seed, but cloud confidence alone is not human ground
 truth. Generated outputs remain ignored by Git and should be shared through a
 dataset release, not committed to the code repository.
+
+## Full-book TrOCR over fixed layout regions
+
+`run_layout_trocr.py` reads existing layout records and never runs a layout
+model. It supports `chandra` (reference regions; six missing pages remain
+`layout_missing`) and `doclayout_yolo` (all 1,034 pages). It uses the same
+`microsoft/trocr-base-printed` checkpoint and line-crop recognition settings
+for both runs.
+
+```bash
+python extras/ocr_research/run_layout_trocr.py \
+  --layout chandra \
+  --layout-path /path/to/chandra/chunks.jsonl \
+  --source-pdf /path/to/pierce-1890.pdf \
+  --output extras/ocr_research/results/trocr_base_printed/chandra \
+  --cache-dir /path/to/local/trocr-pages
+```
+
+The runner checkpoints `regions.jsonl` before its page row in `pages.jsonl`
+and resumes completed pages without duplicate records. Full generated results,
+page renders, line crops, and model caches are local experiment artifacts; do
+not treat these outputs as OCR accuracy until they are compared with manually
+verified transcriptions.

@@ -228,6 +228,8 @@ class Reader:
         self._trocr_model: Any | None = None
         self._trocr_torch: Any | None = None
         self._trocr_device_name: str | None = None
+        self._page_cache_id: str | None = None
+        self._page_cache: np.ndarray | None = None
         if self.cfg["mode"] == "document_ai_reference":
             self._reference_words = _load_reference_words(Path(self.cfg["words_path"]))
         if self.cfg["mode"] == "trocr":
@@ -283,9 +285,15 @@ class Reader:
             raise FileNotFoundError(
                 f"no image path for page {region.page_id}; pass cfg['page_images'] or loader output"
             )
-        image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
-        if image is None:
-            raise RuntimeError(f"cannot read page image {image_path}")
+        if self._page_cache_id == region.page_id and self._page_cache is not None:
+            image = self._page_cache
+        else:
+            loaded = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
+            if loaded is None:
+                raise RuntimeError(f"cannot read page image {image_path}")
+            self._page_cache_id = region.page_id
+            self._page_cache = loaded
+            image = loaded
         height, width = image.shape[:2]
         x0, y0, x1, y1 = region.bbox
         x0, y0 = max(0, x0), max(0, y0)
@@ -293,6 +301,11 @@ class Reader:
         if x1 <= x0 or y1 <= y0:
             raise ValueError(f"region {region.page_id} has an empty bbox: {region.bbox}")
         return image[y0:y1, x0:x1]
+
+    def clear_page_cache(self) -> None:
+        """Release the last page image after a page-level OCR checkpoint."""
+        self._page_cache_id = None
+        self._page_cache = None
 
     def _region_lines(self, region: Region) -> list[Any]:
         image = self._region_image(region)
