@@ -145,3 +145,12 @@ def test_ocr_recorded_failure_case() -> None:
 
     msg = f"Recorded failure case for {target_page}: CER={cer:.4f}, WER={wer:.4f}"
     assert cer >= 0.0 and wer >= 0.0, msg
+
+
+def test_trocr_options_are_lazy_and_validated() -> None:
+    """Validate TrOCR settings without downloading or loading a checkpoint."""
+    options = ocr._ocr_config({"ocr": {"mode": "trocr"}})
+    assert options["trocr_model"] == "microsoft/trocr-base-printed"
+    assert options["trocr_device"] == "auto"
+    assert options["trocr_batch_size"] == 8
+    assert options["trocr_max_length"] == 64
