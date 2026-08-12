@@ -43,9 +43,7 @@ def _ranked_choice(candidates: list[Path], label: str, tokens: tuple[str, ...]) 
     )
     best_score = sum(token in str(ranked[0]).lower() for token in tokens)
     tied = [
-        path
-        for path in ranked
-        if sum(token in str(path).lower() for token in tokens) == best_score
+        path for path in ranked if sum(token in str(path).lower() for token in tokens) == best_score
     ]
     if len(tied) != 1:
         options = ", ".join(str(path) for path in tied[:6])
