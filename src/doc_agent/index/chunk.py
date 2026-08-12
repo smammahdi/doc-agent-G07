@@ -25,13 +25,7 @@ def _settings(cfg: dict[str, Any]) -> tuple[int, int]:
 
 
 def split(chunks: list[Chunk], cfg: dict[str, Any]) -> list[Chunk]:
-    """Split OCR chunks by whitespace tokens while retaining page provenance.
-
-    The OCR stage already produces page-scoped ``Chunk`` objects. This function only
-    changes the text span and deterministic ID; it never merges pages or discards
-    the source document ID. Whitespace tokenisation is intentional for the first
-    reproducible baseline and can be replaced behind this same function later.
-    """
+    """Split OCR chunks by whitespace tokens while retaining page provenance."""
     size, overlap = _settings(cfg)
     if not isinstance(chunks, list):
         raise TypeError("chunks must be a list of Chunk contracts")

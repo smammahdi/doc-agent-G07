@@ -1,0 +1,3 @@
+# .bandit.yaml — Bandit security linter configuration
+# Skip B101 (assert_used) per project rules for uneditable starter pre-commit hooks
+skips: ['B101']
