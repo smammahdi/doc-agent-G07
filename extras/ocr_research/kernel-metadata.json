@@ -1,12 +1,13 @@
 {
-  "id": "cruelangelssprint/g07-full-book-trocr",
+  "id": "cruelangelssprint/g07-full-book-trocr-outputs-from-existing-layouts",
   "title": "G07 full-book TrOCR outputs from existing layouts",
-  "code_file": "kaggle_full_book_trocr.py",
+  "code_file": "kaggle_full_book_trocr.ipynb",
   "language": "python",
-  "kernel_type": "script",
+  "kernel_type": "notebook",
   "is_private": true,
   "enable_gpu": true,
   "enable_internet": true,
+  "keywords": ["gpu", "t4", "ocr", "research"],
   "dataset_sources": [
     "kmazd1110/dl-peoples-common-sense-med-advisor",
     "cruelangelssprint/pierce-1890-figure-and-ocr-outputs"

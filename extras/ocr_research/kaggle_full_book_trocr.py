@@ -42,6 +42,22 @@ def main() -> None:
             "pyyaml>=6,<7",
         ]
     )
+    import torch
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("a CUDA GPU is required for the full-book TrOCR run")
+    capability = torch.cuda.get_device_capability(0)
+    if capability < (7, 0):
+        raise RuntimeError(
+            "this Kaggle GPU is too old for the installed PyTorch CUDA build: "
+            f"compute capability sm_{capability[0]}{capability[1]}; need sm_70 or newer"
+        )
+    print(
+        "GPU:",
+        torch.cuda.get_device_name(0),
+        f"(sm_{capability[0]}{capability[1]})",
+        flush=True,
+    )
     if not REPO.exists():
         run(["git", "clone", "--branch", BRANCH, "--depth", "1", REPOSITORY, str(REPO)])
     else:
