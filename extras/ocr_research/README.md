@@ -67,3 +67,25 @@ and resumes completed pages without duplicate records. Full generated results,
 page renders, line crops, and model caches are local experiment artifacts; do
 not treat these outputs as OCR accuracy until they are compared with manually
 verified transcriptions.
+
+### GPU execution
+
+The full-book run is prepared as a private Kaggle kernel:
+[`g07-full-book-trocr-outputs-from-existing-layouts`](https://www.kaggle.com/code/cruelangelssprint/g07-full-book-trocr-outputs-from-existing-layouts).
+It attaches the Pierce PDF dataset and the existing layout-artifact dataset,
+clones the `a2/trocr-layout-comparison` branch, and runs the same exporter
+twice on CUDA. The kernel writes independent `chandra/` and
+`doclayout_yolo/` directories, each containing only `pages.jsonl`,
+`regions.jsonl`, and `summary.json`, plus a downloadable ZIP. No layout model
+is rerun, and no Chandra text is used as OCR input.
+
+The two input datasets are:
+
+- [`kmazd1110/dl-peoples-common-sense-med-advisor`](https://www.kaggle.com/datasets/kmazd1110/dl-peoples-common-sense-med-advisor)
+  for the 1,034-page Pierce PDF;
+- [`cruelangelssprint/pierce-1890-figure-and-ocr-outputs`](https://www.kaggle.com/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs)
+  for `chandra/chunks.jsonl` and the page-complete DocLayout-YOLO detections.
+
+The kernel must finish with 1,034 page rows for the DLY run and 1,028
+`complete` plus six `layout_missing` page rows for the Chandra run before its
+outputs are copied into the repository results directory.

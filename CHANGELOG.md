@@ -14,6 +14,10 @@ No A2 release tag has been created yet.
   research runner that saves real TrOCR transcriptions from existing Chandra
   reference regions and the selected DocLayout-YOLO regions. No OCR score is
   claimed until manually verified labels are repaired.
+- Added a private Kaggle GPU entrypoint for the same exporter over the full
+  Pierce book. It keeps Chandra and DocLayout-YOLO outputs separate, does not
+  rerun either layout model, and requires 1,028 observed Chandra pages plus
+  six layout-missing pages and all 1,034 DLY pages before acceptance.
 
 ### Layout artifact package
 
