@@ -45,13 +45,13 @@ a useful transcription seed, but cloud confidence alone is not human ground
 truth. Generated outputs remain ignored by Git and should be shared through a
 dataset release, not committed to the code repository.
 
-## Full-book TrOCR over fixed layout regions
+## Full-book TrOCR outputs from existing layout regions
 
 `run_layout_trocr.py` reads existing layout records and never runs a layout
-model. It supports `chandra` (reference regions; six missing pages remain
-`layout_missing`) and `doclayout_yolo` (all 1,034 pages). It uses the same
-`microsoft/trocr-base-printed` checkpoint and line-crop recognition settings
-for both runs.
+model. It saves TrOCR output for `chandra` regions (six missing pages remain
+`layout_missing`) and for the selected `doclayout_yolo` regions (all 1,034
+pages). Both runs use the same `microsoft/trocr-base-printed` checkpoint and
+line-crop recognition settings.
 
 ```bash
 python extras/ocr_research/run_layout_trocr.py \

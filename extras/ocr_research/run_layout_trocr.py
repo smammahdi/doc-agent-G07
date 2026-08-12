@@ -1,4 +1,4 @@
-"""Run TrOCR over fixed Chandra or DocLayout-YOLO regions.
+"""Save TrOCR output from existing Chandra or DocLayout-YOLO regions.
 
 This is an offline research runner. It reads existing layout sidecars, renders
 the Pierce PDF at the same 300-DPI settings as the starter loader, and writes

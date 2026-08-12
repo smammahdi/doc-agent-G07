@@ -8,12 +8,12 @@ release yet.
 
 No A2 release tag has been created yet.
 
-### TrOCR layout comparison
+### TrOCR outputs from existing layouts
 
 - Added an optional lazy `microsoft/trocr-base-printed` reader and a resumable
-  research runner for full-book OCR over the existing Chandra reference and
-  DocLayout-YOLO regions. This records real transcriptions only; no OCR score
-  is claimed until manually verified labels are repaired.
+  research runner that saves real TrOCR transcriptions from existing Chandra
+  reference regions and the selected DocLayout-YOLO regions. No OCR score is
+  claimed until manually verified labels are repaired.
 
 ### Layout artifact package
 
