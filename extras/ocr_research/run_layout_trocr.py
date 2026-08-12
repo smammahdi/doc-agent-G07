@@ -284,7 +284,7 @@ def run(args: argparse.Namespace) -> None:
                     }
                 )
             page_started = time.monotonic()
-            texts = [reader.transcribe_region(region) for region in regions]
+            texts = reader.transcribe_trocr_regions(regions)
             for row, text in zip(output_rows, texts, strict=True):
                 row["text"] = text
                 row["status"] = "complete"

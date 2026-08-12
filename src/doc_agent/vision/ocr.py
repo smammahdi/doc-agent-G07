@@ -348,6 +348,19 @@ class Reader:
     def _transcribe_trocr(self, region: Region) -> str:
         return " ".join(text for text in self._trocr_read_lines(self._region_lines(region)) if text)
 
+    def transcribe_trocr_regions(self, regions: list[Region]) -> list[str]:
+        """Recognize all line crops from a page while reusing one model batch loop."""
+        line_groups = [self._region_lines(region) for region in regions]
+        flattened = [line for group in line_groups for line in group]
+        flat_texts = self._trocr_read_lines(flattened)
+        texts: list[str] = []
+        offset = 0
+        for group in line_groups:
+            group_texts = flat_texts[offset : offset + len(group)]
+            texts.append(" ".join(text for text in group_texts if text))
+            offset += len(group)
+        return texts
+
     def _reference_text(self, region: Region) -> str | None:
         rx0, ry0, rx1, ry1, _ = self._region_bounds(region)
         tokens = []
@@ -446,7 +459,11 @@ def transcribe(regions: list[Region], cfg: dict[str, Any]) -> list[Chunk]:
     texts = (
         reader.transcribe_regions(regions)
         if reader.cfg["mode"] == "document_ai_reference"
-        else [reader.transcribe_region(region) for region in regions]
+        else (
+            reader.transcribe_trocr_regions(regions)
+            if reader.cfg["mode"] == "trocr"
+            else [reader.transcribe_region(region) for region in regions]
+        )
     )
     chunks: list[Chunk] = []
     for index, region in enumerate(regions):
