@@ -90,6 +90,10 @@ def _chandra_regions(path: Path) -> dict[int, list[dict[str, Any]]]:
     return pages
 
 
+def _chandra_observed_pages(path: Path) -> set[int]:
+    return {int(row["book_page"]) for row in _jsonl(path)}
+
+
 def _doclayout_regions(path: Path) -> dict[int, list[dict[str, Any]]]:
     pages: dict[int, list[dict[str, Any]]] = {}
     for row in _jsonl(path):
@@ -204,6 +208,9 @@ def run(args: argparse.Namespace) -> None:
         if args.layout == "chandra"
         else _doclayout_regions(layout_path)
     )
+    observed_layout_pages = (
+        _chandra_observed_pages(layout_path) if args.layout == "chandra" else set(layout_pages)
+    )
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     cache = Path(args.cache_dir)
@@ -238,7 +245,7 @@ def run(args: argparse.Namespace) -> None:
             page_id = f"p{page_number:04d}"
             width, height = _page_dimensions(page, args.dpi)
             records = layout_pages.get(page_number, [])
-            if args.layout == "chandra" and page_number not in layout_pages:
+            if args.layout == "chandra" and page_number not in observed_layout_pages:
                 page_row = {
                     "page_number": page_number,
                     "page_id": page_id,
