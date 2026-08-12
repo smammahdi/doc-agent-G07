@@ -15,7 +15,27 @@ research code: the production pipeline does not import it.
   `pages.jsonl`, `detections.jsonl`, `summary.json`, and `run.log`.
 The repository intentionally does not contain the book, model weights, crops,
 or generated run output. Those are data artifacts, not source code. The output
-directory is ignored by Git.
+directory is ignored by Git. A curated copy of the outputs is packaged in
+[Kaggle dataset version 3](https://www.kaggle.com/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs)
+for partner access.
+
+## Published artifact layout
+
+The external package contains:
+
+- `chandra/chunks.jsonl`: 8,544 Chandra blocks on 1,028 observed pages;
+- `figure-extraction/{orphan_ink,doclayout_yolo,ppdoclayout_v3}/figures.jsonl`;
+- `figure-extraction/rerun_150dpi/<detector>/pages.jsonl`, with one row for
+  each of the 1,034 pages;
+- matching `detections.jsonl`, `summary.json`, and `run.log` files for each
+  page-complete rerun; and
+- the existing comparison and fusion summaries.
+
+The Chandra rows use their own per-page `page_box`; detector rerun boxes use
+the canonical pixel and normalized coordinates recorded in each JSONL file.
+Chandra remains a provisional reference for agreement analysis, not human
+ground truth. The package is for analysis and partner access only; the runtime
+does not download it automatically.
 
 ## Canonical comparison
 

@@ -28,10 +28,11 @@ flowchart LR
 ## Current status
 
 - **Real source and offline outputs:** the Pierce PDF has 1,034 pages; the
-  150-DPI EDA ran over all pages. The private Chandra output contains
-  8,544 blocks on 1,028 pages; Document AI reference OCR contains 419,565 words
-  on 1,016 word-bearing pages. These sidecars are not committed or publicly
-  fetchable.
+  150-DPI EDA ran over all pages. The Chandra reference contains 8,544 blocks
+  on 1,028 pages; Document AI reference OCR contains 419,565 words on 1,016
+  word-bearing pages. Generated layout records are kept in the external
+  [Kaggle artifact package](https://www.kaggle.com/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs)
+  (version 3); they are not runtime dependencies.
 - **Implemented adapters:** PyMuPDF 300-DPI rendering, identity preprocessing,
   projection layout, optional offline Chandra Regions, Tesseract, optional
   Document AI reference mapping, and 256/32 Chunking are implemented. Reference
