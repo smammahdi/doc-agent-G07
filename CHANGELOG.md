@@ -8,6 +8,13 @@ release yet.
 
 No A2 release tag has been created yet.
 
+### Layout artifact package
+
+- Prepared the external Kaggle package
+  [`cruelangelssprint/pierce-1890-figure-and-ocr-outputs`](https://www.kaggle.com/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs)
+  version 3, including the Chandra reference blocks, existing detector
+  outputs, and page-complete 150-DPI rerun records.
+
 ### Held-out OCR work
 
 - Added 14 Pierce held-out page images (`p0024`–`p0037`), accompanying manual
