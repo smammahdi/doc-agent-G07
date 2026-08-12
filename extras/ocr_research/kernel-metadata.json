@@ -1,6 +1,6 @@
 {
-  "id": "cruelangelssprint/g07-full-book-trocr-outputs-from-existing-layouts",
-  "title": "G07 full-book TrOCR outputs from existing layouts",
+  "id": "cruelangelssprint/g07-t4-full-book-trocr",
+  "title": "G07 T4 full-book TrOCR outputs",
   "code_file": "kaggle_full_book_trocr.ipynb",
   "language": "python",
   "kernel_type": "notebook",
