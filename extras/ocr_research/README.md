@@ -111,3 +111,24 @@ book execution is not assumed: the model is a 3B vision-language OCR system,
 and its per-region inference cost must be measured before spending the GPU
 quota on a complete book pass. No CER/WER or accuracy claim is valid until
 manually corrected labels exist.
+
+## Kaggle PaddleOCR and DeepSeek-OCR run
+
+`kaggle-paddle-deepseek-ocr.py` is the simple T4-first entrypoint for saving
+PaddleOCR and DeepSeek-OCR text from one existing layout. It does not rerun a
+layout model and does not treat Chandra's text as OCR input. The companion
+`kaggle-paddle-deepseek-ocr.ipynb` installs the research dependencies, runs a
+page-34 smoke, and can be switched to `RUN_FULL_BOOK = True` for all 1,034
+pages.
+
+Outputs remain independent:
+
+```text
+/kaggle/working/paddle-deepseek-ocr/paddleocr/{pages,regions}.jsonl
+/kaggle/working/paddle-deepseek-ocr/deepseek-ocr/{pages,regions}.jsonl
+```
+
+Use `--layout-name chandra` to save a second run from Chandra regions; its six
+missing pages remain `layout_missing`. Use `--pages all` only after the smoke
+run succeeds. Models, crops, page renders, and caches stay in Kaggle working
+storage and are not part of the repository.

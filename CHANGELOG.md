@@ -8,6 +8,18 @@ release yet.
 
 No A2 release tag has been created yet.
 
+### Kaggle PaddleOCR and DeepSeek-OCR runner
+
+- Added `extras/ocr_research/kaggle-paddle-deepseek-ocr.py` and its notebook.
+  They save independent PaddleOCR and DeepSeek-OCR text from existing Chandra
+  or DocLayout-YOLO regions, with a real page-34 smoke by default and an
+  explicit `--pages all` full-book mode.
+- The runner checkpoints `regions.jsonl` before each page record, reuses page
+  renders and crops, records OCR errors without losing page progress, and
+  leaves the production OCR path and layout models unchanged.
+- No Kaggle model run or OCR-quality claim is recorded in this commit; the
+  notebook is prepared for a Tesla T4 execution.
+
 ### TrOCR outputs from existing layouts
 
 - Added an optional lazy `microsoft/trocr-base-printed` reader and a resumable
