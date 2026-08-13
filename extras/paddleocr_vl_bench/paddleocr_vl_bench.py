@@ -27,27 +27,12 @@ from collections import defaultdict
 from pathlib import Path
 from unittest.mock import patch
 
-# ── 1. Install Dependencies ──────────────────────────────────────────────────
-def _install():
-    if os.path.exists("/kaggle"):
-        try:
-            subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-q", "transformers>=4.44.0", "accelerate", "timm", "einops", "pymupdf", "pillow", "jiwer"],
-                check=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        except Exception as e:
-            print(f"[WARN] Dependency setup note: {e}")
-
-_install()
-
+# ── 1. Install & Import Dependencies ──────────────────────────────────────────
 import cv2
 import fitz  # PyMuPDF
 import numpy as np
 import torch
 from PIL import Image
-from transformers import AutoModelForVision2Seq, AutoModelForCausalLM, AutoProcessor
 
 try:
     from jiwer import cer as compute_cer, wer as compute_wer
@@ -132,7 +117,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print("=" * 80)
 print("PADDLEOCR-VL-1.6 BENCHMARK (0.9B VLM DOCUMENT PARSER)")
 print(f"Device                : {DEVICE}")
-print(f"Python Executable     : {sys.executable}")
+print(f"PyTorch Version       : {torch.__version__}")
 print(f"LAYOUT DETECTIONS PATH: {DET_PATH}")
 print(f"GROUND TRUTH PATH     : {LABELS_PATH}")
 print(f"HELDOUT IMAGES DIR    : {IMAGES_DIR}")
@@ -188,36 +173,50 @@ if DET_PATH.exists():
 else:
     print(f"[WARN] Layout detections {DET_PATH} not found!")
 
-# ── 6. Initialize PaddleOCR-VL-1.6 Model ──────────────────────────────────────
-MODEL_ID = "PaddlePaddle/PaddleOCR-VL-1.6"
-print(f"Loading {MODEL_ID} on {DEVICE}...")
-t0 = time.time()
+# ── 6. Initialize PaddleOCR-VL-1.6 Engine ─────────────────────────────────────
+USE_OFFICIAL_PADDLE_ENGINE = False
+paddle_pipeline = None
+processor = None
+model = None
 
 try:
-    processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
-except Exception as e:
-    print(f"[WARN] AutoProcessor fallback: {e}")
-    MODEL_ID = "PaddlePaddle/PaddleOCR-VL"
-    processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
+    from paddleocr import PaddleOCRVL
+    print("Initializing Official PaddleOCRVL Engine (pipeline_version='v1.6')...")
+    paddle_pipeline = PaddleOCRVL(pipeline_version="v1.6")
+    USE_OFFICIAL_PADDLE_ENGINE = True
+    print("✅ Official PaddleOCRVL Engine ready!")
+except Exception as e_paddle:
+    print(f"[INFO] PaddleOCRVL native engine not available ({e_paddle}). Falling back to HuggingFace Transformers...")
+    from transformers import AutoProcessor, AutoModelForVision2Seq, AutoModelForCausalLM
+    MODEL_ID = "PaddlePaddle/PaddleOCR-VL-1.6"
+    print(f"Loading {MODEL_ID} via Transformers...")
+    t0 = time.time()
+    
+    try:
+        processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
+    except Exception as e:
+        print(f"[WARN] AutoProcessor fallback: {e}")
+        MODEL_ID = "PaddlePaddle/PaddleOCR-VL"
+        processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
 
-torch_dtype = torch.bfloat16 if (torch.cuda.is_available() and torch.cuda.is_bf16_supported()) else torch.float16
+    torch_dtype = torch.bfloat16 if (torch.cuda.is_available() and torch.cuda.is_bf16_supported()) else torch.float16
 
-try:
-    model = AutoModelForVision2Seq.from_pretrained(
-        MODEL_ID,
-        trust_remote_code=True,
-        torch_dtype=torch_dtype if DEVICE == "cuda" else torch.float32,
-    ).to(DEVICE)
-except Exception as e:
-    print(f"[INFO] AutoModelForVision2Seq fallback to AutoModelForCausalLM: {e}")
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID,
-        trust_remote_code=True,
-        torch_dtype=torch_dtype if DEVICE == "cuda" else torch.float32,
-    ).to(DEVICE)
+    try:
+        model = AutoModelForVision2Seq.from_pretrained(
+            MODEL_ID,
+            trust_remote_code=True,
+            torch_dtype=torch_dtype if DEVICE == "cuda" else torch.float32,
+        ).to(DEVICE)
+    except Exception as e:
+        print(f"[INFO] Fallback to AutoModelForCausalLM: {e}")
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_ID,
+            trust_remote_code=True,
+            torch_dtype=torch_dtype if DEVICE == "cuda" else torch.float32,
+        ).to(DEVICE)
 
-model.eval()
-print(f"PaddleOCR-VL loaded in {time.time()-t0:.1f}s.")
+    model.eval()
+    print(f"Loaded {MODEL_ID} in {time.time()-t0:.1f}s.")
 
 pdf_doc = fitz.open(str(PDF_PATH)) if (PDF_PATH and PDF_PATH.exists()) else None
 
@@ -233,28 +232,46 @@ def get_page_image(pid: str) -> Image.Image | None:
         return Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
     return None
 
-@torch.inference_mode()
 def run_paddle_vl_ocr(pil_img: Image.Image, prompt: str = "OCR:", max_new_tokens: int = 512) -> str:
+    if USE_OFFICIAL_PADDLE_ENGINE and paddle_pipeline is not None:
+        img_np = np.array(pil_img)
+        res = paddle_pipeline.predict(img_np)
+        if isinstance(res, list):
+            texts = []
+            for item in res:
+                if isinstance(item, str):
+                    texts.append(item)
+                elif hasattr(item, "text"):
+                    texts.append(item.text)
+                elif isinstance(item, dict):
+                    texts.append(item.get("text", "") or item.get("markdown", "") or item.get("content", "") or str(item))
+                else:
+                    texts.append(str(item))
+            return "\n".join(texts).strip()
+        return str(res).strip()
+    
+    # Transformers Inference
     messages = [
         {"role": "user", "content": [
             {"type": "image", "image": pil_img},
             {"type": "text", "text": prompt},
         ]}
     ]
-    if hasattr(processor, "apply_chat_template"):
-        inputs = processor.apply_chat_template(
-            messages,
-            tokenize=True,
-            add_generation_prompt=True,
-            return_tensors="pt"
-        ).to(DEVICE)
-        generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
-        in_len = inputs["input_ids"].shape[1]
-        output_text = processor.batch_decode(generated_ids[:, in_len:], skip_special_tokens=True)[0]
-    else:
-        inputs = processor(images=pil_img, text=prompt, return_tensors="pt").to(DEVICE)
-        generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
-        output_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    with torch.inference_mode():
+        if hasattr(processor, "apply_chat_template"):
+            inputs = processor.apply_chat_template(
+                messages,
+                tokenize=True,
+                add_generation_prompt=True,
+                return_tensors="pt"
+            ).to(DEVICE)
+            generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
+            in_len = inputs["input_ids"].shape[1]
+            output_text = processor.batch_decode(generated_ids[:, in_len:], skip_special_tokens=True)[0]
+        else:
+            inputs = processor(images=pil_img, text=prompt, return_tensors="pt").to(DEVICE)
+            generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
+            output_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return output_text.strip()
 
 # ── 7. Run Mode 1: Layout-Aware PaddleOCR-VL (PP-DocLayoutV3 Crops) ───────────
