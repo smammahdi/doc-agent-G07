@@ -33,9 +33,21 @@ No A2 release tag has been created yet.
   weights, and shard archives remain outside Git.
 - Verified the third real DocLayout-YOLO shard on Tesla T4: pages `517–775`
   are complete as a separate canonical output, with 259 ordered page records
-  and 1,909 OCR regions. The final DLY range is running as a corrected
-  explicit-T4 submission after the earlier P100 submission failed; no DLY
-  whole-book result is claimed until that shard is downloaded and validated.
+  and 1,909 OCR regions. The corrected final T4 shard is now included in the
+  complete export below.
+- Verified and committed the complete DocLayout-YOLO TrOCR export in
+  `extras/ocr_research/results/trocr_base_printed/doclayout_yolo/`: 1,034
+  ordered completed page records, 7,108 OCR regions, 29 pages with no
+  recognized text, and 11,666.899 seconds across four Tesla T4 shards
+  (commit `b1f4d87`). This is saved OCR output from existing DLY regions, not
+  a layout or OCR accuracy claim.
+- A preliminary held-out diagnostic over the 14 manually transcribed pages
+  `p0024`–`p0037` gives macro CER/WER/word-F1 of `0.2964/0.4071/0.7130`
+  for Chandra-fed TrOCR and `0.1977/0.3167/0.7979` for DLY-fed TrOCR. The
+  transcription file currently contains literal multiline JSON strings and
+  is not valid one-record-per-line JSONL, so these numbers are provisional
+  analysis rather than a passing grading gate. No full-book OCR error is
+  reported without manually verified reference text.
 
 ### DeepSeek-OCR research preparation
 
