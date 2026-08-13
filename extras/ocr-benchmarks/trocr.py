@@ -155,7 +155,9 @@ def make_line_crops(image: Image.Image, box: list[float]) -> list[tuple[Image.Im
 
 @torch.inference_mode()
 def recognize(model: Any, processor: Any, images: list[Image.Image]) -> list[str]:
-    values = processor(images=images, return_tensors="pt").pixel_values.cuda().half()
+    # Keep the encoder and decoder in one dtype. The previous mixed
+    # float32/float16 path failed inside decoder self-attention on Kaggle.
+    values = processor(images=images, return_tensors="pt").pixel_values.cuda()
     ids = model.generate(values, max_length=MAX_LENGTH, num_beams=1)
     return [text.strip() for text in processor.batch_decode(ids, skip_special_tokens=True)]
 
@@ -368,11 +370,7 @@ def main() -> None:
     print({"gpu": torch.cuda.get_device_name(0), "model": MODEL_NAME})
     processor = TrOCRProcessor.from_pretrained(MODEL_NAME)
     model = (
-        VisionEncoderDecoderModel.from_pretrained(
-            MODEL_NAME, torch_dtype=torch.float16, use_safetensors=True
-        )
-        .eval()
-        .cuda()
+        VisionEncoderDecoderModel.from_pretrained(MODEL_NAME, use_safetensors=True).eval().cuda()
     )
     run_mode(model, processor, "full-page", labels, layout_regions)
     run_mode(model, processor, "ppdoclayout-v3", labels, layout_regions)
