@@ -45,6 +45,7 @@ HELDOUT = REPO / "grading_kit/heldout_pages"
 LABELS = REPO / "grading_kit/labels.jsonl"
 PAGES = [f"p{i:04d}" for i in range(24, 48)]
 MODES = ("full-page", "ppdoclayout-v3")
+MAX_PIXELS = 28 * 28 * 1280
 
 
 def ensure_repository() -> tuple[dict[str, str], list[str]]:
@@ -124,7 +125,9 @@ def load_model() -> tuple[Any, Any, str]:
 
     if not torch.cuda.is_available():
         raise RuntimeError("GLM-OCR requires a CUDA GPU; select a Tesla T4 in Kaggle")
-    processor = AutoProcessor.from_pretrained(MODEL_NAME)
+    # Bound visual tokens for standard SDPA on a 16 GB T4. The model's larger
+    # serving-oriented image limit can otherwise require over 14 GB at once.
+    processor = AutoProcessor.from_pretrained(MODEL_NAME, max_pixels=MAX_PIXELS)
     model = AutoModelForImageTextToText.from_pretrained(
         MODEL_NAME,
         torch_dtype="auto",
