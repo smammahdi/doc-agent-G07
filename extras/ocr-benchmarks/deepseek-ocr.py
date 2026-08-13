@@ -1,3 +1,18 @@
+# ---
+# jupyter:
+#   jupytext:
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.19.5
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+# ---
+
+# %%
 """Benchmark DeepSeek-OCR-2 on full pages and existing PP-DocLayoutV3 regions.
 
 The two modes use the same 24 committed held-out Pierce pages. ``full-page``
