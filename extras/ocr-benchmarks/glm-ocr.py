@@ -21,7 +21,7 @@
 
 # %%
 # Kaggle: Internet ON, Accelerator = Tesla T4.
-# %pip install -q --upgrade "git+https://github.com/huggingface/transformers.git" 'pillow>=12,<13'
+# %pip install -q --upgrade "git+https://github.com/huggingface/transformers.git"
 
 from __future__ import annotations
 
