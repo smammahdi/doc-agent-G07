@@ -228,6 +228,8 @@ class Reader:
         self._trocr_model: Any | None = None
         self._trocr_torch: Any | None = None
         self._trocr_device_name: str | None = None
+        self._page_cache_id: str | None = None
+        self._page_cache: np.ndarray | None = None
         if self.cfg["mode"] == "document_ai_reference":
             self._reference_words = _load_reference_words(Path(self.cfg["words_path"]))
         if self.cfg["mode"] == "trocr":
@@ -283,9 +285,15 @@ class Reader:
             raise FileNotFoundError(
                 f"no image path for page {region.page_id}; pass cfg['page_images'] or loader output"
             )
-        image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
-        if image is None:
-            raise RuntimeError(f"cannot read page image {image_path}")
+        if self._page_cache_id == region.page_id and self._page_cache is not None:
+            image = self._page_cache
+        else:
+            loaded = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
+            if loaded is None:
+                raise RuntimeError(f"cannot read page image {image_path}")
+            self._page_cache_id = region.page_id
+            self._page_cache = loaded
+            image = loaded
         height, width = image.shape[:2]
         x0, y0, x1, y1 = region.bbox
         x0, y0 = max(0, x0), max(0, y0)
@@ -293,6 +301,11 @@ class Reader:
         if x1 <= x0 or y1 <= y0:
             raise ValueError(f"region {region.page_id} has an empty bbox: {region.bbox}")
         return image[y0:y1, x0:x1]
+
+    def clear_page_cache(self) -> None:
+        """Release the last page image after a page-level OCR checkpoint."""
+        self._page_cache_id = None
+        self._page_cache = None
 
     def _region_lines(self, region: Region) -> list[Any]:
         image = self._region_image(region)
@@ -334,6 +347,19 @@ class Reader:
 
     def _transcribe_trocr(self, region: Region) -> str:
         return " ".join(text for text in self._trocr_read_lines(self._region_lines(region)) if text)
+
+    def transcribe_trocr_regions(self, regions: list[Region]) -> list[str]:
+        """Recognize all line crops from a page while reusing one model batch loop."""
+        line_groups = [self._region_lines(region) for region in regions]
+        flattened = [line for group in line_groups for line in group]
+        flat_texts = self._trocr_read_lines(flattened)
+        texts: list[str] = []
+        offset = 0
+        for group in line_groups:
+            group_texts = flat_texts[offset : offset + len(group)]
+            texts.append(" ".join(text for text in group_texts if text))
+            offset += len(group)
+        return texts
 
     def _reference_text(self, region: Region) -> str | None:
         rx0, ry0, rx1, ry1, _ = self._region_bounds(region)
@@ -433,7 +459,11 @@ def transcribe(regions: list[Region], cfg: dict[str, Any]) -> list[Chunk]:
     texts = (
         reader.transcribe_regions(regions)
         if reader.cfg["mode"] == "document_ai_reference"
-        else [reader.transcribe_region(region) for region in regions]
+        else (
+            reader.transcribe_trocr_regions(regions)
+            if reader.cfg["mode"] == "trocr"
+            else [reader.transcribe_region(region) for region in regions]
+        )
     )
     chunks: list[Chunk] = []
     for index, region in enumerate(regions):

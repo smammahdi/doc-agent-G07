@@ -8,6 +8,60 @@ release yet.
 
 No A2 release tag has been created yet.
 
+### TrOCR outputs from existing layouts
+
+- Added an optional lazy `microsoft/trocr-base-printed` reader and a resumable
+  research runner that saves real TrOCR transcriptions from existing Chandra
+  reference regions and the selected DocLayout-YOLO regions. No OCR score is
+  claimed until manually verified labels are repaired.
+- Added a private Kaggle GPU entrypoint for the same exporter over the full
+  Pierce book. It keeps Chandra and DocLayout-YOLO outputs separate, does not
+  rerun either layout model, and requires 1,028 observed Chandra pages plus
+  six layout-missing pages and all 1,034 DLY pages before acceptance.
+- The first two submissions were rejected by Kaggle's P100 runtime because its
+  installed PyTorch build does not support sm_60. The active submission uses
+  the explicit `NvidiaTeslaT4` accelerator and aborts before OCR on older GPUs.
+- Verified and committed the complete Chandra TrOCR export in
+  `extras/ocr_research/results/trocr_base_printed/chandra/`: 1,034 ordered
+  page records, 1,028 completed pages, six explicit layout-missing pages
+  (`p0002`, `p0003`, `p0004`, `p0006`, `p1031`, `p1033`), and 8,191
+  OCR regions across four Tesla T4 shards (commit `8208bf9`). This is saved
+  OCR output from the existing Chandra regions; it is not a quality score or
+  a claim that Chandra is human ground truth.
+- The four Chandra shards used the same `microsoft/trocr-base-printed`
+  checkpoint and 300-DPI crop settings. Rendered pages, line crops, model
+  weights, and shard archives remain outside Git.
+- Verified the third real DocLayout-YOLO shard on Tesla T4: pages `517–775`
+  are complete as a separate canonical output, with 259 ordered page records
+  and 1,909 OCR regions. The corrected final T4 shard is now included in the
+  complete export below.
+- Verified and committed the complete DocLayout-YOLO TrOCR export in
+  `extras/ocr_research/results/trocr_base_printed/doclayout_yolo/`: 1,034
+  ordered completed page records, 7,108 OCR regions, 29 pages with no
+  recognized text, and 11,666.899 seconds across four Tesla T4 shards
+  (commit `b1f4d87`). This is saved OCR output from existing DLY regions, not
+  a layout or OCR accuracy claim.
+- A preliminary held-out diagnostic over the 14 manually transcribed pages
+  `p0024`–`p0037` gives macro CER/WER/word-F1 of `0.2964/0.4071/0.7130`
+  for Chandra-fed TrOCR and `0.1977/0.3167/0.7979` for DLY-fed TrOCR. The
+  transcription file currently contains literal multiline JSON strings and
+  is not valid one-record-per-line JSONL, so these numbers are provisional
+  analysis rather than a passing grading gate. No full-book OCR error is
+  reported without manually verified reference text.
+
+### DeepSeek-OCR research preparation
+
+- Added an isolated exporter for the official `deepseek-ai/DeepSeek-OCR`
+  custom Transformers interface. It saves raw text from existing Chandra or
+  DocLayout-YOLO crops only; it does not change the runtime OCR default or
+  rerun layout detection. Added a Kaggle launcher for a bounded real-page
+  smoke (default `p0034`, existing DLY regions); no DeepSeek output or
+  accuracy claim exists yet.
+- Completed the bounded DeepSeek smoke on real Pierce page `p0034` using the
+  existing DocLayout-YOLO regions: 1 page, 5 regions, non-empty text from all
+  5, CUDA/Tesla T4, 24.854 seconds. This is only an exporter feasibility
+  result; no OCR quality or full-book DeepSeek claim is made.
+
 ### Layout artifact package
 
 - Prepared the external Kaggle package
