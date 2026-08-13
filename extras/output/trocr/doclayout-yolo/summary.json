@@ -1,0 +1,14 @@
+{
+  "status": "complete",
+  "layout": "doclayout_yolo",
+  "model": "microsoft/trocr-base-printed",
+  "device": "cuda",
+  "dpi": 300,
+  "pages_requested": 1034,
+  "pages_completed": 1034,
+  "pages_layout_missing": 0,
+  "missing_page_numbers": [],
+  "regions_completed": 7108,
+  "shard_count": 4,
+  "elapsed_seconds": 11666.899
+}

@@ -1,0 +1,286 @@
+{
+  "pages": 1034,
+  "pdf_pages_expected": 1034,
+  "dpi": 150,
+  "confidence": 0.5,
+  "model": "/tmp/PP-DocLayout_plus-L_infer/PP-DocLayout_plus-L_infer",
+  "provisional_gt": {
+    "labels": [
+      "Diagram",
+      "Figure",
+      "Image"
+    ],
+    "pages": 254,
+    "boxes": 353
+  },
+  "predicted_figure_labels": [
+    "chart",
+    "figure",
+    "image"
+  ],
+  "predicted": {
+    "pages": 246,
+    "boxes": 304
+  },
+  "page_coverage": {
+    "gt_pages_hit_by_prediction": 245,
+    "gt_page_recall": 0.9645669291338582,
+    "pred_pages_with_gt": 245
+  },
+  "greedy_iou_0.5": {
+    "tp": 274,
+    "fp": 30,
+    "fn": 79,
+    "precision": 0.9013157894736842,
+    "recall": 0.7762039660056658,
+    "f1": 0.8340943683409436,
+    "mean_iou_matched": 0.9149280040957136,
+    "matched_pairs": 274
+  },
+  "failure_pages": [
+    {
+      "page": 463,
+      "tp": 0,
+      "fp": 1,
+      "fn": 8
+    },
+    {
+      "page": 698,
+      "tp": 0,
+      "fp": 1,
+      "fn": 8
+    },
+    {
+      "page": 464,
+      "tp": 0,
+      "fp": 1,
+      "fn": 7
+    },
+    {
+      "page": 706,
+      "tp": 0,
+      "fp": 1,
+      "fn": 7
+    },
+    {
+      "page": 282,
+      "tp": 0,
+      "fp": 1,
+      "fn": 6
+    },
+    {
+      "page": 771,
+      "tp": 0,
+      "fp": 1,
+      "fn": 6
+    },
+    {
+      "page": 897,
+      "tp": 0,
+      "fp": 1,
+      "fn": 6
+    },
+    {
+      "page": 692,
+      "tp": 0,
+      "fp": 1,
+      "fn": 5
+    },
+    {
+      "page": 24,
+      "tp": 0,
+      "fp": 1,
+      "fn": 2
+    },
+    {
+      "page": 104,
+      "tp": 0,
+      "fp": 1,
+      "fn": 2
+    },
+    {
+      "page": 138,
+      "tp": 0,
+      "fp": 1,
+      "fn": 2
+    },
+    {
+      "page": 331,
+      "tp": 0,
+      "fp": 1,
+      "fn": 2
+    },
+    {
+      "page": 456,
+      "tp": 0,
+      "fp": 1,
+      "fn": 2
+    },
+    {
+      "page": 949,
+      "tp": 0,
+      "fp": 2,
+      "fn": 1
+    },
+    {
+      "page": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 1
+    },
+    {
+      "page": 8,
+      "tp": 0,
+      "fp": 1,
+      "fn": 1
+    },
+    {
+      "page": 465,
+      "tp": 1,
+      "fp": 1,
+      "fn": 1
+    },
+    {
+      "page": 734,
+      "tp": 1,
+      "fp": 1,
+      "fn": 1
+    },
+    {
+      "page": 963,
+      "tp": 0,
+      "fp": 1,
+      "fn": 1
+    },
+    {
+      "page": 12,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 14,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 213,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 691,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 697,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 705,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 772,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 898,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 1029,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 1030,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+    },
+    {
+      "page": 129,
+      "tp": 2,
+      "fp": 1,
+      "fn": 0
+    }
+  ],
+  "chandra_observed_pages": 1028,
+  "excluded_missing_chandra_pages": [
+    2,
+    3,
+    4,
+    6,
+    1031,
+    1033
+  ],
+  "excluded_prediction_boxes": 6,
+  "scaling_checks": {
+    "landscape_pages": 2,
+    "landscape_gt_pages": 0,
+    "landscape_pred_pages": 0,
+    "raw_boxes_outside_render_bounds": 0,
+    "dimensions": [
+      [
+        660,
+        1095
+      ],
+      [
+        668,
+        1086
+      ],
+      [
+        693,
+        1107
+      ],
+      [
+        743,
+        1177
+      ],
+      [
+        752,
+        1184
+      ],
+      [
+        1358,
+        854
+      ],
+      [
+        1374,
+        851
+      ]
+    ]
+  },
+  "class_counts_all": {
+    "image": 309,
+    "text": 4569,
+    "doc_title": 69,
+    "number": 1025,
+    "header": 982,
+    "abstract": 19,
+    "paragraph_title": 688,
+    "formula": 5,
+    "footnote": 9,
+    "figure_title": 228,
+    "chart": 1,
+    "table": 9,
+    "footer": 2,
+    "content": 64,
+    "reference": 33,
+    "reference_content": 600
+  }
+}

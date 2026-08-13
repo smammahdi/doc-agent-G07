@@ -22,6 +22,16 @@ No A2 release tag has been created yet.
 - The notebook gives each layout its own output and cache roots, preventing a
   Chandra run from reusing DocLayout-YOLO checkpoints (or vice versa).
 
+### Curated model outputs
+
+- Added `extras/output/` as the shared, model-organized release directory.
+  It contains the real Chandra `chunks.jsonl`, Document AI `words.jsonl`,
+  page-complete orphan-ink/DocLayout-YOLO/PP-DocLayoutV3 reruns, PP-DocLayout-
+  plus-L and PicoDet-S benchmark records, and the saved TrOCR outputs.
+- The output README records schemas and evidence boundaries. These are
+  inspectable research outputs, not human ground truth; raw scans, weights,
+  crops, credentials, and environments remain outside Git.
+
 ### TrOCR outputs from existing layouts
 
 - Added an optional lazy `microsoft/trocr-base-printed` reader and a resumable

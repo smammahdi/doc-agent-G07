@@ -1,0 +1,9 @@
+2026-08-12T18:15:35+0600 start pages=1034/1034 dpi=150 batch_size=4 confidence=0.5 done=0
+2026-08-12T18:15:35+0600 model=/tmp/PicoDet-S_layout_17cls_infer/PicoDet-S_layout_17cls_infer chandra=/Users/smammahdi/CSE_stuffs/Project/DL Project/development/outputs_dataset/outputs-dataset/chandra/chunks.jsonl observed_pages=1028 gt_pages=254 gt_boxes=353 excluded=[2, 3, 4, 6, 1031, 1033]
+2026-08-12T18:16:38+0600 checkpoint pages=200/1034 elapsed=62.2s rss_mb=1551.5
+2026-08-12T18:17:40+0600 checkpoint pages=400/1034 elapsed=123.6s rss_mb=1457.7
+2026-08-12T18:18:40+0600 checkpoint pages=600/1034 elapsed=183.9s rss_mb=1444.6
+2026-08-12T18:19:40+0600 checkpoint pages=800/1034 elapsed=243.5s rss_mb=1368.4
+2026-08-12T18:20:40+0600 checkpoint pages=1000/1034 elapsed=303.5s rss_mb=1470.8
+2026-08-12T18:20:51+0600 checkpoint pages=1034/1034 elapsed=314.5s rss_mb=1418.8
+2026-08-12T18:20:51+0600 summary precision=0.6794 recall=0.5042 f1=0.5789 mean_iou=0.8648 pred=262 gt=353

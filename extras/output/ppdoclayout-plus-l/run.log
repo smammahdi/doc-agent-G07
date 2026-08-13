@@ -1,0 +1,13 @@
+2026-08-12T17:50:51+0600 start pages=4/1034 dpi=150 batch_size=4 confidence=0.5 done=0
+2026-08-12T17:50:51+0600 model=/tmp/PP-DocLayout_plus-L_infer/PP-DocLayout_plus-L_infer chandra=/Users/smammahdi/CSE_stuffs/Project/DL Project/development/outputs_dataset/outputs-dataset/chandra/chunks.jsonl observed_pages=1028 gt_pages=254 gt_boxes=353 excluded=[2, 3, 4, 6, 1031, 1033]
+2026-08-12T17:50:57+0600 checkpoint pages=4/4 elapsed=5.8s rss_mb=1451.3
+2026-08-12T17:50:57+0600 summary precision=0.0000 recall=0.0000 f1=0.0000 mean_iou=0.0000 pred=1 gt=1
+2026-08-12T17:51:04+0600 start pages=1034/1034 dpi=150 batch_size=4 confidence=0.5 done=4
+2026-08-12T17:51:04+0600 model=/tmp/PP-DocLayout_plus-L_infer/PP-DocLayout_plus-L_infer chandra=/Users/smammahdi/CSE_stuffs/Project/DL Project/development/outputs_dataset/outputs-dataset/chandra/chunks.jsonl observed_pages=1028 gt_pages=254 gt_boxes=353 excluded=[2, 3, 4, 6, 1031, 1033]
+2026-08-12T17:54:55+0600 checkpoint pages=200/1034 elapsed=230.1s rss_mb=1666.8
+2026-08-12T17:58:49+0600 checkpoint pages=400/1034 elapsed=463.7s rss_mb=1752.7
+2026-08-12T18:02:45+0600 checkpoint pages=600/1034 elapsed=699.8s rss_mb=1667.6
+2026-08-12T18:06:41+0600 checkpoint pages=800/1034 elapsed=935.6s rss_mb=1681.7
+2026-08-12T18:10:45+0600 checkpoint pages=1000/1034 elapsed=1179.8s rss_mb=1937.2
+2026-08-12T18:11:38+0600 checkpoint pages=1034/1034 elapsed=1232.4s rss_mb=1356.4
+2026-08-12T18:11:38+0600 summary precision=0.9013 recall=0.7762 f1=0.8341 mean_iou=0.9149 pred=304 gt=353

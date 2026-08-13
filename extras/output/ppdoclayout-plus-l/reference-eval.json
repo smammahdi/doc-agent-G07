@@ -1,0 +1,162 @@
+{
+  "reference": "Chandra figure-like boxes used as provisional ground truth; six missing Chandra pages excluded",
+  "matching": "greedy one-to-one IoU >= 0.5 on normalized page coordinates",
+  "detectors": {
+    "ppdoclayout_plus_l": {
+      "reference_boxes": 353,
+      "prediction_boxes": 304,
+      "reference_pages": 254,
+      "prediction_pages": 246,
+      "chandra_observed_pages": 1028,
+      "excluded_missing_chandra_pages": [
+        2,
+        3,
+        4,
+        6,
+        1031,
+        1033
+      ],
+      "excluded_prediction_boxes": 6,
+      "clipped_prediction_boxes": 0,
+      "page_presence": {
+        "tp": 245,
+        "fp": 1,
+        "fn": 9,
+        "precision": 0.9959,
+        "recall": 0.9646,
+        "f1": 0.98
+      },
+      "box_iou_at_0_5": {
+        "tp": 274,
+        "fp": 30,
+        "fn": 79,
+        "precision": 0.9013,
+        "recall": 0.7762,
+        "f1": 0.8341,
+        "mean_matched_iou": 0.9149
+      },
+      "largest_failure_pages": [
+        {
+          "page": 463,
+          "tp": 0,
+          "fp": 1,
+          "fn": 8
+        },
+        {
+          "page": 698,
+          "tp": 0,
+          "fp": 1,
+          "fn": 8
+        },
+        {
+          "page": 464,
+          "tp": 0,
+          "fp": 1,
+          "fn": 7
+        },
+        {
+          "page": 706,
+          "tp": 0,
+          "fp": 1,
+          "fn": 7
+        },
+        {
+          "page": 282,
+          "tp": 0,
+          "fp": 1,
+          "fn": 6
+        },
+        {
+          "page": 771,
+          "tp": 0,
+          "fp": 1,
+          "fn": 6
+        },
+        {
+          "page": 897,
+          "tp": 0,
+          "fp": 1,
+          "fn": 6
+        },
+        {
+          "page": 692,
+          "tp": 0,
+          "fp": 1,
+          "fn": 5
+        },
+        {
+          "page": 24,
+          "tp": 0,
+          "fp": 1,
+          "fn": 2
+        },
+        {
+          "page": 104,
+          "tp": 0,
+          "fp": 1,
+          "fn": 2
+        },
+        {
+          "page": 138,
+          "tp": 0,
+          "fp": 1,
+          "fn": 2
+        },
+        {
+          "page": 331,
+          "tp": 0,
+          "fp": 1,
+          "fn": 2
+        },
+        {
+          "page": 456,
+          "tp": 0,
+          "fp": 1,
+          "fn": 2
+        },
+        {
+          "page": 949,
+          "tp": 0,
+          "fp": 2,
+          "fn": 1
+        },
+        {
+          "page": 1,
+          "tp": 0,
+          "fp": 1,
+          "fn": 1
+        },
+        {
+          "page": 8,
+          "tp": 0,
+          "fp": 1,
+          "fn": 1
+        },
+        {
+          "page": 465,
+          "tp": 1,
+          "fp": 1,
+          "fn": 1
+        },
+        {
+          "page": 734,
+          "tp": 1,
+          "fp": 1,
+          "fn": 1
+        },
+        {
+          "page": 963,
+          "tp": 0,
+          "fp": 1,
+          "fn": 1
+        },
+        {
+          "page": 12,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        }
+      ]
+    }
+  }
+}

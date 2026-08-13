@@ -28,6 +28,11 @@ output/
 outputs/
 out/
 chandra_out/
+# The curated, small research-release tree under extras/output is explicit.
+!extras/output/
+!extras/output/**
+!extras/output/*/
+!extras/output/*/**
 *.ckpt
 *.onnx
 *.pt
@@ -50,3 +55,8 @@ build-*/
 
 .claude
 chandra
+# Keep the curated model release visible despite the legacy broad rule above.
+!extras/output/chandra/
+!extras/output/chandra/**
+!extras/output/trocr/chandra/
+!extras/output/trocr/chandra/**

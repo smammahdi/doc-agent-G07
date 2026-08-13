@@ -1,0 +1,242 @@
+{
+  "status": "complete",
+  "mode": "ppdoclayout_v3",
+  "model_filename": "PP-DocLayoutV3",
+  "pdf_filename": "pierce-peoples-common-sense-medical-adviser-1890.pdf",
+  "page_count_pdf": 1034,
+  "pages_requested": 1034,
+  "pages_completed": 1034,
+  "dpi": 150,
+  "confidence": 0.5,
+  "environment": {
+    "python": "/Users/smammahdi/CSE_stuffs/Project/DL Project/development/.venv-ppv3/bin/python",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "dependencies": {
+      "cv2": "4.12.0",
+      "numpy": "2.2.6",
+      "psutil": "6.0.0",
+      "pymupdf": "1.25.5",
+      "onnxruntime": "1.23.2",
+      "torch": "2.9.1",
+      "transformers": "5.14.1"
+    }
+  },
+  "counts": {
+    "detections": 8642,
+    "figure_detections": 306
+  },
+  "runtime_seconds": 1374.454,
+  "rss_max_bytes": 1423720448,
+  "chandra": {
+    "pages_requested": 1034,
+    "pages_scored": 1028,
+    "chandra_observed_gt_pages": 254,
+    "chandra_gt_boxes": 353,
+    "chandra_total_observed_gt_pages": 254,
+    "chandra_total_gt_boxes": 353,
+    "prediction_boxes": 306,
+    "box_iou_at_0_5": {
+      "tp": 288,
+      "fp": 18,
+      "fn": 65,
+      "precision": 0.9411764705882353,
+      "recall": 0.8158640226628895,
+      "f1": 0.8740515933232169,
+      "mean_matched_iou": 0.9269646650271728
+    },
+    "page_presence": {
+      "tp": 240,
+      "fp": 1,
+      "fn": 14,
+      "precision": 0.995850622406639,
+      "recall": 0.9448818897637795,
+      "f1": 0.9696969696969697
+    },
+    "failure_pages": [
+      {
+        "page": 1,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 5,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 7,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 8,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 12,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 14,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 123,
+        "tp": 1,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 138,
+        "tp": 2,
+        "fp": 1,
+        "fn": 0
+      },
+      {
+        "page": 282,
+        "tp": 0,
+        "fp": 1,
+        "fn": 6
+      },
+      {
+        "page": 331,
+        "tp": 0,
+        "fp": 1,
+        "fn": 2
+      },
+      {
+        "page": 456,
+        "tp": 2,
+        "fp": 1,
+        "fn": 0
+      },
+      {
+        "page": 463,
+        "tp": 0,
+        "fp": 1,
+        "fn": 8
+      },
+      {
+        "page": 464,
+        "tp": 0,
+        "fp": 1,
+        "fn": 7
+      },
+      {
+        "page": 691,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 692,
+        "tp": 0,
+        "fp": 1,
+        "fn": 5
+      },
+      {
+        "page": 697,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 698,
+        "tp": 2,
+        "fp": 1,
+        "fn": 6
+      },
+      {
+        "page": 705,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 706,
+        "tp": 0,
+        "fp": 1,
+        "fn": 7
+      },
+      {
+        "page": 772,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 897,
+        "tp": 0,
+        "fp": 1,
+        "fn": 6
+      },
+      {
+        "page": 898,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 949,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 963,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 1012,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 1029,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 1030,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 1032,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 1034,
+        "tp": 0,
+        "fp": 1,
+        "fn": 0
+      }
+    ],
+    "excluded_missing_chandra_pages": [
+      2,
+      3,
+      4,
+      6,
+      1031,
+      1033
+    ],
+    "runtime_seconds": 1374.454,
+    "rss_max_bytes": 1423720448
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "status": "complete",
+  "mode": "orphan_ink",
+  "model_filename": null,
+  "pdf_filename": "pierce-peoples-common-sense-medical-adviser-1890.pdf",
+  "page_count_pdf": 1034,
+  "pages_requested": 1034,
+  "pages_completed": 1034,
+  "dpi": 150,
+  "confidence": 0.5,
+  "environment": {
+    "python": "/Users/smammahdi/CSE_stuffs/Project/DL Project/development/.venv-ppv3/bin/python",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "dependencies": {
+      "cv2": "4.12.0",
+      "numpy": "2.2.6",
+      "psutil": "6.0.0",
+      "pymupdf": "1.25.5",
+      "onnxruntime": "1.23.2",
+      "torch": "2.9.1",
+      "transformers": "5.14.1"
+    }
+  },
+  "counts": {
+    "detections": 331,
+    "figure_detections": 331
+  },
+  "runtime_seconds": 210.685,
+  "rss_max_bytes": 683393024,
+  "chandra": {
+    "pages_requested": 1034,
+    "pages_scored": 1028,
+    "chandra_observed_gt_pages": 254,
+    "chandra_gt_boxes": 353,
+    "chandra_total_observed_gt_pages": 254,
+    "chandra_total_gt_boxes": 353,
+    "prediction_boxes": 330,
+    "box_iou_at_0_5": {
+      "tp": 286,
+      "fp": 44,
+      "fn": 67,
+      "precision": 0.8666666666666667,
+      "recall": 0.8101983002832861,
+      "f1": 0.8374816983894583,
+      "mean_matched_iou": 0.9101260728688909
+    },
+    "page_presence": {
+      "tp": 246,
+      "fp": 3,
+      "fn": 8,
+      "precision": 0.9879518072289156,
+      "recall": 0.968503937007874,
+      "f1": 0.978131212723658
+    },
+    "failure_pages": [
+      {
+        "page": 1,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 5,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 7,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 10,
+        "tp": 0,
+        "fp": 1,
+        "fn": 0
+      },
+      {
+        "page": 12,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 14,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 21,
+        "tp": 0,
+        "fp": 3,
+        "fn": 1
+      },
+      {
+        "page": 24,
+        "tp": 0,
+        "fp": 1,
+        "fn": 2
+      },
+      {
+        "page": 39,
+        "tp": 1,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 40,
+        "tp": 2,
+        "fp": 1,
+        "fn": 0
+      },
+      {
+        "page": 56,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 59,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 61,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 62,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 79,
+        "tp": 1,
+        "fp": 3,
+        "fn": 1
+      },
+      {
+        "page": 80,
+        "tp": 0,
+        "fp": 3,
+        "fn": 1
+      },
+      {
+        "page": 116,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 123,
+        "tp": 1,
+        "fp": 2,
+        "fn": 1
+      },
+      {
+        "page": 129,
+        "tp": 1,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 160,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 213,
+        "tp": 1,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 253,
+        "tp": 0,
+        "fp": 1,
+        "fn": 0
+      },
+      {
+        "page": 282,
+        "tp": 0,
+        "fp": 1,
+        "fn": 6
+      },
+      {
+        "page": 425,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 463,
+        "tp": 0,
+        "fp": 1,
+        "fn": 8
+      },
+      {
+        "page": 464,
+        "tp": 5,
+        "fp": 0,
+        "fn": 2
+      },
+      {
+        "page": 691,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 692,
+        "tp": 1,
+        "fp": 2,
+        "fn": 4
+      },
+      {
+        "page": 697,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 698,
+        "tp": 2,
+        "fp": 3,
+        "fn": 6
+      },
+      {
+        "page": 705,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 706,
+        "tp": 2,
+        "fp": 3,
+        "fn": 5
+      },
+      {
+        "page": 734,
+        "tp": 1,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 771,
+        "tp": 4,
+        "fp": 1,
+        "fn": 2
+      },
+      {
+        "page": 772,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 897,
+        "tp": 1,
+        "fp": 1,
+        "fn": 5
+      },
+      {
+        "page": 898,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      },
+      {
+        "page": 985,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1
+      },
+      {
+        "page": 1015,
+        "tp": 0,
+        "fp": 1,
+        "fn": 0
+      },
+      {
+        "page": 1029,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1
+      }
+    ],
+    "excluded_missing_chandra_pages": [
+      2,
+      3,
+      4,
+      6,
+      1031,
+      1033
+    ],
+    "runtime_seconds": 210.685,
+    "rss_max_bytes": 683393024
+  }
+}
