@@ -21,19 +21,21 @@ No A2 release tag has been created yet.
 - The first two submissions were rejected by Kaggle's P100 runtime because its
   installed PyTorch build does not support sm_60. The active submission uses
   the explicit `NvidiaTeslaT4` accelerator and aborts before OCR on older GPUs.
-- Verified the first two real Chandra shards on Tesla T4: pages `1–258` and
-  `259–516` are complete as separate canonical outputs, with 516 ordered page
-  records, 4 layout-missing pages (`p0002`, `p0003`, `p0004`, `p0006`), and
-  3,499 OCR regions. These outputs remain outside Git until the remaining
-  Chandra and DocLayout-YOLO ranges are complete and merged.
-- Verified the third real Chandra shard on Tesla T4: pages `517–775` are
-  complete as a separate canonical output, with 259 ordered page records and
-  2,103 OCR regions. The final Chandra range (`776–1034`) is still running;
-  no whole-book Chandra result is claimed yet.
+- Verified and committed the complete Chandra TrOCR export in
+  `extras/ocr_research/results/trocr_base_printed/chandra/`: 1,034 ordered
+  page records, 1,028 completed pages, six explicit layout-missing pages
+  (`p0002`, `p0003`, `p0004`, `p0006`, `p1031`, `p1033`), and 8,191
+  OCR regions across four Tesla T4 shards (commit `8208bf9`). This is saved
+  OCR output from the existing Chandra regions; it is not a quality score or
+  a claim that Chandra is human ground truth.
+- The four Chandra shards used the same `microsoft/trocr-base-printed`
+  checkpoint and 300-DPI crop settings. Rendered pages, line crops, model
+  weights, and shard archives remain outside Git.
 - Verified the third real DocLayout-YOLO shard on Tesla T4: pages `517–775`
   are complete as a separate canonical output, with 259 ordered page records
-  and 1,909 OCR regions. The final DLY range still needs a corrected T4
-  submission after the earlier P100 submission failed.
+  and 1,909 OCR regions. The final DLY range is running as a corrected
+  explicit-T4 submission after the earlier P100 submission failed; no DLY
+  whole-book result is claimed until that shard is downloaded and validated.
 
 ### DeepSeek-OCR research preparation
 
