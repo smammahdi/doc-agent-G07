@@ -1,25 +1,15 @@
 #!/usr/bin/env python3
 """
-Tesseract OCR — Layout-Aware Benchmark (Kaggle script version)
-Pierce 1890 Medical Adviser · Team G07 · A2 OCR benchmarking
+Tesseract OCR — PP-DocLayoutV3 Layout-Aware Benchmark
+Pierce 1890 Medical Adviser · Team G07 · A2 OCR Benchmarking
 
-Run on Kaggle with:
+Run on Kaggle:
     python tesseract_layout_bench.py
 
-Strategy:
-  1. Load Chandra chunks.jsonl layout blocks (text regions only, figures excluded).
-  2. Render each PDF page at 300 DPI using PyMuPDF.
-  3. Crop each Chandra text region from the page image.
-  4. Run Tesseract on each crop individually.
-  5. Reassemble page transcript in reading order.
-  6. Score against hand-verified held-out labels (grading_kit/labels.jsonl).
-  7. Also score Chandra's own text content against the same GT for comparison.
-  8. Save page_transcripts.jsonl, heldout_scores.csv, report.md.
-
-Kaggle inputs expected:
-  PDF:     /kaggle/input/datasets/kmazd1110/dl-peoples-common-sense-med-advisor/EN_The-Peoples-Common-Sense-Medical-Adviser.pdf
-  Chandra: /kaggle/input/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs/**  (chunks.jsonl auto-discovered)
-  GT:      /kaggle/input/datasets/kmazd1110/pierce-book-gt/labels.jsonl
+Kaggle dataset inputs:
+  - Layout:  /kaggle/input/datasets/kmazd1110/ocr-layout-dataset/ocr-layout-dataset/ppdoclayout-v3/detections.jsonl
+  - Labels:  /kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/labels.jsonl
+  - Images:  /kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/heldout_pages/ (or PDF fallback)
 """
 
 from __future__ import annotations
@@ -34,350 +24,299 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
-# ── Install dependencies (Kaggle environment) ────────────────────────────────
+# ── 1. Install System & Python Dependencies ──────────────────────────────────
 def _install():
-    subprocess.run(
-        ["apt-get", "install", "-y", "-q", "tesseract-ocr", "tesseract-ocr-eng"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-q", "pytesseract", "pymupdf", "jiwer"],
-        check=True,
-    )
+    if os.path.exists("/kaggle"):
+        try:
+            subprocess.run(
+                ["apt-get", "update", "-y", "-q"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.run(
+                ["apt-get", "install", "-y", "-q", "tesseract-ocr", "tesseract-ocr-eng"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-q", "pytesseract", "pymupdf", "pillow", "jiwer"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception as e:
+            print(f"[WARN] Dependency setup warning: {e}")
 
 _install()
 
-import cv2                          # noqa: E402
-import fitz                         # noqa: E402  PyMuPDF
-import numpy as np                  # noqa: E402
-import pytesseract                  # noqa: E402
-from jiwer import cer as compute_cer, wer as compute_wer  # noqa: E402
+import cv2
+import fitz  # PyMuPDF
+import numpy as np
+import pytesseract
+from PIL import Image
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-PDF_PATH = Path(
-    "/kaggle/input/datasets/kmazd1110/dl-peoples-common-sense-med-advisor"
-    "/EN_The-Peoples-Common-Sense-Medical-Adviser.pdf"
-)
-CHANDRA_PATH = Path(
-    "/kaggle/input/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs"
-    "/chandra/chunks.jsonl"
-)
-LABELS_PATH = Path("/kaggle/input/datasets/kmazd1110/pierce-book-gt/labels.jsonl")
+try:
+    from jiwer import cer as compute_cer, wer as compute_wer
+except ImportError:
+    def levenshtein_distance(ref_seq, hyp_seq):
+        n, m = len(ref_seq), len(hyp_seq)
+        if n == 0: return m
+        if m == 0: return n
+        dp = list(range(m + 1))
+        for i in range(1, n + 1):
+            prev = dp[0]
+            dp[0] = i
+            for j in range(1, m + 1):
+                temp = dp[j]
+                if ref_seq[i - 1] == hyp_seq[j - 1]:
+                    dp[j] = prev
+                else:
+                    dp[j] = 1 + min(prev, dp[j], dp[j - 1])
+                prev = temp
+        return dp[m]
 
-OUT_DIR = Path("/kaggle/working/tesseract_layout_bench")
+    def compute_cer(ref, hyp):
+        dist = levenshtein_distance(list(ref), list(hyp))
+        return dist / float(len(ref)) if ref else 0.0
+
+    def compute_wer(ref, hyp):
+        ref_w, hyp_w = ref.split(), hyp.split()
+        dist = levenshtein_distance(ref_w, hyp_w)
+        return dist / float(len(ref_w)) if ref_w else 0.0
+
+# ── 2. Configure Paths ────────────────────────────────────────────────────────
+KAGGLE_DET_PATH = Path("/kaggle/input/datasets/kmazd1110/ocr-layout-dataset/ocr-layout-dataset/ppdoclayout-v3/detections.jsonl")
+LOCAL_DET_PATH = Path("extras/output/ppdoclayout-v3/detections.jsonl")
+
+KAGGLE_LABELS_PATH = Path("/kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/labels.jsonl")
+LOCAL_LABELS_PATH = Path("grading_kit/labels.jsonl")
+
+KAGGLE_IMAGES_DIR = Path("/kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/heldout_pages")
+LOCAL_IMAGES_DIR = Path("grading_kit/heldout_pages")
+
+KAGGLE_PDF_PATH = Path("/kaggle/input/datasets/kmazd1110/dl-peoples-common-sense-med-advisor/EN_The-Peoples-Common-Sense-Medical-Adviser.pdf")
+LOCAL_PDF_PATH = Path("data/raw/pierce-peoples-common-sense-medical-adviser-1890.pdf")
+
+# Output Paths
+if os.path.exists("/kaggle"):
+    OUT_DIR = Path("/kaggle/working/tesseract_ppdoclayout_v3")
+    OUT_RESULTS_JSONL = Path("/kaggle/working/tesseract_ppdoclayout_v3_results.jsonl")
+    OUT_SCORES_CSV = Path("/kaggle/working/tesseract_ppdoclayout_v3_scores.csv")
+    OUT_REPORT_MD = Path("/kaggle/working/report.md")
+else:
+    OUT_DIR = Path("extras/tesseract_layout_bench/output")
+    OUT_RESULTS_JSONL = Path("extras/results/tesseract_ppdoclayout_v3_results.jsonl")
+    OUT_SCORES_CSV = Path("extras/results/tesseract_ppdoclayout_v3_scores.csv")
+    OUT_REPORT_MD = Path("extras/results/report.md")
+
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUT_RESULTS_JSONL.parent.mkdir(parents=True, exist_ok=True)
 
-DPI = 300
-TESSERACT_CFG = "--psm 6"  # single uniform block of text per crop
+# Discover actual layout detection path
+if KAGGLE_DET_PATH.exists():
+    DET_PATH = KAGGLE_DET_PATH
+elif LOCAL_DET_PATH.exists():
+    DET_PATH = LOCAL_DET_PATH
+else:
+    # Auto discover
+    found = list(Path(".").rglob("*ppdoclayout-v3/detections.jsonl")) + list(Path("/kaggle").rglob("*ppdoclayout-v3/detections.jsonl"))
+    DET_PATH = found[0] if found else KAGGLE_DET_PATH
 
+# Discover actual labels path
+if KAGGLE_LABELS_PATH.exists():
+    LABELS_PATH = KAGGLE_LABELS_PATH
+elif LOCAL_LABELS_PATH.exists():
+    LABELS_PATH = LOCAL_LABELS_PATH
+else:
+    found = list(Path(".").rglob("labels.jsonl")) + list(Path("/kaggle").rglob("labels.jsonl"))
+    LABELS_PATH = found[0] if found else KAGGLE_LABELS_PATH
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# Discover actual images directory or PDF
+IMAGES_DIR = KAGGLE_IMAGES_DIR if KAGGLE_IMAGES_DIR.exists() else (LOCAL_IMAGES_DIR if LOCAL_IMAGES_DIR.exists() else None)
+PDF_PATH = KAGGLE_PDF_PATH if KAGGLE_PDF_PATH.exists() else (LOCAL_PDF_PATH if LOCAL_PDF_PATH.exists() else None)
 
-def _chandra_label_kind(label) -> str:
-    if label is None:
-        return "text"
-    l = str(label).lower().strip()
-    if any(kw in l for kw in ["image", "figure", "diagram", "picture"]):
-        return "figure"
-    return "text"
+print("=" * 80)
+print(f"LAYOUT DETECTIONS PATH : {DET_PATH}")
+print(f"GROUND TRUTH LABELS PATH: {LABELS_PATH}")
+print(f"HELDOUT IMAGES DIR    : {IMAGES_DIR}")
+print(f"PDF PATH              : {PDF_PATH}")
+print("=" * 80)
 
-
-def render_page(doc: fitz.Document, page_idx: int, dpi: int = DPI) -> np.ndarray:
-    """Render a PDF page to a numpy BGR image."""
-    pix = doc[page_idx].get_pixmap(dpi=dpi)
-    arr = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, pix.n)
-    return cv2.cvtColor(
-        arr, cv2.COLOR_RGB2BGR if pix.n == 3 else cv2.COLOR_RGBA2BGR
-    )
-
-
-def bbox_to_pixel(
-    bbox: list, page_box: list, img_w: int, img_h: int
-) -> tuple[int, int, int, int] | None:
-    """
-    Convert Chandra bbox [x0,y0,x1,y1] in page_box [W, H] coords
-    to pixel coords in our rendered image (img_w x img_h).
-    Returns None if page_box dimensions are zero/invalid (bad Chandra data).
-    """
-    cw, ch = float(page_box[0]), float(page_box[1])
-    if cw == 0.0 or ch == 0.0:
-        return None  # guard: skip blocks with undefined page_box dimensions
-    x0, y0, x1, y1 = bbox
-    px0 = max(0,     int(x0 / cw * img_w))
-    py0 = max(0,     int(y0 / ch * img_h))
-    px1 = min(img_w, int(x1 / cw * img_w))
-    py1 = min(img_h, int(y1 / ch * img_h))
-    return px0, py0, px1, py1
-
-
-def ocr_crop(img: np.ndarray, x0: int, y0: int, x1: int, y1: int) -> str:
-    """Crop a region from a page image and run Tesseract on it."""
-    if x1 <= x0 or y1 <= y0:
-        return ""
-    crop = img[y0:y1, x0:x1]
-    if crop.size == 0:
-        return ""
-    text = pytesseract.image_to_string(crop, lang="eng", config=TESSERACT_CFG)
-    return text.strip()
-
-
+# ── 3. Helper Functions ───────────────────────────────────────────────────────
 def normalize(text: str) -> str:
-    """Normalize whitespace for fair CER/WER computation."""
-    return re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
+    text = text.replace("æ", "ae").replace("œ", "oe").replace("ﬁ", "fi").replace("ﬂ", "fl")
+    return text
 
+def compute_word_f1(ref: str, hyp: str) -> float:
+    ref_w = set(normalize(ref).lower().split())
+    hyp_w = set(normalize(hyp).lower().split())
+    tp = len(ref_w & hyp_w)
+    prec = tp / len(hyp_w) if hyp_w else 0.0
+    rec = tp / len(ref_w) if ref_w else 0.0
+    return (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
 
-# ── Load Chandra layout blocks ────────────────────────────────────────────────
-print("Loading Chandra layout blocks...")
-if CHANDRA_PATH is None or not CHANDRA_PATH.exists():
-    print("[WARN] chunks.jsonl not found — will run full-page Tesseract as fallback.")
-    USE_LAYOUT = False
-else:
-    USE_LAYOUT = True
-    print(f"Using layout blocks from: {CHANDRA_PATH}")
-chandra_blocks: dict[str, list[dict]] = defaultdict(list)
-if USE_LAYOUT:
-    with CHANDRA_PATH.open(encoding="utf-8") as f:  # type: ignore[union-attr]
-        for line in f:
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            book_page = row.get("book_page")
-            if book_page is None:
-                continue
-            label = row.get("label", "")
-            if _chandra_label_kind(label) == "figure":
-                continue  # Skip non-text blocks; Tesseract shouldn't read figures
-            page_id = f"p{int(book_page):04d}"
-            chandra_blocks[page_id].append({
-                "page_box": row.get("page_box"),  # [W, H] Chandra image space
-                "bbox": row.get("bbox"),           # [x0, y0, x1, y1] in page_box coords
-                "label": label,
-                "content": row.get("content", ""), # Chandra's own OCR text (pseudo-GT)
-            })
-    total_pages_with_blocks = len(chandra_blocks)
-    total_blocks = sum(len(v) for v in chandra_blocks.values())
-    print(f"Loaded {total_pages_with_blocks} pages with {total_blocks} text blocks.")
-else:
-    print("No Chandra layout blocks — will use full-page OCR fallback for all pages.")
-
-# ── Load ground-truth labels ──────────────────────────────────────────────────
-print("Loading ground-truth labels...")
-assert LABELS_PATH.exists(), f"Missing: {LABELS_PATH}"
+# ── 4. Load Ground Truth Labels ──────────────────────────────────────────────
+print("Loading Ground Truth labels...")
 gt_labels: dict[str, str] = {}
 with LABELS_PATH.open(encoding="utf-8") as f:
     for line in f:
-        if not line.strip():
+        if line.strip():
+            row = json.loads(line)
+            gt_labels[row["page_id"]] = row["text"]
+
+test_page_ids = sorted(gt_labels.keys())
+print(f"Found {len(test_page_ids)} test set pages: {test_page_ids}")
+
+# ── 5. Load PP-DocLayoutV3 Detections for Test Set Pages ───────────────────────
+print("Loading PP-DocLayoutV3 layout detections...")
+det_blocks: dict[str, list[dict]] = defaultdict(list)
+if DET_PATH.exists():
+    with DET_PATH.open(encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                row = json.loads(line)
+                pid = row.get("page_id")
+                if pid in gt_labels:
+                    det_blocks[pid].append(row)
+    print(f"Loaded layout detections for {len(det_blocks)} test set pages.")
+else:
+    print(f"[WARN] Layout file {DET_PATH} not found!")
+
+# Open PDF doc if needed
+pdf_doc = fitz.open(str(PDF_PATH)) if (PDF_PATH and PDF_PATH.exists()) else None
+
+# ── 6. Run Tesseract OCR on Test Set Pages ────────────────────────────────────
+print("\nRunning Tesseract OCR on PP-DocLayoutV3 text crops...")
+start_time = time.time()
+results = []
+scored_results = []
+
+for pid in test_page_ids:
+    page_start = time.time()
+    book_page_num = int(pid.replace("p", ""))
+    
+    # Load page image (from image file or rendered PDF)
+    img_pil = None
+    if IMAGES_DIR and IMAGES_DIR.exists():
+        for ext in [".jpg", ".png", ".jpeg"]:
+            img_file = IMAGES_DIR / f"{pid}{ext}"
+            if img_file.exists():
+                img_pil = Image.open(img_file).convert("RGB")
+                break
+                
+    if img_pil is None and pdf_doc is not None:
+        pix = pdf_doc[book_page_num - 1].get_pixmap(dpi=300)
+        img_pil = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        
+    if img_pil is None:
+        print(f"[ERROR] Could not load image or PDF for page {pid}. Skipping.")
+        continue
+        
+    img_w, img_h = img_pil.size
+    blocks = det_blocks.get(pid, [])
+    
+    # Separate text blocks vs figure blocks
+    text_blocks = [b for b in blocks if not b.get("is_figure", False)]
+    # Sort top-to-bottom y0, then left-to-right x0
+    text_blocks.sort(key=lambda b: (b.get("bbox_norm", [0,0,0,0])[1], b.get("bbox_norm", [0,0,0,0])[0]))
+    
+    transcripts = []
+    for b in text_blocks:
+        norm = b.get("bbox_norm", [0, 0, 0, 0])
+        px0 = max(0, int(norm[0] * img_w))
+        py0 = max(0, int(norm[1] * img_h))
+        px1 = min(img_w, int(norm[2] * img_w))
+        py1 = min(img_h, int(norm[3] * img_h))
+        
+        if px1 <= px0 or py1 <= py0:
             continue
-        row = json.loads(line)
-        gt_labels[row["page_id"]] = row["text"]
-print(f"Loaded {len(gt_labels)} ground-truth pages: {sorted(gt_labels.keys())}")
-
-# ── Full-corpus Tesseract OCR with layout masking ─────────────────────────────
-if USE_LAYOUT:
-    print("\nRunning Tesseract with Chandra layout masking on all pages...")
-else:
-    print("\nRunning Tesseract full-page (no layout masking — chunks.jsonl unavailable)...")
-
-assert PDF_PATH.exists(), f"Missing PDF: {PDF_PATH}"
-doc = fitz.open(str(PDF_PATH))
-print(f"PDF loaded: {doc.page_count} pages")
-
-results: list[dict] = []
-
-# If we have Chandra layout, process only pages Chandra observed.
-# Fallback: process ALL pages (needed for full corpus + GT scoring).
-if USE_LAYOUT:
-    all_page_ids = sorted(chandra_blocks.keys())
-else:
-    all_page_ids = [f"p{i+1:04d}" for i in range(doc.page_count)]
-
-t_total = time.time()
-
-for page_num, page_id in enumerate(all_page_ids):
-    pdf_idx = int(page_id[1:]) - 1  # page_id 'p0024' → PDF index 23
-    if pdf_idx < 0 or pdf_idx >= doc.page_count:
-        continue
-
-    t0 = time.time()
-    img = render_page(doc, pdf_idx, DPI)
-    img_h, img_w = img.shape[:2]
-
-    if USE_LAYOUT:
-        # Layout-masked: crop each text region and OCR it individually
-        blocks = chandra_blocks[page_id]
-        block_texts: list[str] = []
-        for blk in blocks:
-            page_box = blk.get("page_box")
-            bbox = blk.get("bbox")
-            if not page_box or not bbox or len(page_box) < 2 or len(bbox) < 4:
-                continue
-            px_result = bbox_to_pixel(bbox, page_box, img_w, img_h)
-            if px_result is None:
-                continue  # skip block with zero/invalid page_box dimensions
-            px0, py0, px1, py1 = px_result
-            text = ocr_crop(img, px0, py0, px1, py1)
-            if text:
-                block_texts.append(text)
-        page_text = "\n".join(block_texts)
-        n_blocks = len(block_texts)
-    else:
-        # Fallback: run Tesseract on the full page
-        page_text = pytesseract.image_to_string(img, lang="eng", config=TESSERACT_CFG).strip()
-        n_blocks = 1
-
-    elapsed = time.time() - t0
-
+            
+        crop = img_pil.crop((px0, py0, px1, py1))
+        tess_text = pytesseract.image_to_string(crop, lang="eng", config="--psm 6").strip()
+        if tess_text:
+            transcripts.append(tess_text)
+            
+    full_transcript = "\n\n".join(transcripts)
+    elapsed = time.time() - page_start
+    
     results.append({
-        "page_id": page_id,
-        "text": page_text,
-        "n_blocks": n_blocks,
-        "elapsed_s": round(elapsed, 2),
+        "page_id": pid,
+        "text": full_transcript,
+        "n_blocks": len(text_blocks),
+        "elapsed_s": round(elapsed, 2)
     })
-
-    if page_num % 50 == 0 or page_num < 5:
-        print(f"  [{page_num:4d}/{len(all_page_ids)}] {page_id} — {n_blocks} blocks, {elapsed:.1f}s")
-
-print(f"\nAll pages done in {time.time() - t_total:.1f}s")
-
-# Save full transcripts
-transcripts_path = OUT_DIR / "page_transcripts.jsonl"
-with transcripts_path.open("w", encoding="utf-8") as f:
-    for r in results:
-        f.write(json.dumps(r, ensure_ascii=False) + "\n")
-print(f"Saved transcripts -> {transcripts_path}")
-
-# ── Score against held-out ground truth ───────────────────────────────────────
-print("\n=== Scoring Tesseract vs held-out ground truth ===")
-transcript_map: dict[str, str] = {r["page_id"]: r["text"] for r in results}
-scored_pages: list[dict] = []
-
-for page_id, ref_text in sorted(gt_labels.items()):
-    hyp_text = transcript_map.get(page_id, "")
-    ref_norm = normalize(ref_text)
-    hyp_norm = normalize(hyp_text)
-
-    if not ref_norm:
-        continue
-
-    page_cer = compute_cer(ref_norm, hyp_norm)
-    page_wer = compute_wer(ref_norm, hyp_norm)
-
-    # Word F1 (set-based)
-    ref_words = set(ref_norm.lower().split())
-    hyp_words = set(hyp_norm.lower().split())
-    tp = len(ref_words & hyp_words)
-    precision = tp / len(hyp_words) if hyp_words else 0.0
-    recall = tp / len(ref_words) if ref_words else 0.0
-    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
-
-    scored_pages.append({
-        "page_id": page_id,
-        "cer": round(page_cer, 4),
-        "wer": round(page_wer, 4),
-        "word_f1": round(f1, 4),
-        "ref_chars": len(ref_norm),
+    
+    # Compute evaluation metrics against GT
+    ref_norm = normalize(gt_labels[pid])
+    hyp_norm = normalize(full_transcript)
+    
+    cer = compute_cer(ref_norm, hyp_norm)
+    wer = compute_wer(ref_norm, hyp_norm)
+    f1 = compute_word_f1(ref_norm, hyp_norm)
+    
+    scored_results.append({
+        "page_id": pid,
+        "cer": cer,
+        "wer": wer,
+        "f1": f1,
+        "gt_chars": len(ref_norm),
         "hyp_chars": len(hyp_norm),
+        "n_blocks": len(text_blocks),
+        "elapsed_s": round(elapsed, 2)
     })
-    print(f"  {page_id}  CER={page_cer:.4f}  WER={page_wer:.4f}  Word-F1={f1:.4f}")
 
-mean_cer = mean_wer = mean_f1 = float("nan")
-if scored_pages:
-    mean_cer = float(np.mean([p["cer"] for p in scored_pages]))
-    mean_wer = float(np.mean([p["wer"] for p in scored_pages]))
-    mean_f1 = float(np.mean([p["word_f1"] for p in scored_pages]))
-    print(f"\n{'='*55}")
-    print(f"AGGREGATE over {len(scored_pages)} held-out pages (Tesseract + layout masking)")
-    print(f"  Mean CER    : {mean_cer:.4f}")
-    print(f"  Mean WER    : {mean_wer:.4f}")
-    print(f"  Mean Word F1: {mean_f1:.4f}")
+total_time = time.time() - start_time
+print(f"\nCompleted Tesseract OCR on {len(results)} pages in {total_time:.2f} seconds.")
 
-    # Save scores CSV
-    score_path = OUT_DIR / "heldout_scores.csv"
-    with score_path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(scored_pages[0]))
-        w.writeheader()
-        w.writerows(scored_pages)
-    print(f"Scores -> {score_path}")
+# ── 7. Save Transcripts Output ────────────────────────────────────────────────
+with OUT_RESULTS_JSONL.open("w", encoding="utf-8") as f:
+    for row in results:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
+print(f"Saved transcripts to: {OUT_RESULTS_JSONL}")
 
-# ── Worst failure ─────────────────────────────────────────────────────────────
-worst = best = None
-if scored_pages:
-    worst = max(scored_pages, key=lambda p: p["cer"])
-    best = min(scored_pages, key=lambda p: p["cer"])
-    print(f"\nBest  page: {best['page_id']}  CER={best['cer']:.4f}")
-    print(f"Worst page: {worst['page_id']}  CER={worst['cer']:.4f}")
-    print(f"\n--- Ground truth {worst['page_id']} (first 400 chars) ---")
-    print(gt_labels[worst["page_id"]][:400])
-    print(f"\n--- Tesseract output {worst['page_id']} (first 400 chars) ---")
-    print(transcript_map.get(worst["page_id"], "(not found)")[:400])
+# ── 8. Print & Save Benchmark Evaluation Report ─────────────────────────────
+print("\n" + "=" * 90)
+print(f"{'PAGE':7s} | {'CER':8s} | {'WER':8s} | {'WORD F1':8s} | {'BLOCKS':6s} | GT CHARS | HYP CHARS")
+print("=" * 90)
 
-# ── Compare Chandra text vs Ground Truth ─────────────────────────────────────
-print("\n=== Chandra pseudo-GT vs hand labels ===")
-chandra_scores: list[tuple] = []
-for page_id, ref_text in sorted(gt_labels.items()):
-    chandra_text = " ".join(
-        blk.get("content", "") for blk in chandra_blocks.get(page_id, [])
-    )
-    ref_norm = normalize(ref_text)
-    hyp_norm = normalize(chandra_text)
-    if not ref_norm or not hyp_norm:
-        continue
-    c = compute_cer(ref_norm, hyp_norm)
-    w = compute_wer(ref_norm, hyp_norm)
-    chandra_scores.append((page_id, c, w))
-    print(f"  {page_id}  CER={c:.4f}  WER={w:.4f}")
+for s in scored_results:
+    print(f"{s['page_id']:7s} | {s['cer']:8.4f} | {s['wer']:8.4f} | {s['f1']:8.4f} | {s['n_blocks']:6d} | {s['gt_chars']:8d} | {s['hyp_chars']:9d}")
 
-c_cer = c_wer = float("nan")
-if chandra_scores:
-    c_cer = float(np.mean([s[1] for s in chandra_scores]))
-    c_wer = float(np.mean([s[2] for s in chandra_scores]))
-    print(f"\nChandra   mean CER={c_cer:.4f}  WER={c_wer:.4f}")
-    print(f"Tesseract mean CER={mean_cer:.4f}  WER={mean_wer:.4f}")
+mean_cer = sum(s["cer"] for s in scored_results) / len(scored_results) if scored_results else 0.0
+mean_wer = sum(s["wer"] for s in scored_results) / len(scored_results) if scored_results else 0.0
+mean_f1 = sum(s["f1"] for s in scored_results) / len(scored_results) if scored_results else 0.0
 
-# ── Write report.md ───────────────────────────────────────────────────────────
-lines = [
-    "# Tesseract Layout-Aware OCR Benchmark — Pierce 1890",
-    "",
-    "## Setup",
-    f"- PDF: `{PDF_PATH.name}`",
-    "- Layout source: Chandra `chunks.jsonl` — text blocks only (Image/Figure/Diagram excluded)",
-    f"- OCR engine: Tesseract 5, lang=eng, `{TESSERACT_CFG}`",
-    f"- Render DPI: {DPI}",
-    f"- Pages processed: {len(results)} / {doc.page_count}",
-    "",
-    "## Results on held-out ground-truth pages (p0024–p0037)",
-    "",
-    "| page_id | CER | WER | Word F1 |",
-    "|---|---|---|---|",
-]
-for p in sorted(scored_pages, key=lambda x: x["page_id"]):
-    lines.append(f"| {p['page_id']} | {p['cer']:.4f} | {p['wer']:.4f} | {p['word_f1']:.4f} |")
-if scored_pages:
-    lines += [
-        "",
-        f"| **MEAN** | **{mean_cer:.4f}** | **{mean_wer:.4f}** | **{mean_f1:.4f}** |",
-    ]
+print("=" * 90)
+print(f"PP-DocLayoutV3 + Tesseract MEAN: CER = {mean_cer:.4f} ({mean_cer*100:.2f}%) | WER = {mean_wer:.4f} ({mean_wer*100:.2f}%) | Word F1 = {mean_f1:.4f} ({mean_f1*100:.2f}%)")
+print("=" * 90)
 
-lines += ["", "## Worst failure"]
-if worst:
-    lines += [
-        f"- Worst page: `{worst['page_id']}` — CER={worst['cer']:.4f}, WER={worst['wer']:.4f}",
-        "- Likely cause: figure-adjacent regions or header/footer noise overlapping body text crop boundaries.",
-    ]
+# Save CSV
+with OUT_SCORES_CSV.open("w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=["page_id", "cer", "wer", "f1", "gt_chars", "hyp_chars", "n_blocks", "elapsed_s"])
+    writer.writeheader()
+    writer.writerows(scored_results)
+print(f"Saved CSV scores to: {OUT_SCORES_CSV}")
 
-lines += ["", "## Engine comparison (Chandra pseudo-GT vs Tesseract)"]
-if chandra_scores:
-    lines += [
-        "| Engine | Mean CER | Mean WER |",
-        "|---|---|---|",
-        f"| Chandra OCR (pseudo-GT reference) | {c_cer:.4f} | {c_wer:.4f} |",
-        f"| Tesseract 5 (layout-masked crops) | {mean_cer:.4f} | {mean_wer:.4f} |",
-        "",
-        "> Lower CER/WER = better. Chandra is our pseudo-ground-truth; "
-        "Tesseract benchmarked here as the fine-tuning baseline.",
-    ]
+# Save Markdown Report
+report_md = f"""# Tesseract + PP-DocLayoutV3 Layout OCR Benchmark Report
 
-report_path = OUT_DIR / "report.md"
-report_path.write_text("\n".join(lines) + "\n")
-print(f"\nReport -> {report_path}")
-print("\n".join(lines))
+**Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)  
+**Layout Engine**: PP-DocLayoutV3 (`detections.jsonl`)  
+**OCR Engine**: Tesseract 5 (`--psm 6`)  
+**Evaluation Set**: {len(scored_results)} Test Pages  
+
+## Overall Benchmark Summary
+
+| Metric | Score | Percentage |
+|---|---|---|
+| **Mean Character Error Rate (CER)** | `{mean_cer:.4f}` | **{mean_cer*100:.2f}%** |
+| **Mean Word Error Rate (WER)** | `{mean_wer:.4f}` | **{mean_wer*100:.2f}%** |
+| **Mean Word F1 Score** | `{mean_f1:.4f}` | **{mean_f1*100:.2f}%** |
+
+Saved predictions to `{OUT_RESULTS_JSONL.name}` for downstream comparison.
+"""
+OUT_REPORT_MD.write_text(report_md, encoding="utf-8")
+print(f"Saved Report MD to: {OUT_REPORT_MD}")
