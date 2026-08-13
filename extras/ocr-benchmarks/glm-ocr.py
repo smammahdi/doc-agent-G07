@@ -26,6 +26,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -37,8 +38,16 @@ from typing import Any
 import torch
 from PIL import Image
 
-REPO = Path("/kaggle/working/doc-agent-G07")
-OUT = Path("/kaggle/working/glm-ocr-benchmark")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+KAGGLE_WORKING = Path("/kaggle/working")
+DEFAULT_REPO = KAGGLE_WORKING / "doc-agent-G07" if KAGGLE_WORKING.is_dir() else PROJECT_ROOT
+DEFAULT_OUT = (
+    KAGGLE_WORKING / "glm-ocr-benchmark"
+    if KAGGLE_WORKING.is_dir()
+    else PROJECT_ROOT / "glm-ocr-benchmark"
+)
+REPO = Path(os.environ.get("DOC_AGENT_REPO", DEFAULT_REPO)).expanduser().resolve()
+OUT = Path(os.environ.get("OCR_BENCHMARK_OUT", DEFAULT_OUT)).expanduser().resolve()
 MODEL_NAME = "zai-org/GLM-OCR"
 LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
 HELDOUT = REPO / "grading_kit/heldout_pages"
@@ -124,10 +133,11 @@ def load_model() -> tuple[Any, Any, str]:
     from transformers import AutoModelForImageTextToText, AutoProcessor
 
     if not torch.cuda.is_available():
-        raise RuntimeError("GLM-OCR requires a CUDA GPU; select a Tesla T4 in Kaggle")
+        raise RuntimeError("GLM-OCR requires a CUDA GPU")
     # Bound visual tokens for standard SDPA on a 16 GB T4. The model's larger
     # serving-oriented image limit can otherwise require over 14 GB at once.
-    processor = AutoProcessor.from_pretrained(MODEL_NAME, max_pixels=MAX_PIXELS)
+    processor = AutoProcessor.from_pretrained(MODEL_NAME)
+    processor.image_processor.max_pixels = MAX_PIXELS
     model = AutoModelForImageTextToText.from_pretrained(
         MODEL_NAME,
         torch_dtype="auto",
@@ -347,7 +357,7 @@ def main() -> None:
     }
     (OUT / "comparison.json").write_text(json.dumps(comparison, indent=2) + "\n", encoding="utf-8")
     shutil.rmtree(OUT / ".crops", ignore_errors=True)
-    archive = shutil.make_archive("/kaggle/working/glm-ocr-benchmark", "zip", root_dir=OUT)
+    archive = shutil.make_archive(str(OUT), "zip", root_dir=OUT)
     print("download:", archive)
 
 
