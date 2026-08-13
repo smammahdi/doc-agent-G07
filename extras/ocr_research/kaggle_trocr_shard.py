@@ -130,8 +130,10 @@ def run(args: argparse.Namespace) -> None:
     ]
     print(f"Saving {selected.name} TrOCR pages {args.pages}", flush=True)
     subprocess.run(command, check=True, env=environment)
+    page_numbers = args.pages.split(",")
+    range_label = f"{page_numbers[0]}-{page_numbers[-1]}"
     archive = shutil.make_archive(
-        str(Path("/kaggle/working") / f"trocr_{selected.name}_{args.pages.replace(',', '-') }"),
+        str(Path("/kaggle/working") / f"trocr_{selected.name}_{range_label}"),
         "zip",
         args.output,
     )
