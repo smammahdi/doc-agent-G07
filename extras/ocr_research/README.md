@@ -101,6 +101,11 @@ defaults. The model requires its custom remote code and a CUDA-oriented
 environment; use Kaggle for the first smoke run rather than adding its heavy
 dependencies to the starter runtime.
 
+`kaggle_deepseek_layout_smoke.py` packages that bounded run. It defaults to
+real Pierce page `p0034` and the existing DocLayout-YOLO regions; pass
+`--layout chandra` to use the Chandra regions instead. The launcher aborts on
+unsupported GPUs and does not submit a full-book job automatically.
+
 The first DeepSeek experiment should be a bounded, real-page smoke run. Full
 book execution is not assumed: the model is a 3B vision-language OCR system,
 and its per-region inference cost must be measured before spending the GPU

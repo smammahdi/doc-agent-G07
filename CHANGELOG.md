@@ -36,8 +36,9 @@ No A2 release tag has been created yet.
 - Added an isolated exporter for the official `deepseek-ai/DeepSeek-OCR`
   custom Transformers interface. It saves raw text from existing Chandra or
   DocLayout-YOLO crops only; it does not change the runtime OCR default or
-  rerun layout detection. A bounded real-page Kaggle smoke is required before
-  considering a larger run; no DeepSeek output or accuracy claim exists yet.
+  rerun layout detection. Added a Kaggle launcher for a bounded real-page
+  smoke (default `p0034`, existing DLY regions); no DeepSeek output or
+  accuracy claim exists yet.
 
 ### Layout artifact package
 
