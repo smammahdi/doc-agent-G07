@@ -89,3 +89,20 @@ The two input datasets are:
 The kernel must finish with 1,034 page rows for the DLY run and 1,028
 `complete` plus six `layout_missing` page rows for the Chandra run before its
 outputs are copied into the repository results directory.
+
+## DeepSeek-OCR research export
+
+`run_deepseek_layout_ocr.py` is a separate research exporter for the official
+`deepseek-ai/DeepSeek-OCR` custom Transformers model. It consumes the same
+existing Chandra or DocLayout-YOLO region records, crops those regions from
+the real page image, and saves the model's returned text. It does not rerun a
+layout detector, use Chandra text, or change the production Tesseract/TrOCR
+defaults. The model requires its custom remote code and a CUDA-oriented
+environment; use Kaggle for the first smoke run rather than adding its heavy
+dependencies to the starter runtime.
+
+The first DeepSeek experiment should be a bounded, real-page smoke run. Full
+book execution is not assumed: the model is a 3B vision-language OCR system,
+and its per-region inference cost must be measured before spending the GPU
+quota on a complete book pass. No CER/WER or accuracy claim is valid until
+manually corrected labels exist.

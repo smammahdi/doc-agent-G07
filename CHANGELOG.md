@@ -31,6 +31,14 @@ No A2 release tag has been created yet.
   2,103 OCR regions. The final Chandra range (`776–1034`) is still running;
   no whole-book Chandra result is claimed yet.
 
+### DeepSeek-OCR research preparation
+
+- Added an isolated exporter for the official `deepseek-ai/DeepSeek-OCR`
+  custom Transformers interface. It saves raw text from existing Chandra or
+  DocLayout-YOLO crops only; it does not change the runtime OCR default or
+  rerun layout detection. A bounded real-page Kaggle smoke is required before
+  considering a larger run; no DeepSeek output or accuracy claim exists yet.
+
 ### Layout artifact package
 
 - Prepared the external Kaggle package
