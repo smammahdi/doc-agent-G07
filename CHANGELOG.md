@@ -26,6 +26,10 @@ No A2 release tag has been created yet.
   records, 4 layout-missing pages (`p0002`, `p0003`, `p0004`, `p0006`), and
   3,499 OCR regions. These outputs remain outside Git until the remaining
   Chandra and DocLayout-YOLO ranges are complete and merged.
+- Verified the third real Chandra shard on Tesla T4: pages `517–775` are
+  complete as a separate canonical output, with 259 ordered page records and
+  2,103 OCR regions. The final Chandra range (`776–1034`) is still running;
+  no whole-book Chandra result is claimed yet.
 
 ### Layout artifact package
 
