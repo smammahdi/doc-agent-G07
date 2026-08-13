@@ -30,6 +30,10 @@ No A2 release tag has been created yet.
   and reports per-page CER, WER, and word-F1 against the existing labels. This
   is an OCR check only; no layout model is rerun and no full-book claim is
   made.
+- Added Kaggle CUDA-library alignment for PaddleX's indirect PyTorch import:
+  NCCL 2.27.5, NVJITLINK 12.8.93, and NVTX 12.8.90. This prevents the
+  `ncclCommShrink` import failure seen with Kaggle's older preinstalled CUDA
+  libraries.
 
 ### Curated model outputs
 
