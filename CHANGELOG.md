@@ -31,6 +31,12 @@ No A2 release tag has been created yet.
 - The output README records schemas and evidence boundaries. These are
   inspectable research outputs, not human ground truth; raw scans, weights,
   crops, credentials, and environments remain outside Git.
+- Added `extras/output/layout-pdfs/` with eight 24-page visual evidence PDFs
+  for held-out pages `p0024`–`p0047`: Chandra, projection, orphan-ink,
+  DocLayout-YOLO, PP-DocLayoutV3, PP-DocLayout-plus-L, PicoDet-S, and
+  Document AI word boxes. PaddleOCR is intentionally not listed here because
+  it is an OCR engine producing text-line boxes, not an independent semantic
+  layout detector. Chandra and Document AI remain provisional references.
 
 ### TrOCR outputs from existing layouts
 

@@ -1,0 +1,94 @@
+{
+  "pages": [
+    "p0024",
+    "p0025",
+    "p0026",
+    "p0027",
+    "p0028",
+    "p0029",
+    "p0030",
+    "p0031",
+    "p0032",
+    "p0033",
+    "p0034",
+    "p0035",
+    "p0036",
+    "p0037",
+    "p0038",
+    "p0039",
+    "p0040",
+    "p0041",
+    "p0042",
+    "p0043",
+    "p0044",
+    "p0045",
+    "p0046",
+    "p0047"
+  ],
+  "pdfs": [
+    "chandra_heldout_bbox.pdf",
+    "projection_heldout_bbox.pdf",
+    "orphan_ink_heldout_bbox.pdf",
+    "doclayout_yolo_heldout_bbox.pdf",
+    "ppdoclayout_v3_heldout_bbox.pdf",
+    "ppdoclayout_plus_l_heldout_bbox.pdf",
+    "picodet_s_heldout_bbox.pdf",
+    "document_ai_word_boxes_heldout_bbox.pdf"
+  ],
+  "counts": {
+    "chandra": {
+      "Page-Header": 42,
+      "Section-Header": 11,
+      "Text": 101,
+      "Caption": 34,
+      "Image": 27,
+      "Page-Footer": 4
+    },
+    "projection": {
+      "text": 97
+    },
+    "orphan_ink": {
+      "figure": 27
+    },
+    "doclayout_yolo": {
+      "plain text": 94,
+      "figure": 26,
+      "title": 9,
+      "abandon": 45,
+      "figure_caption": 24,
+      "isolate_formula": 1
+    },
+    "ppdoclayout_v3": {
+      "number": 25,
+      "header": 21,
+      "paragraph_title": 5,
+      "text": 97,
+      "figure_title": 19,
+      "image": 27,
+      "doc_title": 5,
+      "abstract": 3,
+      "vision_footnote": 13
+    },
+    "ppdoclayout_plus_l": {
+      "text": 110,
+      "image": 26,
+      "header": 21,
+      "number": 25,
+      "paragraph_title": 5,
+      "doc_title": 6,
+      "figure_title": 18
+    },
+    "picodet_s": {
+      "image": 18,
+      "text": 52,
+      "header": 2,
+      "paragraph_title": 1,
+      "number": 2,
+      "reference": 1,
+      "figure_title": 8
+    },
+    "document_ai_word_boxes": {
+      "word": 8233
+    }
+  }
+}

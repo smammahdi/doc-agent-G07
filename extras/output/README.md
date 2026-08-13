@@ -22,12 +22,18 @@ These files are research evidence, not automatically accepted ground truth:
 - `trocr/chandra/` and `trocr/doclayout-yolo/` — saved TrOCR text generated
   from the corresponding existing layout regions. These are OCR outputs, not
   accuracy labels.
+- `layout-pdfs/` — eight 24-page visual evidence PDFs for held-out pages
+  `p0024`–`p0047`, covering Chandra, projection, orphan-ink, DocLayout-YOLO,
+  PP-DocLayoutV3, PP-DocLayout-plus-L, PicoDet-S, and Document AI word boxes.
+  These are for manual inspection; Chandra and Document AI remain provisional
+  references, not hand-checked ground truth.
 
-All copied files are JSON/JSONL/text and are intentionally kept below normal
-GitHub file-size limits. Raw PDFs, rendered pages, crops, model checkpoints,
-virtual environments, private Kaggle outputs, and credentials remain outside
-Git. The source PDF and sidecars are described in the research READMEs and can
-be regenerated or obtained from the referenced Kaggle/Internet Archive inputs.
+Machine-readable outputs are JSON/JSONL/text; visual evidence is under
+`layout-pdfs/`. All copied files are intentionally kept below normal GitHub
+file-size limits. Raw PDFs, rendered pages, crops, model checkpoints, virtual
+environments, private Kaggle outputs, and credentials remain outside Git. The
+source PDF and sidecars are described in the research READMEs and can be
+regenerated or obtained from the referenced Kaggle/Internet Archive inputs.
 
 ## Layout output schema
 
