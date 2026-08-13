@@ -1,7 +1,7 @@
 # Curated research outputs
 
 This is the repository's small, model-organized artifact release. It contains
-machine-readable outputs that are useful for reproducing the layout/OCR work;
+machine-readable outputs that are useful for reproducing the layout work;
 it is separate from `extras/ocr_research/`, which contains code and notebooks.
 
 These files are research evidence, not automatically accepted ground truth:
@@ -19,9 +19,6 @@ These files are research evidence, not automatically accepted ground truth:
   summaries/evaluations from the same provisional-reference benchmark. These
   older runner outputs do not use the page-commit schema, so they are kept
   separate rather than presented as identical to the three canonical reruns.
-- `trocr/chandra/` and `trocr/doclayout-yolo/` — saved TrOCR text generated
-  from the corresponding existing layout regions. These are OCR outputs, not
-  accuracy labels.
 - `layout-pdfs/` — eight 24-page visual evidence PDFs for held-out pages
   `p0024`–`p0047`, covering Chandra, projection, orphan-ink, DocLayout-YOLO,
   PP-DocLayoutV3, PP-DocLayout-plus-L, PicoDet-S, and Document AI word boxes.
@@ -47,4 +44,4 @@ agreement metrics. `run.log` records page/checkpoint progress.
 The copied artifacts came from the real Pierce 1890 PDF and existing local
 Chandra/Document AI/layout runs. No synthetic rows were generated for this
 release. The exact run settings and limitations remain in
-`extras/ocr_research/README.md` and `CHANGELOG.md`.
+the research READMEs and `CHANGELOG.md`.
