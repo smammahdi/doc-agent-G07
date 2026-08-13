@@ -19,6 +19,8 @@ No A2 release tag has been created yet.
   leaves the production OCR path and layout models unchanged.
 - No Kaggle model run or OCR-quality claim is recorded in this commit; the
   notebook is prepared for a Tesla T4 execution.
+- The notebook gives each layout its own output and cache roots, preventing a
+  Chandra run from reusing DocLayout-YOLO checkpoints (or vice versa).
 
 ### TrOCR outputs from existing layouts
 

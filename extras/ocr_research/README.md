@@ -121,12 +121,16 @@ layout model and does not treat Chandra's text as OCR input. The companion
 page-34 smoke, and can be switched to `RUN_FULL_BOOK = True` for all 1,034
 pages.
 
-Outputs remain independent:
+Outputs remain independent, and each layout run should use its own output root:
 
 ```text
 /kaggle/working/paddle-deepseek-ocr/paddleocr/{pages,regions}.jsonl
 /kaggle/working/paddle-deepseek-ocr/deepseek-ocr/{pages,regions}.jsonl
 ```
+
+The notebook automatically changes this root to
+`paddle-deepseek-ocr-doclayout_yolo` or `paddle-deepseek-ocr-chandra`, so a
+second layout run cannot reuse the first layout's page checkpoints.
 
 Use `--layout-name chandra` to save a second run from Chandra regions; its six
 missing pages remain `layout_missing`. Use `--pages all` only after the smoke
