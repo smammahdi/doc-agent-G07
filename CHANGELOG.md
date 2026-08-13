@@ -8,6 +8,18 @@ release yet.
 
 No A2 release tag has been created yet.
 
+### MinerU2.5-Pro OCR benchmark runner
+
+- Added `extras/ocr-benchmarks/mineru-ocr.py` for the same 24-page, two-mode
+  benchmark used by the other OCR runners: direct full-page parsing and
+  PP-DocLayoutV3 non-figure crops.
+- The runner uses the official `opendatalab/MinerU2.5-Pro-2604-1.2B` model and
+  `mineru-vl-utils` Transformers client on an ordinary internet-enabled Kaggle
+  T4, then writes CER, WER, word-F1, structured MinerU blocks, and one
+  downloadable `mineru-ocr-benchmark.zip`.
+- This commit adds the runner only. It does not record a successful model run
+  or claim OCR quality before the generated archive is verified.
+
 ### Kaggle PaddleOCR and DeepSeek-OCR runner
 
 - Added `extras/ocr_research/kaggle-deepseek-ocr-heldout.py` as a standalone

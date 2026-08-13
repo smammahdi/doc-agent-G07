@@ -7,6 +7,7 @@ current experiment:
 - `paddle-ocr.py` — PaddleOCR PP-OCRv6 on the committed evaluation pages;
 - `trocr.py` — TrOCR over existing DocLayout-YOLO text regions.
 - `glm-ocr.py` — the official `zai-org/GLM-OCR` checkpoint on the same pages.
+- `mineru-ocr.py` — MinerU2.5-Pro on full pages and PP-DocLayoutV3 regions.
 
 All runners are Python files. Their generated text, metrics, archives, caches,
 and model weights belong in Kaggle working storage, not in Git. Results should
