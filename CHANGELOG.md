@@ -43,6 +43,10 @@ No A2 release tag has been created yet.
   rerun layout detection. Added a Kaggle launcher for a bounded real-page
   smoke (default `p0034`, existing DLY regions); no DeepSeek output or
   accuracy claim exists yet.
+- Completed the bounded DeepSeek smoke on real Pierce page `p0034` using the
+  existing DocLayout-YOLO regions: 1 page, 5 regions, non-empty text from all
+  5, CUDA/Tesla T4, 24.854 seconds. This is only an exporter feasibility
+  result; no OCR quality or full-book DeepSeek claim is made.
 
 ### Layout artifact package
 
