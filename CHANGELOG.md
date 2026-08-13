@@ -26,6 +26,26 @@ No A2 release tag has been created yet.
 - The notebook gives each layout its own output and cache roots, preventing a
   Chandra run from reusing DocLayout-YOLO checkpoints (or vice versa).
 
+### Held-out TrOCR notebook (24 pages)
+
+- Added `extras/ocr_research/kaggle-trocr-heldout.ipynb` for a complete
+  held-out run over `p0024`--`p0047` (24 pages), rather than the older 14-page
+  diagnostic slice.
+- The notebook feeds existing DocLayout-YOLO non-figure regions to
+  `microsoft/trocr-large-printed` as line crops. It does not rerun layout and
+  does not use Chandra or Document AI text as OCR input.
+- It writes one JSON record per page, then reports CER, WER, and word-F1 for
+  all 24 pages and for a fair text-only subset excluding `p0041` and `p0043`,
+  whose labels contain image descriptions.
+- `trocr-large-printed` is the largest official Microsoft printed TrOCR
+  checkpoint, not a claim of current OCR state of the art. Run it on a Tesla
+  T4 with Internet enabled; the notebook writes a downloadable ZIP under
+  `/kaggle/working/`.
+- The existing held-out DeepSeek result is from
+  `deepseek-ai/DeepSeek-OCR`. The newer official `DeepSeek-OCR-2` has not been
+  run yet and remains a separate follow-up experiment; its results must not be
+  compared as if they came from the same checkpoint.
+
 ### Held-out PaddleOCR benchmark
 
 - Replaced the over-scoped full-book entrypoint with the small
