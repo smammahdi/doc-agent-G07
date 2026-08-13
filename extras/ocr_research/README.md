@@ -136,3 +136,11 @@ Use `--layout-name chandra` to save a second run from Chandra regions; its six
 missing pages remain `layout_missing`. Use `--pages all` only after the smoke
 run succeeds. Models, crops, page renders, and caches stay in Kaggle working
 storage and are not part of the repository.
+
+For a PaddleOCR-only full-book run, use
+`kaggle-paddleocr-full-book.ipynb`. It installs the current stable
+`PaddleOCR==3.7.0` and `paddlepaddle-gpu==3.3.1`, runs a real page-34 smoke,
+then processes all 1,034 pages from the committed DocLayout-YOLO regions. It
+writes `pages.jsonl`, `regions.jsonl`, and `summary.json`, then creates
+`/kaggle/working/paddleocr-full-book-doclayout-yolo.zip`. PaddleOCR is the OCR
+engine in this run; no layout detector is rerun.
