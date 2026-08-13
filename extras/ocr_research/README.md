@@ -137,10 +137,11 @@ missing pages remain `layout_missing`. Use `--pages all` only after the smoke
 run succeeds. Models, crops, page renders, and caches stay in Kaggle working
 storage and are not part of the repository.
 
-For a PaddleOCR-only full-book run, execute
-`kaggle-paddleocr-full-book.py`. It installs the current stable
-`PaddleOCR==3.7.0` and `paddlepaddle-gpu==3.3.1`, runs a real page-34 smoke,
-then processes all 1,034 pages from the committed DocLayout-YOLO regions. It
-writes `pages.jsonl`, `regions.jsonl`, and `summary.json`, then creates a ZIP
-when `--zip` is supplied. PaddleOCR is the OCR engine in this run; no layout
-detector is rerun.
+For a small controlled PaddleOCR check, use
+`kaggle-paddleocr-heldout.ipynb`. It installs the current PaddleOCR 3.7
+PP-OCRv6 stack,
+runs on the 24 committed held-out page images, saves one JSON result per page,
+and reports per-page plus aggregate CER, WER, and word-F1 against
+`grading_kit/labels.jsonl`. This benchmark uses PaddleOCR's own full-page text
+detection and recognition; it does not rerun Chandra or the project layout
+models. It is the first step before considering any full-book run.

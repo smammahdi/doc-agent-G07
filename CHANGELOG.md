@@ -22,14 +22,14 @@ No A2 release tag has been created yet.
 - The notebook gives each layout its own output and cache roots, preventing a
   Chandra run from reusing DocLayout-YOLO checkpoints (or vice versa).
 
-### Dedicated full-book PaddleOCR runner
+### Held-out PaddleOCR benchmark
 
-- Added `extras/ocr_research/kaggle-paddleocr-full-book.py` for a focused Tesla
-  T4 run over all 1,034 pages using the existing DocLayout-YOLO regions. It
-  installs `PaddleOCR==3.7.0` with `paddlepaddle-gpu==3.3.1`, verifies a real
-  page-34 smoke first, resumes page-by-page, and packages only the PaddleOCR
-  results for Kaggle download. No layout model is rerun and no OCR-quality
-  claim is made by the runner.
+- Replaced the over-scoped full-book entrypoint with the small
+  `extras/ocr_research/kaggle-paddleocr-heldout.ipynb` benchmark. It runs the
+  current PaddleOCR 3.7 PP-OCRv6 pipeline on the 24 committed held-out pages
+  and reports per-page CER, WER, and word-F1 against the existing labels. This
+  is an OCR check only; no layout model is rerun and no full-book claim is
+  made.
 
 ### Curated model outputs
 
