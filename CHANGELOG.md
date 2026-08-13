@@ -10,6 +10,10 @@ No A2 release tag has been created yet.
 
 ### Kaggle PaddleOCR and DeepSeek-OCR runner
 
+- Added `extras/ocr_research/kaggle-deepseek-ocr-heldout.py` as a standalone
+  24-page DeepSeek-OCR check. It installs only the official Transformers-side
+  dependencies, clones `main` for the committed images/labels, and writes
+  per-page text plus CER/WER/word-F1 metrics to a downloadable ZIP.
 - Added `extras/ocr_research/kaggle-paddle-deepseek-ocr.py` and its notebook.
   They save independent PaddleOCR and DeepSeek-OCR text from existing Chandra
   or DocLayout-YOLO regions, with a real page-34 smoke by default and an
