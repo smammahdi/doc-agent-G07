@@ -1,34 +1,39 @@
-"""Run DeepSeek-OCR-2 on the repository's committed OCR pages.
+"""Benchmark DeepSeek-OCR-2 on full pages and existing PP-DocLayoutV3 regions.
 
-It clones the public repository, discovers the committed page images and
-labels, writes one JSON record per page, and reports CER, WER, and word-F1.
-It is intentionally a full-page OCR runner: it does not run a layout model and
-does not use Chandra or Document AI text as input. Existing layout-fed OCR is
-kept in the separate combined research runner.
+The two modes use the same 24 committed held-out Pierce pages. ``full-page``
+passes each page image directly to DeepSeek-OCR-2; ``ppdoclayout-v3`` crops
+the existing non-figure regions from the committed layout sidecar, orders them
+top-to-bottom/left-to-right, and passes each crop to the same model. No layout
+model is run here. Each mode writes ``pages.jsonl``, ``regions.jsonl``, and
+``metrics.json``. A root ``comparison.json`` and one archive are written after
+both modes finish.
 
 Kaggle requirements: Internet enabled and a Tesla T4 GPU. Run with:
 
-    python kaggle-deepseek-ocr.py
+    python deepseek-ocr.py
 
-The archive is written to /kaggle/working/deepseek-ocr-results.zip.
+The archive is written to ``/kaggle/working/deepseek-ocr-benchmark.zip``.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
-
 REPO = Path("/kaggle/working/doc-agent-G07")
-OUT = Path("/kaggle/working/deepseek-ocr-results")
+OUT = Path("/kaggle/working/deepseek-ocr-benchmark")
 MODEL_NAME = "deepseek-ai/DeepSeek-OCR-2"
+LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
+MODES = ("full-page", "ppdoclayout-v3")
 
 
 def install_dependencies() -> None:
@@ -83,10 +88,67 @@ def ensure_repository() -> tuple[Path, dict[str, str], list[str]]:
         for row in [json.loads(line)]
     }
     pages = sorted(labels)
+    expected_pages = [f"p{number:04d}" for number in range(24, 48)]
+    if pages != expected_pages:
+        raise ValueError(f"expected held-out pages p0024-p0047; found {pages}")
     missing = [page_id for page_id in pages if not (heldout / f"{page_id}.jpg").is_file()]
     if missing:
         raise FileNotFoundError(f"missing held-out images: {missing}")
     return heldout, labels, pages
+
+
+def load_layout_regions(pages: list[str]) -> dict[str, list[dict[str, Any]]]:
+    """Load existing PP-DocLayoutV3 non-figure regions for the held-out pages."""
+
+    if not LAYOUT_PATH.is_file():
+        raise FileNotFoundError(f"missing committed PP-DocLayoutV3 detections: {LAYOUT_PATH}")
+    page_set = set(pages)
+    regions: dict[str, list[dict[str, Any]]] = {page_id: [] for page_id in pages}
+    with LAYOUT_PATH.open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            page_id = row.get("page_id")
+            if page_id not in page_set or bool(row.get("is_figure")):
+                continue
+            box = row.get("bbox_norm")
+            if not isinstance(box, list) or len(box) != 4:
+                raise ValueError(f"invalid PP-DocLayoutV3 box at line {line_number}")
+            values = [max(0.0, min(1.0, float(value))) for value in box]
+            if values[2] <= values[0] or values[3] <= values[1]:
+                raise ValueError(f"non-positive PP-DocLayoutV3 box at line {line_number}")
+            regions[page_id].append(
+                {
+                    "source_id": str(row.get("detection_id", f"line-{line_number}")),
+                    "class_name": str(row.get("class_name", "text")),
+                    "score": float(row.get("score", 0.0)),
+                    "bbox_norm": values,
+                }
+            )
+    for page_regions in regions.values():
+        page_regions.sort(
+            key=lambda row: (
+                row["bbox_norm"][1],
+                row["bbox_norm"][0],
+                row["bbox_norm"][3],
+                row["bbox_norm"][2],
+                row["source_id"],
+            )
+        )
+    return regions
+
+
+def bbox_pixels(box: list[float], width: int, height: int) -> list[int]:
+    """Convert a clipped normalized box to a non-empty pixel crop."""
+
+    left = max(0, min(width, int(box[0] * width)))
+    top = max(0, min(height, int(box[1] * height)))
+    right = max(left + 1, min(width, int(box[2] * width + 0.999999)))
+    bottom = max(top + 1, min(height, int(box[3] * height + 0.999999)))
+    if right <= left or bottom <= top:
+        raise ValueError(f"normalized box became empty at {width}x{height}: {box}")
+    return [left, top, right, bottom]
 
 
 def load_model() -> tuple[Any, Any, str]:
@@ -177,14 +239,68 @@ def word_f1(hypothesis: str, reference: str) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
-def score(labels: dict[str, str], pages: list[str]) -> dict[str, Any]:
+def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    temporary = path.with_name(f".{path.name}.tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
+
+
+def recover_mode(
+    mode_dir: Path, pages: list[str]
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
+    """Retain only page rows with a matching complete region set after a restart."""
+
+    page_rows = read_jsonl(mode_dir / "pages.jsonl")
+    region_rows = read_jsonl(mode_dir / "regions.jsonl")
+    allowed = set(pages)
+    regions_by_page: dict[str, list[dict[str, Any]]] = {page_id: [] for page_id in pages}
+    for row in region_rows:
+        page_id = row.get("page_id")
+        if page_id in allowed:
+            regions_by_page[page_id].append(row)
+    complete: dict[str, dict[str, Any]] = {}
+    for row in page_rows:
+        page_id = row.get("page_id")
+        if (
+            page_id in allowed
+            and row.get("status") == "complete"
+            and int(row.get("region_count", -1)) == len(regions_by_page[page_id])
+            and page_id not in complete
+        ):
+            complete[page_id] = row
+    kept_pages = [complete[page_id] for page_id in pages if page_id in complete]
+    kept_regions = [
+        region for page_id in pages if page_id in complete for region in regions_by_page[page_id]
+    ]
+    mode_dir.mkdir(parents=True, exist_ok=True)
+    write_jsonl(mode_dir / "pages.jsonl", kept_pages)
+    write_jsonl(mode_dir / "regions.jsonl", kept_regions)
+    return complete, regions_by_page
+
+
+def score(
+    labels: dict[str, str],
+    pages: list[str],
+    page_rows: dict[str, dict[str, Any]],
+    mode: str,
+    dtype: str,
+    region_count: int,
+) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     total_char_errors = total_word_errors = total_chars = total_words = 0
     for page_id in pages:
         reference = normalize(labels[page_id])
-        hypothesis = normalize(
-            json.loads((OUT / f"{page_id}.json").read_text(encoding="utf-8"))["text"]
-        )
+        hypothesis = normalize(str(page_rows[page_id].get("text", "")))
         reference_words = reference.split()
         hypothesis_words = hypothesis.split()
         char_errors = levenshtein(hypothesis, reference)
@@ -196,6 +312,8 @@ def score(labels: dict[str, str], pages: list[str]) -> dict[str, Any]:
             "word_f1": word_f1(hypothesis, reference),
             "reference_chars": len(reference),
             "reference_words": len(reference_words),
+            "hypothesis_chars": len(hypothesis),
+            "hypothesis_words": len(hypothesis_words),
         }
         rows.append(row)
         total_char_errors += char_errors
@@ -205,8 +323,11 @@ def score(labels: dict[str, str], pages: list[str]) -> dict[str, Any]:
         print(page_id, row)
     metrics = {
         "engine": MODEL_NAME,
-        "layout": "full-page input",
+        "mode": mode,
+        "layout": "full-page input" if mode == "full-page" else "PP-DocLayoutV3 non-figure regions",
+        "dtype": dtype,
         "pages": len(rows),
+        "regions": region_count,
         "micro_cer": total_char_errors / max(1, total_chars),
         "micro_wer": total_word_errors / max(1, total_words),
         "macro_cer": sum(row["cer"] for row in rows) / len(rows),
@@ -214,42 +335,191 @@ def score(labels: dict[str, str], pages: list[str]) -> dict[str, Any]:
         "macro_word_f1": sum(row["word_f1"] for row in rows) / len(rows),
         "per_page": rows,
     }
-    (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
+    mode_dir = OUT / mode
+    mode_dir.mkdir(parents=True, exist_ok=True)
+    mode_dir.joinpath("metrics.json").write_text(
+        json.dumps(metrics, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(json.dumps({key: value for key, value in metrics.items() if key != "per_page"}, indent=2))
     return metrics
+
+
+def run_mode(
+    mode: str,
+    heldout: Path,
+    pages: list[str],
+    labels: dict[str, str],
+    layout_regions: dict[str, list[dict[str, Any]]],
+    model: Any,
+    tokenizer: Any,
+    dtype: str,
+) -> dict[str, Any]:
+    """Run one mode while checkpointing canonical page and region JSONL files."""
+
+    from PIL import Image
+
+    mode_dir = OUT / mode
+    complete, existing_regions = recover_mode(mode_dir, pages)
+    page_rows = dict(complete)
+    region_rows_by_page = {
+        page_id: list(existing_regions.get(page_id, [])) for page_id in pages if page_id in complete
+    }
+    with tempfile.TemporaryDirectory(prefix=f"deepseek-{mode}-") as scratch_name:
+        scratch = Path(scratch_name)
+        side_effects = scratch / "model-side-effects"
+        side_effects.mkdir()
+        for index, page_id in enumerate(pages, 1):
+            if page_id in complete:
+                continue
+            image_path = heldout / f"{page_id}.jpg"
+            with Image.open(image_path) as image:
+                width, height = image.size
+                if mode == "full-page":
+                    sources = [
+                        {
+                            "source_id": "full-page",
+                            "class_name": "full-page",
+                            "score": 1.0,
+                            "bbox_norm": [0.0, 0.0, 1.0, 1.0],
+                            "bbox_px": [0, 0, width, height],
+                            "image_path": image_path,
+                        }
+                    ]
+                else:
+                    sources = []
+                    for source in layout_regions[page_id]:
+                        source = dict(source)
+                        source["bbox_px"] = bbox_pixels(source["bbox_norm"], width, height)
+                        sources.append(source)
+                page_started = time.perf_counter()
+                output_regions: list[dict[str, Any]] = []
+                for region_index, source in enumerate(sources):
+                    region_started = time.perf_counter()
+                    crop_path = image_path
+                    if mode != "full-page":
+                        crop_path = scratch / f"{page_id}-r{region_index:04d}.jpg"
+                        region_box = source["bbox_px"]
+                        if not isinstance(region_box, list):
+                            raise TypeError(f"invalid region pixel box: {region_box!r}")
+                        image.crop(tuple(int(value) for value in region_box)).convert("RGB").save(
+                            crop_path
+                        )
+                    text = infer(model, tokenizer, crop_path, side_effects)
+                    output_regions.append(
+                        {
+                            "region_id": f"{page_id}-r{region_index:04d}",
+                            "page_id": page_id,
+                            "source_id": source["source_id"],
+                            "source_class": source["class_name"],
+                            "score": source["score"],
+                            "bbox_norm": source["bbox_norm"],
+                            "bbox_px": source["bbox_px"],
+                            "text": text,
+                            "status": "complete",
+                            "elapsed_seconds": round(time.perf_counter() - region_started, 3),
+                        }
+                    )
+            page_text = "\n\n".join(row["text"] for row in output_regions if row["text"])
+            page_row = {
+                "page_id": page_id,
+                "mode": mode,
+                "status": "complete",
+                "text": page_text,
+                "region_count": len(output_regions),
+                "region_ids": [region["region_id"] for region in output_regions],
+                "elapsed_seconds": round(time.perf_counter() - page_started, 3),
+            }
+            page_rows[page_id] = page_row
+            region_rows_by_page[page_id] = output_regions
+            complete[page_id] = page_row
+            write_jsonl(
+                mode_dir / "regions.jsonl",
+                [
+                    region
+                    for expected_page in pages
+                    if expected_page in complete
+                    for region in region_rows_by_page[expected_page]
+                ],
+            )
+            write_jsonl(
+                mode_dir / "pages.jsonl",
+                [page_rows[expected_page] for expected_page in pages if expected_page in complete],
+            )
+            print(f"{mode}: {index}/{len(pages)} {page_id}", flush=True)
+    rows = {page_id: page_rows[page_id] for page_id in pages}
+    return score(
+        labels,
+        pages,
+        rows,
+        mode,
+        dtype,
+        sum(len(region_rows_by_page[page_id]) for page_id in pages if page_id in complete),
+    )
+
+
+def write_comparison(metrics_by_mode: dict[str, dict[str, Any]], pages: list[str]) -> None:
+    summaries = {
+        mode: {key: value for key, value in metrics.items() if key != "per_page"}
+        for mode, metrics in metrics_by_mode.items()
+    }
+    per_page: list[dict[str, Any]] = []
+    full_rows = {row["page_id"]: row for row in metrics_by_mode["full-page"]["per_page"]}
+    layout_rows = {row["page_id"]: row for row in metrics_by_mode["ppdoclayout-v3"]["per_page"]}
+    for page_id in pages:
+        full = full_rows[page_id]
+        layout = layout_rows[page_id]
+        per_page.append(
+            {
+                "page_id": page_id,
+                "full-page": {
+                    "cer": full["cer"],
+                    "wer": full["wer"],
+                    "word_f1": full["word_f1"],
+                },
+                "ppdoclayout-v3": {
+                    "cer": layout["cer"],
+                    "wer": layout["wer"],
+                    "word_f1": layout["word_f1"],
+                },
+            }
+        )
+    (OUT / "comparison.json").write_text(
+        json.dumps(
+            {
+                "engine": MODEL_NAME,
+                "pages": len(pages),
+                "modes": summaries,
+                "per_page": per_page,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
     install_dependencies()
     heldout, labels, pages = ensure_repository()
+    layout_regions = load_layout_regions(pages)
     tokenizer, model, dtype = load_model()
     OUT.mkdir(parents=True, exist_ok=True)
-    result_dir = OUT / "model-side-effects"
-    result_dir.mkdir(parents=True, exist_ok=True)
-    started = time.perf_counter()
-    for page_id in pages:
-        target = OUT / f"{page_id}.json"
-        if target.is_file():
-            continue
-        text = infer(model, tokenizer, heldout / f"{page_id}.jpg", result_dir)
-        target.write_text(
-            json.dumps(
-                {
-                    "page_id": page_id,
-                    "text": text,
-                    "elapsed_seconds": round(time.perf_counter() - started, 3),
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
+    metrics_by_mode = {
+        mode: run_mode(
+            mode,
+            heldout,
+            pages,
+            labels,
+            layout_regions,
+            model,
+            tokenizer,
+            dtype,
         )
-        print(page_id)
-    metrics = score(labels, pages)
-    metrics["dtype"] = dtype
-    (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
-    archive = shutil.make_archive("/kaggle/working/deepseek-ocr-results", "zip", OUT)
+        for mode in MODES
+    }
+    write_comparison(metrics_by_mode, pages)
+    archive = shutil.make_archive("/kaggle/working/deepseek-ocr-benchmark", "zip", OUT)
     print("download:", archive)
 
 
