@@ -1,15 +1,16 @@
-"""Run the official DeepSeek-OCR model on the committed held-out pages.
+"""Run DeepSeek-OCR-2 on the repository's committed OCR pages.
 
-This is a small full-page OCR benchmark for pages p0024--p0047. It clones the
-public repository, reads the committed images and manual labels, saves one JSON
-record per page, and reports CER, WER, and word-F1. It does not run a layout
-model and does not use Chandra or Document AI text as input.
+It clones the public repository, discovers the committed page images and
+labels, writes one JSON record per page, and reports CER, WER, and word-F1.
+It is intentionally a full-page OCR runner: it does not run a layout model and
+does not use Chandra or Document AI text as input. Existing layout-fed OCR is
+kept in the separate combined research runner.
 
 Kaggle requirements: Internet enabled and a Tesla T4 GPU. Run with:
 
-    python kaggle-deepseek-ocr-heldout.py
+    python kaggle-deepseek-ocr.py
 
-The archive is written to /kaggle/working/deepseek-ocr-heldout-results.zip.
+The archive is written to /kaggle/working/deepseek-ocr-results.zip.
 """
 
 from __future__ import annotations
@@ -26,8 +27,8 @@ from typing import Any
 
 
 REPO = Path("/kaggle/working/doc-agent-G07")
-OUT = Path("/kaggle/working/deepseek-ocr-heldout")
-MODEL_NAME = "deepseek-ai/DeepSeek-OCR"
+OUT = Path("/kaggle/working/deepseek-ocr-results")
+MODEL_NAME = "deepseek-ai/DeepSeek-OCR-2"
 
 
 def install_dependencies() -> None:
@@ -82,9 +83,6 @@ def ensure_repository() -> tuple[Path, dict[str, str], list[str]]:
         for row in [json.loads(line)]
     }
     pages = sorted(labels)
-    expected = [f"p{number:04d}" for number in range(24, 48)]
-    if pages != expected:
-        raise ValueError(f"expected held-out pages {expected}, found {pages}")
     missing = [page_id for page_id in pages if not (heldout / f"{page_id}.jpg").is_file()]
     if missing:
         raise FileNotFoundError(f"missing held-out images: {missing}")
@@ -96,20 +94,24 @@ def load_model() -> tuple[Any, Any, str]:
     from transformers import AutoModel, AutoTokenizer
 
     if not torch.cuda.is_available():
-        raise RuntimeError("DeepSeek-OCR requires a CUDA GPU; select a Tesla T4 in Kaggle")
+        raise RuntimeError("DeepSeek-OCR-2 requires a CUDA GPU; select a Tesla T4 in Kaggle")
     try:
         bf16 = bool(torch.cuda.is_bf16_supported())
     except (AttributeError, RuntimeError):
         bf16 = False
     dtype = torch.bfloat16 if bf16 else torch.float16
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
-    model = AutoModel.from_pretrained(
-        MODEL_NAME,
-        trust_remote_code=True,
-        use_safetensors=True,
-        torch_dtype=dtype,
-        _attn_implementation="eager",
-    )
+    model_kwargs = {
+        "trust_remote_code": True,
+        "use_safetensors": True,
+        "torch_dtype": dtype,
+        "_attn_implementation": "eager",
+    }
+    try:
+        model = AutoModel.from_pretrained(MODEL_NAME, **model_kwargs)
+    except (TypeError, ValueError):
+        model_kwargs.pop("_attn_implementation")
+        model = AutoModel.from_pretrained(MODEL_NAME, **model_kwargs)
     model = model.eval().to("cuda").to(dtype)
     return tokenizer, model, str(dtype).replace("torch.", "")
 
@@ -135,7 +137,7 @@ def infer(model: Any, tokenizer: Any, image_path: Path, result_dir: Path) -> str
     if isinstance(result, str):
         return result.strip()
     raise RuntimeError(
-        "DeepSeek-OCR did not return text; use the official custom-code runtime "
+        "DeepSeek-OCR-2 did not return text; use the official custom-code runtime "
         "with eval_mode=True rather than treating saved side effects as OCR output"
     )
 
@@ -247,7 +249,7 @@ def main() -> None:
     metrics = score(labels, pages)
     metrics["dtype"] = dtype
     (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
-    archive = shutil.make_archive("/kaggle/working/deepseek-ocr-heldout-results", "zip", OUT)
+    archive = shutil.make_archive("/kaggle/working/deepseek-ocr-results", "zip", OUT)
     print("download:", archive)
 
 
