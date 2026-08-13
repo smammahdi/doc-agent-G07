@@ -30,6 +30,10 @@ No A2 release tag has been created yet.
   complete as a separate canonical output, with 259 ordered page records and
   2,103 OCR regions. The final Chandra range (`776–1034`) is still running;
   no whole-book Chandra result is claimed yet.
+- Verified the third real DocLayout-YOLO shard on Tesla T4: pages `517–775`
+  are complete as a separate canonical output, with 259 ordered page records
+  and 1,909 OCR regions. The final DLY range still needs a corrected T4
+  submission after the earlier P100 submission failed.
 
 ### DeepSeek-OCR research preparation
 
