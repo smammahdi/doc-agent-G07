@@ -10,3 +10,16 @@ current experiment:
 All runners are Python files. Their generated text, metrics, archives, caches,
 and model weights belong in Kaggle working storage, not in Git. Results should
 only be added back after the page labels and measurements have been reviewed.
+
+Each runner writes one archive to `/kaggle/working/`:
+
+```text
+<engine>-ocr-benchmark.zip
+├── full-page/{pages.jsonl,regions.jsonl,metrics.json}
+├── ppdoclayout-v3/{pages.jsonl,regions.jsonl,metrics.json}
+└── comparison.json
+```
+
+Both modes process the same 24 pages and report CER, WER, and word-F1 from the
+saved `pages.jsonl` text. The PP-DocLayoutV3 boxes are the committed layout
+input; no layout model is rerun by these OCR runners.
