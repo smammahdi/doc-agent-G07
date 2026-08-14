@@ -24,6 +24,12 @@ These files are research evidence, not automatically accepted ground truth:
   PP-DocLayoutV3, PP-DocLayout-plus-L, PicoDet-S, and Document AI word boxes.
   These are for manual inspection; Chandra and Document AI remain provisional
   references, not hand-checked ground truth.
+- `ocr-benchmarks/` — saved two-mode held-out OCR outputs for DeepSeek-OCR-2,
+  GLM-OCR, TrOCR large-printed, and the historical MinerU 2604 run. The known
+  invalid PaddleOCR output is deliberately excluded.
+- `mineru-ocr-full-book/` — complete 1,034-page MinerU 2605 outputs in full-page
+  and PP-DocLayoutV3-region modes, with metrics limited to the 24 labelled
+  held-out pages.
 
 Machine-readable outputs are JSON/JSONL/text; visual evidence is under
 `layout-pdfs/`. All copied files are intentionally kept below normal GitHub
