@@ -24,11 +24,13 @@
 # %pip install -q 'transformers>=4.46,<5' 'sentencepiece>=0.2,<1' \
 #     'safetensors>=0.4' 'pillow>=10,<12' 'opencv-python-headless>=4.10,<5'
 
+import html
 import json
 import re
 import shutil
 import subprocess
 import time
+import unicodedata
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -207,6 +209,10 @@ def recover_mode(
 
 
 def normalize(text: str) -> str:
+    text = html.unescape(text or "")
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = unicodedata.normalize("NFKC", text).casefold()
+    text = "".join(character if character.isalnum() else " " for character in text)
     return re.sub(r"\s+", " ", text).strip()
 
 
