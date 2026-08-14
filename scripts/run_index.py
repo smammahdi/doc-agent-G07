@@ -27,17 +27,16 @@ sys.path.insert(0, str(REPO / "src"))
 
 import yaml
 
-from doc_agent.index.chunk import build_image_index, load_from_pages_markdown, split
-from doc_agent.index.embed import encode
+from doc_agent.index.chunk import load_from_pages_markdown, split
 from doc_agent.index.store import build
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-CFG_PATH      = REPO / "configs" / "config.yaml"
-PAGES_MD      = REPO / "chandra" / "pages.md"
-CHANDRA_DIR   = REPO / "chandra"
+CFG_PATH = REPO / "configs" / "config.yaml"
+PAGES_MD = REPO / "chandra" / "pages.md"
+CHANDRA_DIR = REPO / "chandra"
 
 
 def main() -> None:
@@ -49,7 +48,7 @@ def main() -> None:
     index_path = Path(cfg["index"]["path"])
 
     print("=" * 70)
-    print(f"  Doc-Agent G07 — Stage 4 Index Build")
+    print("  Doc-Agent G07 — Stage 4 Index Build")
     print(f"  Source : {PAGES_MD}")
     print(f"  doc_id : {doc_id}")
     print(f"  Index  : {index_path}")
@@ -59,33 +58,43 @@ def main() -> None:
     print("\n[1/4] Parsing chandra/pages.md ...", flush=True)
     page_chunks, image_index = load_from_pages_markdown(PAGES_MD, doc_id)
     print(f"      → {len(page_chunks)} non-empty pages loaded", flush=True)
-    print(f"      → {sum(len(v) for v in image_index.values())} image references "
-          f"across {len(image_index)} pages", flush=True)
+    print(
+        f"      → {sum(len(v) for v in image_index.values())} image references "
+        f"across {len(image_index)} pages",
+        flush=True,
+    )
 
     # ── Step 2: Sliding-window token chunking ─────────────────────────────────
-    print("\n[2/4] Chunking (tokens={}, overlap={}) ...".format(
-        cfg["index"]["chunk_tokens"], cfg["index"]["overlap"]), flush=True)
+    print(
+        "\n[2/4] Chunking (tokens={}, overlap={}) ...".format(
+            cfg["index"]["chunk_tokens"], cfg["index"]["overlap"]
+        ),
+        flush=True,
+    )
     chunks = split(page_chunks, cfg)
     total_tokens = sum(len(c.text.split()) for c in chunks)
     print(f"      → {len(chunks)} chunks  ({total_tokens:,} total tokens)", flush=True)
 
     # ── Step 3: Embed ──────────────────────────────────────────────────────────
-    print(f"\n[3/4] Embedding with {cfg['embed']['model']} "
-          f"(batch={cfg['embed'].get('batch_size', 32)}) ...", flush=True)
+    print(
+        f"\n[3/4] Embedding with {cfg['embed']['model']} "
+        f"(batch={cfg['embed'].get('batch_size', 32)}) ...",
+        flush=True,
+    )
 
-    from sentence_transformers import SentenceTransformer
     import numpy as np
+    from sentence_transformers import SentenceTransformer
 
     # encode() in embed.py validates shape/finiteness; we call SentenceTransformer
     # directly here to enable show_progress_bar and normalize_embeddings.
-    model  = SentenceTransformer(cfg["embed"]["model"])
-    batch  = cfg["embed"].get("batch_size", 32)
+    model = SentenceTransformer(cfg["embed"]["model"])
+    batch = cfg["embed"].get("batch_size", 32)
     vectors = model.encode(
         [c.text for c in chunks],
         batch_size=batch,
         convert_to_numpy=True,
         show_progress_bar=True,
-        normalize_embeddings=True,   # L2-norm ⟹ inner-product == cosine similarity
+        normalize_embeddings=True,  # L2-norm ⟹ inner-product == cosine similarity
     )
     vectors = np.asarray(vectors, dtype="float32")
     print(f"      → Embedding matrix: {vectors.shape}", flush=True)
@@ -98,16 +107,13 @@ def main() -> None:
     index_path.mkdir(parents=True, exist_ok=True)
     img_idx_path = index_path / "image_index.json"
     img_idx_path.write_text(
-        json.dumps(image_index, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8"
+        json.dumps(image_index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
-    print(f"      → image_index.json written ({len(image_index)} pages with figures)",
-          flush=True)
+    print(f"      → image_index.json written ({len(image_index)} pages with figures)", flush=True)
 
     elapsed = time.perf_counter() - t0
     print(f"\n✅  Index built in {elapsed:.1f}s")
-    print(f"   {len(chunks)} chunks · dim {cfg['embed']['dim']} · "
-          f"{index_path}/index.faiss")
+    print(f"   {len(chunks)} chunks · dim {cfg['embed']['dim']} · " f"{index_path}/index.faiss")
 
 
 if __name__ == "__main__":

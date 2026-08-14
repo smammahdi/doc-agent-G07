@@ -14,8 +14,8 @@ from ..contracts import Chunk
 # ---------------------------------------------------------------------------
 
 _PAGE_DELIM = re.compile(r"<!--\s*book\s+p(\d+)\s*-->")
-_MD_IMAGE   = re.compile(r"!\[([^\]]*)\]\(([^)]+\.webp)\)")
-_HTML_TAG   = re.compile(r"<[^>]+>")
+_MD_IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+\.webp)\)")
+_HTML_TAG = re.compile(r"<[^>]+>")
 _WHITESPACE = re.compile(r"\s+")
 
 
@@ -63,6 +63,7 @@ def _extract_images(raw: str, page_id: str) -> list[dict[str, str]]:
 # Chandra pages.md ingestion
 # ---------------------------------------------------------------------------
 
+
 def load_from_pages_markdown(
     pages_md_path: Path,
     doc_id: str,
@@ -80,7 +81,7 @@ def load_from_pages_markdown(
         Used by the demo notebook and ``read_page`` tool to render figures.
     """
     content = pages_md_path.read_text(encoding="utf-8")
-    parts   = _PAGE_DELIM.split(content)
+    parts = _PAGE_DELIM.split(content)
     # parts layout: [pre-text, page_num, page_text, page_num, page_text, ...]
 
     page_chunks: list[Chunk] = []
@@ -89,7 +90,7 @@ def load_from_pages_markdown(
     for i in range(1, len(parts), 2):
         page_num = int(parts[i])
         raw_text = parts[i + 1] if i + 1 < len(parts) else ""
-        page_id  = f"p{page_num:04d}"
+        page_id = f"p{page_num:04d}"
 
         # Build image index (for display, not embedding)
         imgs = _extract_images(raw_text, page_id)
@@ -125,6 +126,7 @@ def build_image_index(pages_md_path: Path) -> dict[str, list[dict[str, str]]]:
 # ---------------------------------------------------------------------------
 # Token-level sliding-window chunking
 # ---------------------------------------------------------------------------
+
 
 def split(chunks: list[Chunk], cfg: dict[str, Any]) -> list[Chunk]:
     """Split OCR chunks by whitespace tokens while retaining page provenance."""
