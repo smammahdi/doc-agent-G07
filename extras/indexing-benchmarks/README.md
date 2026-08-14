@@ -17,6 +17,8 @@ This directory contains the experimental framework to evaluate and justify all d
 - `BAAI/bge-small-en-v1.5` (384-d compact MTEB leader)
 - `nomic-ai/nomic-embed-text-v1.5` (768-d 8k long-context + MRL)
 - `Qwen/Qwen3-Embedding-0.6B` (1024-d compact Qwen3 text embedder)
+- `Qwen/Qwen3-Embedding-0.6B-GGUF` (single Q4_K_M ~400MB)
+- `Qwen/Qwen3-Embedding-4B-GGUF` (single Q4_K_M ~2.4GB)
 - `Qwen/Qwen3-VL-Embedding-2B` (1536-d multimodal embedder for text + figures)
 - `BAAI/bge-m3` (1024-d universal dense + sparse model)
 

@@ -76,6 +76,22 @@ MODEL_SPECS = [
         "description": "Compact SOTA 0.6B param Qwen3 instruction-aware text embedding model",
     },
     {
+        "id": "Qwen/Qwen3-Embedding-0.6B-GGUF",
+        "name": "qwen3-embedding-0-6b-gguf",
+        "dim": 1024,
+        "type": "quantized-gguf",
+        "license": "apache-2.0",
+        "description": "Single Q4_K_M quantized 0.6B Qwen3 GGUF (~400MB) for lightweight inference",
+    },
+    {
+        "id": "Qwen/Qwen3-Embedding-4B-GGUF",
+        "name": "qwen3-embedding-4b-gguf",
+        "dim": 2560,
+        "type": "quantized-gguf",
+        "license": "apache-2.0",
+        "description": "Single Q4_K_M quantized 4.0B Qwen3 GGUF (~2.4GB) for memory-efficient 4B embedding",
+    },
+    {
         "id": "Qwen/Qwen3-Reranker-0.6B",
         "name": "qwen3-reranker-0-6b",
         "dim": None,
@@ -223,16 +239,18 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
     if not revision:
         raise RuntimeError(f"Hugging Face returned no immutable revision for {model_id}")
 
-    is_gguf = spec.get("type") == "quantized-gguf" or "gguf" in model_id.lower()
+    allow_patterns = None
     ignore_patterns = ["*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot", "*.flax*"]
     if is_gguf:
-        # Avoid downloading unnecessary massive FP16/BF16/quant files; keep Q4_K_M, Q8_0, Q5_K_M, and configs
-        ignore_patterns = ["*f16*", "*F16*", "*bf16*", "*BF16*", "*q2_*", "*q3_*"]
+        # Strictly download ONLY the optimal single Q4_K_M quantization (~2.4GB for 4B, ~400MB for 0.6B)
+        allow_patterns = ["*q4_k_m.gguf", "*Q4_K_M.gguf", "*q4_k.gguf", "*.json", "README.md"]
+        ignore_patterns = None
 
     resolved = snapshot_download(
         repo_id=model_id,
         revision=revision,
         local_dir=model_dir,
+        allow_patterns=allow_patterns,
         ignore_patterns=ignore_patterns,
         max_workers=8,
     )
