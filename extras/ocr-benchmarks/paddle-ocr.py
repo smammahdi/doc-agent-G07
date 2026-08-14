@@ -90,7 +90,7 @@ def prepare_support_roots() -> list[Path]:
     direct_layout = [
         path
         for path in INPUT_ROOT.rglob("detections.jsonl")
-        if "ppdoclayout" in str(path).lower() and not path.is_relative_to(WORK)
+        if path.parent.name.lower() == "ppdoclayout-v3" and not path.is_relative_to(WORK)
     ]
     direct_pages = [
         path
@@ -248,7 +248,9 @@ def find_support_files(roots: list[Path]) -> tuple[Path, Path, Path]:
             if page_ids == PAGES:
                 labels_matches.append(path)
         layout_matches.extend(
-            path for path in root.rglob("detections.jsonl") if "ppdoclayout" in str(path).lower()
+            path
+            for path in root.rglob("detections.jsonl")
+            if path.parent.name.lower() == "ppdoclayout-v3"
         )
         heldout_matches.extend(
             path
