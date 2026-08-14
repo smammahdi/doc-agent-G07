@@ -44,8 +44,6 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from PIL import Image
-
 os.environ["PADDLE_PDX_CACHE_HOME"] = "/kaggle/working/paddlex-cache"
 os.environ["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True"
 os.environ["DISABLE_MODEL_SOURCE_CHECK"] = "True"
@@ -232,6 +230,11 @@ def install_runtime(asset_root: Path) -> None:
             ],
             check=True,
         )
+    for name in list(sys.modules):
+        if name in ("PIL", "paddle", "paddleocr", "paddlex") or name.startswith(
+            ("PIL.", "paddle.", "paddleocr.", "paddlex.")
+        ):
+            del sys.modules[name]
     importlib.invalidate_caches()
 
 
@@ -617,6 +620,8 @@ def run_mode(
     run_signature: str,
     provenance: dict[str, Any],
 ) -> None:
+    from PIL import Image
+
     mode_dir = OUT / mode
     mode_dir.mkdir(parents=True, exist_ok=True)
     pages_path, regions_path = mode_dir / "pages.jsonl", mode_dir / "regions.jsonl"
