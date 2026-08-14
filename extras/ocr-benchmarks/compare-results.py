@@ -245,7 +245,7 @@ def parse_engine_spec(spec: str) -> tuple[str, Path]:
     return name.strip(), path
 
 
-def markdown_report(results: list[dict[str, Any]]) -> str:
+def markdown_report(results: list[dict[str, Any]], excluded_pages: Iterable[str] = ()) -> str:
     """Render a compact summary table suitable for a report or review."""
 
     lines = [
@@ -269,8 +269,14 @@ def markdown_report(results: list[dict[str, Any]]) -> str:
             "",
             "Scores are computed from the saved JSONL text. They are not claims of",
             "human OCR accuracy unless the reference labels are manually verified.",
+            "Ranking is by macro CER ascending; no composite average of CER, WER,",
+            "and Word-F1 is used because CER/WER are lower-is-better and Word-F1",
+            "is higher-is-better.",
         ]
     )
+    excluded = sorted(excluded_pages)
+    if excluded:
+        lines.insert(4, f"Excluded pages: {', '.join(excluded)}.")
     return "\n".join(lines) + "\n"
 
 
@@ -284,6 +290,13 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="NAME=JSONL",
         help="saved page/block JSONL; repeat for every engine or mode",
     )
+    parser.add_argument(
+        "--exclude-page",
+        action="append",
+        default=[],
+        metavar="PAGE_ID",
+        help="exclude a labelled page from scoring; repeat as needed",
+    )
     parser.add_argument("--json", type=Path, help="optional JSON report destination")
     parser.add_argument("--markdown", type=Path, help="optional Markdown report destination")
     return parser
@@ -292,18 +305,32 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     page_ids, labels = read_labels(args.labels)
+    excluded_pages = set(args.exclude_page)
+    unknown_pages = sorted(excluded_pages - set(page_ids))
+    if unknown_pages:
+        raise ValueError(f"cannot exclude unlabelled pages: {unknown_pages}")
+    scored_page_ids = [page_id for page_id in page_ids if page_id not in excluded_pages]
+    if not scored_page_ids:
+        raise ValueError("page exclusion removed every labelled page")
     specs = [parse_engine_spec(spec) for spec in args.engine]
     names = [name for name, _ in specs]
     if len(names) != len(set(names)):
         raise ValueError("engine names must be unique")
-    results = [score_engine(name, path, page_ids, labels) for name, path in specs]
+    results = [score_engine(name, path, scored_page_ids, labels) for name, path in specs]
     payload = {
         "labels": str(args.labels),
-        "pages": page_ids,
+        "pages": scored_page_ids,
+        "excluded_pages": sorted(excluded_pages),
         "normalization": NORMALIZATION,
+        "ranking": {
+            "metric": "macro_cer",
+            "direction": "ascending",
+            "composite_average_used": False,
+            "macro_definition": "mean of per-page scores",
+        },
         "engines": results,
     }
-    report = markdown_report(results)
+    report = markdown_report(results, excluded_pages)
     print(report, end="")
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)

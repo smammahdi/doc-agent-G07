@@ -72,6 +72,8 @@ python extras/ocr-benchmarks/compare-results.py \
   --engine "Chandra=extras/output/chandra/chunks.jsonl" \
   --engine "MinerU=extras/output/mineru-ocr-full-book/full-page/pages.jsonl" \
   --engine "Tesseract=extras/tesseract_layout_bench/result/tesseract_ppdoclayout_v3_results.jsonl" \
+  --exclude-page p0041 \
+  --exclude-page p0043 \
   --json /tmp/ocr-comparison.json \
   --markdown /tmp/ocr-comparison.md
 ```
