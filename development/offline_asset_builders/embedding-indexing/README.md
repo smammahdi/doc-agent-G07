@@ -29,7 +29,7 @@ This directory contains the Kaggle asset builder script to package multiple sent
 2. Configure settings:
    - **Accelerator**: None (CPU)
    - **Internet**: **ON**
-3. Paste the contents of [`package_embedding_models.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding_indexing/package_embedding_models.py) into a notebook cell and run it.
+3. Paste the contents of [`package-embedding-models.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-embedding-models.py) into a notebook cell and run it.
 4. When finished, create a new private Kaggle Dataset from the notebook's output:
    - Name: `embedding-indexing-offline-assets`
 5. Attach the resulting dataset to your offline indexing and retrieval benchmark notebooks with **Internet: OFF**.
