@@ -23,5 +23,7 @@ Each runner writes one archive to `/kaggle/working/`:
 ```
 
 Both modes process the same 24 pages and report CER, WER, and word-F1 from the
-saved `pages.jsonl` text. The PP-DocLayoutV3 boxes are the committed layout
-input; no layout model is rerun by these OCR runners.
+saved `pages.jsonl` text. Primary scores use the same Unicode-normalized,
+case-insensitive, punctuation-insensitive text for every engine; exact raw-text
+scores are retained separately. The PP-DocLayoutV3 boxes are the committed
+layout input; no layout model is rerun by these OCR runners.

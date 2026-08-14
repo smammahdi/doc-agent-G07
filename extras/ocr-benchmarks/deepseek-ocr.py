@@ -40,6 +40,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -49,6 +50,8 @@ OUT = Path("/kaggle/working/deepseek-ocr-benchmark")
 MODEL_NAME = "deepseek-ai/DeepSeek-OCR-2"
 LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
 MODES = ("full-page", "ppdoclayout-v3")
+FULL_PAGE_PROMPT = "<image>\n<|grounding|>Convert the document to markdown."
+REGION_PROMPT = "<image>\nFree OCR."
 
 
 def install_dependencies() -> None:
@@ -193,14 +196,20 @@ def load_model() -> tuple[Any, Any, str]:
     return tokenizer, model, str(dtype).replace("torch.", "")
 
 
-def infer(model: Any, tokenizer: Any, image_path: Path, result_dir: Path) -> str:
+def infer(
+    model: Any,
+    tokenizer: Any,
+    image_path: Path,
+    result_dir: Path,
+    prompt: str,
+) -> str:
     kwargs = {
         "tokenizer": tokenizer,
-        "prompt": "<image>\nFree OCR.",
+        "prompt": prompt,
         "image_file": str(image_path),
         "output_path": str(result_dir),
         "base_size": 1024,
-        "image_size": 640,
+        "image_size": 768,
         "crop_mode": True,
         "save_results": False,
         "test_compress": False,
@@ -219,8 +228,23 @@ def infer(model: Any, tokenizer: Any, image_path: Path, result_dir: Path) -> str
     )
 
 
-def normalize(text: str) -> str:
+def normalize_exact(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def remove_grounding_markup(text: str) -> str:
+    """Remove DeepSeek coordinate annotations while retaining their referenced text."""
+
+    text = re.sub(r"<\|det\|>.*?<\|/det\|>", " ", text, flags=re.DOTALL)
+    return re.sub(r"<\|/?ref\|>", "", text)
+
+
+def normalize(text: str) -> str:
+    """Normalize typography while preserving letters and numbers for fair OCR scoring."""
+
+    folded = unicodedata.normalize("NFKC", remove_grounding_markup(text)).casefold()
+    characters = [char if unicodedata.category(char)[0] in {"L", "N"} else " " for char in folded]
+    return re.sub(r"\s+", " ", "".join(characters)).strip()
 
 
 def levenshtein(left: list[Any] | str, right: list[Any] | str) -> int:
@@ -242,8 +266,8 @@ def levenshtein(left: list[Any] | str, right: list[Any] | str) -> int:
 
 
 def word_f1(hypothesis: str, reference: str) -> float:
-    hyp = Counter(normalize(hypothesis).split())
-    ref = Counter(normalize(reference).split())
+    hyp = Counter(hypothesis.split())
+    ref = Counter(reference.split())
     true_positive = sum((hyp & ref).values())
     if not hyp and not ref:
         return 1.0
@@ -313,18 +337,26 @@ def score(
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     total_char_errors = total_word_errors = total_chars = total_words = 0
+    exact_total_char_errors = exact_total_word_errors = exact_total_chars = exact_total_words = 0
     for page_id in pages:
-        reference = normalize(labels[page_id])
-        hypothesis = normalize(str(page_rows[page_id].get("text", "")))
+        exact_reference = normalize_exact(labels[page_id])
+        exact_hypothesis = normalize_exact(str(page_rows[page_id].get("text", "")))
+        reference = normalize(exact_reference)
+        hypothesis = normalize(exact_hypothesis)
         reference_words = reference.split()
         hypothesis_words = hypothesis.split()
         char_errors = levenshtein(hypothesis, reference)
         word_errors = levenshtein(hypothesis_words, reference_words)
+        exact_char_errors = levenshtein(exact_hypothesis, exact_reference)
+        exact_word_errors = levenshtein(exact_hypothesis.split(), exact_reference.split())
         row = {
             "page_id": page_id,
             "cer": char_errors / max(1, len(reference)),
             "wer": word_errors / max(1, len(reference_words)),
             "word_f1": word_f1(hypothesis, reference),
+            "exact_cer": exact_char_errors / max(1, len(exact_reference)),
+            "exact_wer": exact_word_errors / max(1, len(exact_reference.split())),
+            "exact_word_f1": word_f1(exact_hypothesis, exact_reference),
             "reference_chars": len(reference),
             "reference_words": len(reference_words),
             "hypothesis_chars": len(hypothesis),
@@ -335,12 +367,22 @@ def score(
         total_word_errors += word_errors
         total_chars += len(reference)
         total_words += len(reference_words)
+        exact_total_char_errors += exact_char_errors
+        exact_total_word_errors += exact_word_errors
+        exact_total_chars += len(exact_reference)
+        exact_total_words += len(exact_reference.split())
         print(page_id, row)
     metrics = {
         "engine": MODEL_NAME,
         "mode": mode,
         "layout": "full-page input" if mode == "full-page" else "PP-DocLayoutV3 non-figure regions",
         "dtype": dtype,
+        "prompts": {
+            "full-page": FULL_PAGE_PROMPT,
+            "ppdoclayout-v3": REGION_PROMPT,
+        },
+        "image_size": 768,
+        "primary_scoring": "NFKC, casefold, letters/numbers only, collapsed whitespace",
         "pages": len(rows),
         "regions": region_count,
         "micro_cer": total_char_errors / max(1, total_chars),
@@ -348,6 +390,11 @@ def score(
         "macro_cer": sum(row["cer"] for row in rows) / len(rows),
         "macro_wer": sum(row["wer"] for row in rows) / len(rows),
         "macro_word_f1": sum(row["word_f1"] for row in rows) / len(rows),
+        "exact_micro_cer": exact_total_char_errors / max(1, exact_total_chars),
+        "exact_micro_wer": exact_total_word_errors / max(1, exact_total_words),
+        "exact_macro_cer": sum(row["exact_cer"] for row in rows) / len(rows),
+        "exact_macro_wer": sum(row["exact_wer"] for row in rows) / len(rows),
+        "exact_macro_word_f1": sum(row["exact_word_f1"] for row in rows) / len(rows),
         "per_page": rows,
     }
     mode_dir = OUT / mode
@@ -419,7 +466,8 @@ def run_mode(
                         image.crop(tuple(int(value) for value in region_box)).convert("RGB").save(
                             crop_path
                         )
-                    text = infer(model, tokenizer, crop_path, side_effects)
+                    prompt = FULL_PAGE_PROMPT if mode == "full-page" else REGION_PROMPT
+                    text = infer(model, tokenizer, crop_path, side_effects, prompt)
                     output_regions.append(
                         {
                             "region_id": f"{page_id}-r{region_index:04d}",

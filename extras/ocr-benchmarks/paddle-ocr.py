@@ -34,12 +34,13 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import time
+import unicodedata
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from PIL import Image
 
 os.environ["PADDLE_PDX_CACHE_HOME"] = "/kaggle/working/paddlex-cache"
@@ -51,6 +52,9 @@ LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
 HELDOUT = REPO / "grading_kit/heldout_pages"
 LABELS = REPO / "grading_kit/labels.jsonl"
 PAGES = [f"p{i:04d}" for i in range(24, 48)]
+DETECTION_MODEL = "PP-OCRv6_medium_det"
+RECOGNITION_MODEL = "PP-OCRv6_medium_rec"
+ENGINE_NAME = f"PaddleOCR 3.7.0 {DETECTION_MODEL} + {RECOGNITION_MODEL}"
 
 
 def ensure_repository() -> None:
@@ -192,8 +196,16 @@ def recover_mode(
     return complete, {page_id: regions_by_page[page_id] for page_id in complete}
 
 
-def normalize(text: str) -> str:
+def normalize_exact(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def normalize(text: str) -> str:
+    """Normalize typography while preserving letters and numbers for fair OCR scoring."""
+
+    folded = unicodedata.normalize("NFKC", text).casefold()
+    characters = [char if unicodedata.category(char)[0] in {"L", "N"} else " " for char in folded]
+    return re.sub(r"\s+", " ", "".join(characters)).strip()
 
 
 def levenshtein(left: list[Any] | str, right: list[Any] | str) -> int:
@@ -215,8 +227,8 @@ def levenshtein(left: list[Any] | str, right: list[Any] | str) -> int:
 
 
 def word_f1(hypothesis: str, reference: str) -> float:
-    hyp = Counter(normalize(hypothesis).split())
-    ref = Counter(normalize(reference).split())
+    hyp = Counter(hypothesis.split())
+    ref = Counter(reference.split())
     true_positive = sum((hyp & ref).values())
     if not hyp and not ref:
         return 1.0
@@ -234,17 +246,25 @@ def score(mode_dir: Path, labels: dict[str, str], engine: str) -> dict[str, Any]
         raise ValueError(f"{mode_dir} does not contain exactly 24 completed pages")
     rows = []
     total_ce = total_we = total_chars = total_words = 0
+    exact_total_ce = exact_total_we = exact_total_chars = exact_total_words = 0
     for page in pages:
-        reference = normalize(labels[page["page_id"]])
-        hypothesis = normalize(page["text"])
+        exact_reference = normalize_exact(labels[page["page_id"]])
+        exact_hypothesis = normalize_exact(page["text"])
+        reference = normalize(exact_reference)
+        hypothesis = normalize(exact_hypothesis)
         reference_words, hypothesis_words = reference.split(), hypothesis.split()
         char_errors = levenshtein(hypothesis, reference)
         word_errors = levenshtein(hypothesis_words, reference_words)
+        exact_char_errors = levenshtein(exact_hypothesis, exact_reference)
+        exact_word_errors = levenshtein(exact_hypothesis.split(), exact_reference.split())
         row = {
             "page_id": page["page_id"],
             "cer": char_errors / max(1, len(reference)),
             "wer": word_errors / max(1, len(reference_words)),
             "word_f1": word_f1(hypothesis, reference),
+            "exact_cer": exact_char_errors / max(1, len(exact_reference)),
+            "exact_wer": exact_word_errors / max(1, len(exact_reference.split())),
+            "exact_word_f1": word_f1(exact_hypothesis, exact_reference),
             "reference_chars": len(reference),
             "reference_words": len(reference_words),
         }
@@ -253,8 +273,17 @@ def score(mode_dir: Path, labels: dict[str, str], engine: str) -> dict[str, Any]
         total_we += word_errors
         total_chars += len(reference)
         total_words += len(reference_words)
+        exact_total_ce += exact_char_errors
+        exact_total_we += exact_word_errors
+        exact_total_chars += len(exact_reference)
+        exact_total_words += len(exact_reference.split())
     metrics = {
         "engine": engine,
+        "models": {
+            "detection": DETECTION_MODEL,
+            "recognition": RECOGNITION_MODEL,
+        },
+        "primary_scoring": "NFKC, casefold, letters/numbers only, collapsed whitespace",
         "mode": mode_dir.name,
         "pages": len(rows),
         "micro_cer": total_ce / max(1, total_chars),
@@ -262,6 +291,11 @@ def score(mode_dir: Path, labels: dict[str, str], engine: str) -> dict[str, Any]
         "macro_cer": sum(row["cer"] for row in rows) / len(rows),
         "macro_wer": sum(row["wer"] for row in rows) / len(rows),
         "macro_word_f1": sum(row["word_f1"] for row in rows) / len(rows),
+        "exact_micro_cer": exact_total_ce / max(1, exact_total_chars),
+        "exact_micro_wer": exact_total_we / max(1, exact_total_words),
+        "exact_macro_cer": sum(row["exact_cer"] for row in rows) / len(rows),
+        "exact_macro_wer": sum(row["exact_wer"] for row in rows) / len(rows),
+        "exact_macro_word_f1": sum(row["exact_word_f1"] for row in rows) / len(rows),
         "per_page": rows,
     }
     (mode_dir / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
@@ -299,26 +333,29 @@ def run_mode(
             else layout_regions[pid]
         )
         new_regions = []
-        for index, source in enumerate(sources):
-            box = source["bbox_norm"]
-            pixel_box = bbox_pixels(box, image.width, image.height)
-            crop = image.crop(pixel_box)
-            lines = recognize(ocr, np.asarray(crop))
-            new_regions.append(
-                {
-                    "region_id": f"{pid}-r{index:04d}",
-                    "page_id": pid,
-                    "source_id": source["source_id"],
-                    "source_class": source["class_name"],
-                    "score": source["score"],
-                    "bbox_norm": box,
-                    "bbox_px": list(pixel_box),
-                    "text": "\n".join(line["text"] for line in lines),
-                    "line_count": len(lines),
-                    "lines": lines,
-                    "status": "complete",
-                }
-            )
+        with tempfile.TemporaryDirectory(prefix=f"paddle-{pid}-") as scratch_name:
+            scratch = Path(scratch_name)
+            for index, source in enumerate(sources):
+                box = source["bbox_norm"]
+                pixel_box = bbox_pixels(box, image.width, image.height)
+                crop_path = scratch / f"{pid}-r{index:04d}.png"
+                image.crop(pixel_box).save(crop_path)
+                lines = recognize(ocr, str(crop_path))
+                new_regions.append(
+                    {
+                        "region_id": f"{pid}-r{index:04d}",
+                        "page_id": pid,
+                        "source_id": source["source_id"],
+                        "source_class": source["class_name"],
+                        "score": source["score"],
+                        "bbox_norm": box,
+                        "bbox_px": list(pixel_box),
+                        "text": "\n".join(line["text"] for line in lines),
+                        "line_count": len(lines),
+                        "lines": lines,
+                        "status": "complete",
+                    }
+                )
         page_rows.append(
             {
                 "page_id": pid,
@@ -336,7 +373,7 @@ def run_mode(
         write_jsonl(regions_path, region_rows)
         write_jsonl(pages_path, page_rows)
         print(mode, pid, len(new_regions), flush=True)
-    metrics = score(mode_dir, labels, "PaddleOCR 3.7.0 PP-OCRv6")
+    metrics = score(mode_dir, labels, ENGINE_NAME)
     selected = {key: metrics[key] for key in ("micro_cer", "micro_wer", "macro_word_f1")}
     print(mode, json.dumps(selected))
 
@@ -350,11 +387,24 @@ def main() -> None:
 
     ocr = PaddleOCR(
         lang="en",
+        ocr_version="PP-OCRv6",
+        text_detection_model_name=DETECTION_MODEL,
+        text_recognition_model_name=RECOGNITION_MODEL,
         use_doc_orientation_classify=False,
         use_doc_unwarping=False,
         use_textline_orientation=False,
         device="gpu:0" if paddle.is_compiled_with_cuda() else "cpu",
     )
+    smoke_lines = recognize(ocr, str(HELDOUT / "p0024.jpg"))
+    smoke_text = " ".join(line["text"] for line in smoke_lines)
+    alphabetic = [char for char in smoke_text if char.isalpha()]
+    latin_ratio = sum(char.isascii() for char in alphabetic) / max(1, len(alphabetic))
+    if len(smoke_text) < 500 or len(smoke_lines) < 5 or latin_ratio < 0.9:
+        raise RuntimeError(
+            "PP-OCRv6 smoke test failed: expected substantial English text on p0024, "
+            f"got {len(smoke_lines)} lines, {len(smoke_text)} chars, Latin ratio {latin_ratio:.3f}"
+        )
+    print({"smoke_page": "p0024", "lines": len(smoke_lines), "preview": smoke_text[:160]})
     run_mode(ocr, "full-page", labels, layout_regions)
     run_mode(ocr, "ppdoclayout-v3", labels, layout_regions)
     mode_metrics = {
@@ -362,7 +412,7 @@ def main() -> None:
         for mode in ("full-page", "ppdoclayout-v3")
     }
     comparison = {
-        "engine": "PaddleOCR 3.7.0 PP-OCRv6",
+        "engine": ENGINE_NAME,
         "pages": len(PAGES),
         "modes": {
             mode: {key: value for key, value in metrics.items() if key != "per_page"}
