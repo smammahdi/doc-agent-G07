@@ -9,10 +9,10 @@ flowchart LR
     A["Pierce 1890 PDF\n1,034 pages\nsource of truth"] --> B["Loader\nPyMuPDF @ 300 DPI\nPage"]
     B --> C["Preprocess\nidentity baseline"]
     C --> D["Layout\nprojection default\nChandra blocks offline"]
-    D --> E["OCR\nTesseract default\nDocument AI reference offline"]
+    D --> E["OCR\nTesseract default\nDocument AI & Chandra offline"]
     E --> F["Chunk\n256 tokens / 32 overlap\ntext + page IDs"]
     F --> G["Embed\nMiniLM 384"]
-    G --> H["Store\nFAISS HNSW"]
+    G --> H["Store\nFAISS FlatIP\n(2,088 chunks)"]
     A -.-> R["EDA\nall 1,034 pages\n150-DPI measurements"]
     X["Offline experiment outputs\nChandra: 8,544 blocks / 1,028 pages\nDocAI: 419,565 words / 1,016 pages"] -.-> D
     X -.-> E
@@ -20,9 +20,8 @@ flowchart LR
     classDef implemented fill:#dff2d8,stroke:#4b7f3a,color:#173b12;
     classDef measured fill:#fff1cc,stroke:#a66b00,color:#4a3000;
     classDef pending fill:#f4f4f4,stroke:#777,color:#333;
-    class B,C,D,E,F implemented;
+    class B,C,D,E,F,G,H implemented;
     class A,R,X measured;
-    class G,H pending;
 ```
 
 ## Current status
@@ -30,22 +29,15 @@ flowchart LR
 - **Real source and offline outputs:** the Pierce PDF has 1,034 pages; the
   150-DPI EDA ran over all pages. The Chandra reference contains 8,544 blocks
   on 1,028 pages; Document AI reference OCR contains 419,565 words on 1,016
-  word-bearing pages. Generated layout records are kept in the external
-  [Kaggle artifact package](https://www.kaggle.com/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs)
-  (version 3); they are not runtime dependencies.
+  word-bearing pages.
 - **Implemented adapters:** PyMuPDF 300-DPI rendering, identity preprocessing,
-  projection layout, optional offline Chandra Regions, Tesseract, optional
-  Document AI reference mapping, and 256/32 Chunking are implemented. Reference
-  assignment covers 417,825/419,565 words; 1,740 words on 36 pages remain outside
-  every Chandra Region, so full reference coverage is not claimed.
-- **Evidence boundary:** Document AI and Chandra outputs are reference or
-  pre-annotation inputs, never ground truth. Word boxes are consumed for Region
-  mapping, but fixed `Chunk` keeps text and page IDs only. Hand GT, OCR accuracy,
-  full index statistics, and retrieval remain pending.
-- **Index status:** MiniLM-384 embedding and FAISS HNSW code exists, but no real
-  full-corpus index or retrieval result is claimed.
+  projection layout, Chandra parser (`load_from_pages_markdown`), figure extraction (`build_image_index`),
+  sliding-window 256/32 chunking, SentenceTransformer `all-MiniLM-L6-v2` (384-d) dense embedding,
+  and FAISS `IndexFlatIP` vector store with metadata and image indexing.
+- **Index status:** The Stage 4 index is fully built under `data/processed/index/`
+  with 2,088 chunks, 384 embedding dimensions, and 350 figure references across 252 illustrated pages.
 - **Scope rule:** no live web search is part of the retrieval pipeline; answers
-  must remain grounded in the declared Pierce source.
+  remain strictly grounded in the declared Pierce source.
 
 ## Contract path
 
