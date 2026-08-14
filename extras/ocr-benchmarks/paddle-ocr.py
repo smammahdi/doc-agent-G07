@@ -50,6 +50,11 @@ os.environ["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True"
 os.environ["DISABLE_MODEL_SOURCE_CHECK"] = "True"
 os.environ["DISABLE_PADDLE_UPDATE_CHECK"] = "1"
 os.environ["PADDLEOCR_SHOW_LOG"] = "False"
+os.environ["FLAGS_use_mkldnn"] = "0"
+os.environ["FLAGS_enable_onednn"] = "0"
+os.environ["FLAGS_enable_pir_api"] = "0"
+os.environ["FLAGS_enable_pir_in_executor"] = "0"
+os.environ["PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT"] = "0"
 
 INPUT_ROOT = Path("/kaggle/input")
 WORK = Path("/kaggle/working")
@@ -724,6 +729,17 @@ def main() -> None:
     import paddleocr
     from paddleocr import PaddleOCR
 
+    for flag_name, flag_val in (
+        ("FLAGS_use_mkldnn", False),
+        ("FLAGS_enable_onednn", False),
+        ("FLAGS_enable_pir_api", False),
+        ("FLAGS_enable_pir_in_executor", False),
+    ):
+        try:
+            paddle.set_flags({flag_name: flag_val})
+        except Exception:
+            pass
+
     device = "gpu:0" if paddle.is_compiled_with_cuda() else "cpu"
     revisions = {
         "detection": receipt_revision(receipt, DETECTION_MODEL_ID),
@@ -771,6 +787,7 @@ def main() -> None:
         use_doc_unwarping=False,
         use_textline_orientation=False,
         text_recognition_batch_size=16,
+        enable_mkldnn=False,
         device=device,
     )
     smoke_lines = recognize(ocr, str(heldout / "p0024.jpg"))
