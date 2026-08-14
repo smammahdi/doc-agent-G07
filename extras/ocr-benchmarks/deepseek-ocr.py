@@ -52,6 +52,7 @@ LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
 MODES = ("full-page", "ppdoclayout-v3")
 FULL_PAGE_PROMPT = "<image>\n<|grounding|>Convert the document to markdown."
 REGION_PROMPT = "<image>\nFree OCR."
+IMAGE_SIZE = 640  # DeepSeek's supported default and the tested single-T4 profile.
 
 
 def install_dependencies() -> None:
@@ -209,7 +210,7 @@ def infer(
         "image_file": str(image_path),
         "output_path": str(result_dir),
         "base_size": 1024,
-        "image_size": 768,
+        "image_size": IMAGE_SIZE,
         "crop_mode": True,
         "save_results": False,
         "test_compress": False,
@@ -381,7 +382,7 @@ def score(
             "full-page": FULL_PAGE_PROMPT,
             "ppdoclayout-v3": REGION_PROMPT,
         },
-        "image_size": 768,
+        "image_size": IMAGE_SIZE,
         "primary_scoring": "NFKC, casefold, letters/numbers only, collapsed whitespace",
         "pages": len(rows),
         "regions": region_count,
