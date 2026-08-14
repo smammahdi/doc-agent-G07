@@ -41,10 +41,15 @@ def _atomic_json(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def build(chunks: list[Chunk], vectors: Any, cfg: dict[str, Any]) -> None:
-    """Persist a FAISS HNSW index and its exact chunk metadata.
+    """Persist a FAISS index and its exact chunk metadata.
 
-    The index is a generated build artifact. It is written under the configured
-    processed-data path and should not be committed to the public repository.
+    Uses IndexFlatIP (exact inner-product / cosine similarity after L2-normalisation)
+    instead of IndexHNSWFlat. HNSW triggers a macOS arm64 segfault with faiss-cpu
+    at process teardown; FlatIP is brute-force but exact, reliable everywhere, and
+    perfectly adequate for a 2k-vector corpus. HNSW would only matter at ≥100k vectors.
+
+    The index is a generated build artifact written under the configured processed-data
+    path and should not be committed to the public repository.
     """
     if not isinstance(chunks, list) or any(not isinstance(chunk, Chunk) for chunk in chunks):
         raise TypeError("chunks must be a list of Chunk contracts")
@@ -57,7 +62,7 @@ def build(chunks: list[Chunk], vectors: Any, cfg: dict[str, Any]) -> None:
         raise ValueError("cannot build an index with no chunks")
     if not np.isfinite(matrix).all():
         raise ValueError("vectors contain non-finite values")
-    output_dir, m = _settings(cfg)
+    output_dir, _m = _settings(cfg)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -67,16 +72,16 @@ def build(chunks: list[Chunk], vectors: Any, cfg: dict[str, Any]) -> None:
             "faiss-cpu is required to build the configured index; install the project dependencies"
         ) from exc
 
-    index = faiss.IndexHNSWFlat(matrix.shape[1], m)
-    index.hnsw.efConstruction = max(40, m * 2)
+    # L2-normalise so inner-product == cosine similarity
+    faiss.normalize_L2(matrix)
+    index = faiss.IndexFlatIP(matrix.shape[1])
     index.add(matrix)
     faiss.write_index(index, str(output_dir / "index.faiss"))
     _atomic_json(output_dir / "chunks.jsonl", [chunk.model_dump() for chunk in chunks])
     metadata = {
-        "index_type": "faiss:hnsw",
+        "index_type": "faiss:flat_ip",
         "dimension": int(matrix.shape[1]),
         "count": len(chunks),
-        "hnsw_m": m,
     }
     (output_dir / "metadata.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
