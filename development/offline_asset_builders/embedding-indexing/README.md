@@ -8,6 +8,7 @@ This directory contains the Kaggle asset builder script to package multiple sent
 |:---|:---|:---:|:---:|:---:|:---|
 | `sentence-transformers/all-MiniLM-L6-v2` | `all-minilm-l6-v2` | Text Embed | 384 | ~90 MB | Lightweight 22M param fast dense baseline (starter default) |
 | `BAAI/bge-small-en-v1.5` | `bge-small-en-v1-5` | Text Embed | 384 | ~133 MB | SOTA compact 33M param MTEB retrieval champion |
+| `nomic-ai/nomic-embed-text-v1.5` | `nomic-embed-text-v1-5` | Text Embed | 768 | ~540 MB | 137M param 8k long-context model with Matryoshka (MRL) |
 | `Qwen/Qwen3-Embedding-0.6B` | `qwen3-embedding-0-6b` | Text Embed | 1024 | ~1.2 GB | SOTA 0.6B compact Qwen3 instruction-aware text embedder |
 | `Qwen/Qwen3-Embedding-4B` | `qwen3-embedding-4b` | Text Embed | 2560 | ~8.2 GB | High-capacity 4.0B param Qwen3 dense text embedder |
 | `Qwen/Qwen3-Reranker-0.6B` | `qwen3-reranker-0-6b` | Reranker | — | ~1.2 GB | Fast 0.6B param Qwen3 instruction-tuned cross-encoder reranker |

@@ -60,6 +60,14 @@ MODEL_SPECS = [
         "description": "High-accuracy compact 33M param MTEB dense retriever",
     },
     {
+        "id": "nomic-ai/nomic-embed-text-v1.5",
+        "name": "nomic-embed-text-v1-5",
+        "dim": 768,
+        "type": "text-embedding",
+        "license": "apache-2.0",
+        "description": "137M param 8k long-context embedding model with Matryoshka dimension scaling (MRL)",
+    },
+    {
         "id": "Qwen/Qwen3-Embedding-0.6B",
         "name": "qwen3-embedding-0-6b",
         "dim": 1024,
