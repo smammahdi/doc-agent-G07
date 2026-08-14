@@ -224,7 +224,7 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"Hugging Face returned no immutable revision for {model_id}")
 
     is_gguf = spec.get("type") == "quantized-gguf" or "gguf" in model_id.lower()
-    ignore_patterns = ["pytorch_model.bin", "*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot"]
+    ignore_patterns = ["*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot", "*.flax*"]
     if is_gguf:
         # Avoid downloading unnecessary massive FP16/BF16/quant files; keep Q4_K_M, Q8_0, Q5_K_M, and configs
         ignore_patterns = ["*f16*", "*F16*", "*bf16*", "*BF16*", "*q2_*", "*q3_*"]
@@ -247,8 +247,11 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
     if not is_gguf:
         if "config.json" not in files:
             raise FileNotFoundError(f"{model_id} missing config.json")
-        if not any(f.endswith(".safetensors") for f in files):
-            raise FileNotFoundError(f"{model_id} missing .safetensors weights")
+        has_weights = any(
+            f.endswith(".safetensors") or f.endswith(".bin") or f.endswith(".pt") for f in files
+        )
+        if not has_weights:
+            raise FileNotFoundError(f"{model_id} missing model weights (.safetensors or .bin)")
     else:
         if not any(f.endswith(".gguf") for f in files):
             raise FileNotFoundError(f"{model_id} missing .gguf weights")
