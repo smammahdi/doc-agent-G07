@@ -194,6 +194,20 @@ def load_model() -> tuple[Any, Any, str]:
         model_kwargs.pop("_attn_implementation")
         model = AutoModel.from_pretrained(MODEL_NAME, **model_kwargs)
     model = model.eval().to("cuda").to(dtype)
+    if hasattr(model, "generation_config") and model.generation_config is not None:
+        model.generation_config.do_sample = False
+    if hasattr(model, "generate"):
+        orig_generate = model.generate
+
+        def bounded_generate(*args: Any, **kwargs: Any) -> Any:
+            max_new = kwargs.get("max_new_tokens")
+            if max_new is None or max_new > 4096:
+                kwargs["max_new_tokens"] = 4096
+            if kwargs.get("temperature") == 0.0 and not kwargs.get("do_sample", False):
+                kwargs.pop("temperature", None)
+            return orig_generate(*args, **kwargs)
+
+        model.generate = bounded_generate
     return tokenizer, model, str(dtype).replace("torch.", "")
 
 
@@ -203,6 +217,8 @@ def infer(
     image_path: Path,
     result_dir: Path,
     prompt: str,
+    *,
+    crop_mode: bool = True,
 ) -> str:
     kwargs = {
         "tokenizer": tokenizer,
@@ -211,16 +227,25 @@ def infer(
         "output_path": str(result_dir),
         "base_size": 1024,
         "image_size": IMAGE_SIZE,
-        "crop_mode": True,
+        "crop_mode": crop_mode,
         "save_results": False,
         "test_compress": False,
     }
     try:
-        result = model.infer(**kwargs, eval_mode=True)
+        import torch
+
+        with torch.inference_mode():
+            result = model.infer(**kwargs, eval_mode=True)
     except TypeError:
-        result = model.infer(
-            **kwargs,
-        )
+        try:
+            import torch
+
+            with torch.inference_mode():
+                result = model.infer(**kwargs)
+        except Exception:
+            result = model.infer(**kwargs)
+    except Exception:
+        result = model.infer(**kwargs, eval_mode=True)
     if isinstance(result, str):
         return result.strip()
     raise RuntimeError(
@@ -230,7 +255,7 @@ def infer(
 
 
 def normalize_exact(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip()
+    return re.sub(r"\s+", " ", remove_grounding_markup(text)).strip()
 
 
 def remove_grounding_markup(text: str) -> str:
@@ -468,7 +493,15 @@ def run_mode(
                             crop_path
                         )
                     prompt = FULL_PAGE_PROMPT if mode == "full-page" else REGION_PROMPT
-                    text = infer(model, tokenizer, crop_path, side_effects, prompt)
+                    crop_mode = mode == "full-page"
+                    text = infer(
+                        model,
+                        tokenizer,
+                        crop_path,
+                        side_effects,
+                        prompt,
+                        crop_mode=crop_mode,
+                    )
                     output_regions.append(
                         {
                             "region_id": f"{page_id}-r{region_index:04d}",

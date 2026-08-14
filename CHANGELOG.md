@@ -8,6 +8,10 @@ release yet.
 
 No A2 release tag has been created yet.
 
+### DeepSeek-OCR-2 benchmark execution and scoring repairs
+
+- Updated `extras/ocr-benchmarks/deepseek-ocr.py` with inference mode, bounded generation (`max_new_tokens=4096`, deterministic greedy decoding), full-page internal tiling vs pre-cropped non-figure region mode (`crop_mode=False`), and metric-only grounding markup normalization.
+
 ### MinerU2.5-Pro OCR benchmark runner
 
 - Added `extras/ocr-benchmarks/mineru-ocr.py` for the same 24-page, two-mode
