@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import importlib.util
 import json
 import os
 import re
@@ -204,6 +205,10 @@ def install_runtime(asset_root: Path) -> None:
     except Exception:
         has_cuda_paddle = False
 
+    has_pil = importlib.util.find_spec("PIL") is not None
+    has_numpy = importlib.util.find_spec("numpy") is not None
+    has_cv2 = importlib.util.find_spec("cv2") is not None
+
     selected = []
     for wheel in wheels:
         normalized = wheel.name.lower().replace("_", "-")
@@ -211,6 +216,14 @@ def install_runtime(asset_root: Path) -> None:
             normalized.startswith("paddlepaddle-")
             or normalized.startswith("paddlepaddle_gpu-")
             or normalized.startswith("paddlepaddle_cu")
+        ):
+            continue
+        if has_pil and normalized.startswith("pillow-"):
+            continue
+        if has_numpy and normalized.startswith("numpy-"):
+            continue
+        if has_cv2 and (
+            normalized.startswith("opencv-") or normalized.startswith("opencv_python-")
         ):
             continue
         selected.append(wheel)
@@ -230,11 +243,6 @@ def install_runtime(asset_root: Path) -> None:
             ],
             check=True,
         )
-    for name in list(sys.modules):
-        if name in ("PIL", "paddle", "paddleocr", "paddlex") or name.startswith(
-            ("PIL.", "paddle.", "paddleocr.", "paddlex.")
-        ):
-            del sys.modules[name]
     importlib.invalidate_caches()
 
 
