@@ -1,469 +1,316 @@
 #!/usr/bin/env python3
 """
 PaddleOCR-VL-1.6 Benchmark: Layout-Aware (PP-DocLayoutV3) & Direct Full-Page
-Pierce 1890 Medical Adviser · Team G07 · A2 SOTA Vision-Language Document OCR
+Pierce 1890 Medical Adviser · Team G07 · A2 SOTA Vision-Language Document Parser
 
-Evaluates PaddlePaddle/PaddleOCR-VL-1.6 (0.9B VLM Document Parser) under two modes:
-  1. Mode 1: Layout-Aware Crop OCR (PP-DocLayoutV3 text crops)
-  2. Mode 2: Direct Full-Page Document OCR (Un-cropped 300 DPI pages)
-  3. Side-by-Side Comparison & Benchmark Report
+Uses the OFFICIAL PaddleOCR pipeline (paddleocr[doc-parser] >= 3.6.0) as recommended
+by the model card. NOT the Transformers path (element-level only, slower).
 
-Kaggle dataset inputs:
-  - Layout:  /kaggle/input/datasets/kmazd1110/ocr-layout-dataset/ocr-layout-dataset/ppdoclayout-v3/detections.jsonl
-  - Labels:  /kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/labels.jsonl
-  - Images:  /kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/heldout_pages/ (or PDF fallback)
+  1. Mode 1 (full-page):     Direct full-page document parsing via PaddleOCRVL
+  2. Mode 2 (ppdoclayout):   PP-DocLayoutV3 non-figure crop → PaddleOCRVL per-region OCR
+  3. Evaluation:             CER, WER, Word F1 against grading_kit/labels.jsonl
 """
 
 from __future__ import annotations
 
-import csv
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
-from collections import defaultdict
+from collections import Counter
 from pathlib import Path
-from unittest.mock import patch
+from typing import Any
 
-# ── 1. Install & Import Dependencies ──────────────────────────────────────────
-import cv2
-import fitz  # PyMuPDF
-import numpy as np
-import torch
-from PIL import Image
+os.environ["PYTHONUNBUFFERED"] = "1"
 
-try:
-    from jiwer import cer as compute_cer, wer as compute_wer
-except ImportError:
-    def levenshtein_distance(ref_seq, hyp_seq):
-        n, m = len(ref_seq), len(hyp_seq)
-        if n == 0: return m
-        if m == 0: return n
-        dp = list(range(m + 1))
-        for i in range(1, n + 1):
-            prev = dp[0]
-            dp[0] = i
-            for j in range(1, m + 1):
-                temp = dp[j]
-                if ref_seq[i - 1] == hyp_seq[j - 1]:
-                    dp[j] = prev
-                else:
-                    dp[j] = 1 + min(prev, dp[j], dp[j - 1])
-                prev = temp
-        return dp[m]
+# ── Paths ────────────────────────────────────────────────────────────────────
+REPO = Path("/kaggle/working/doc-agent-G07")
+OUT  = Path("/kaggle/working/paddleocr-vl-benchmark")
 
-    def compute_cer(ref, hyp):
-        dist = levenshtein_distance(list(ref), list(hyp))
-        return dist / float(len(ref)) if ref else 0.0
+LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
+HELDOUT     = REPO / "grading_kit/heldout_pages"
+LABELS      = REPO / "grading_kit/labels.jsonl"
+PAGES       = [f"p{n:04d}" for n in range(24, 48)]
 
-    def compute_wer(ref, hyp):
-        ref_w, hyp_w = ref.split(), hyp.split()
-        dist = levenshtein_distance(ref_w, hyp_w)
-        return dist / float(len(ref_w)) if ref_w else 0.0
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def ensure_repository() -> dict[str, str]:
+    if not LABELS.is_file():
+        print("Cloning doc-agent-G07 repository...", flush=True)
+        subprocess.run(
+            ["git", "clone", "--depth", "1", "--branch", "main",
+             "https://github.com/smammahdi/doc-agent-G07.git", str(REPO)],
+            check=True,
+        )
+    if not LABELS.is_file() or not LAYOUT_PATH.is_file():
+        raise FileNotFoundError("Repository missing labels or PP-DocLayoutV3 detections")
+    labels = {
+        row["page_id"]: row["text"]
+        for line in LABELS.read_text("utf-8").splitlines() if line.strip()
+        for row in [json.loads(line)]
+    }
+    if list(labels) != PAGES:
+        raise ValueError("labels must contain exactly p0024 through p0047 in order")
+    missing = [p for p in PAGES if not (HELDOUT / f"{p}.jpg").is_file()]
+    if missing:
+        raise FileNotFoundError(f"Missing held-out pages: {missing}")
+    return labels
 
-# ── 2. Configure Paths ────────────────────────────────────────────────────────
-KAGGLE_DET_PATH = Path("/kaggle/input/datasets/kmazd1110/ocr-layout-dataset/ocr-layout-dataset/ppdoclayout-v3/detections.jsonl")
-LOCAL_DET_PATH = Path("extras/output/ppdoclayout-v3/detections.jsonl")
 
-KAGGLE_LABELS_PATH = Path("/kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/labels.jsonl")
-LOCAL_LABELS_PATH = Path("grading_kit/labels.jsonl")
+def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    return [json.loads(l) for l in path.read_text("utf-8").splitlines() if l.strip()]
 
-KAGGLE_IMAGES_DIR = Path("/kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/heldout_pages")
-LOCAL_IMAGES_DIR = Path("grading_kit/heldout_pages")
 
-KAGGLE_PDF_PATH = Path("/kaggle/input/datasets/kmazd1110/dl-peoples-common-sense-med-advisor/EN_The-Peoples-Common-Sense-Medical-Adviser.pdf")
-LOCAL_PDF_PATH = Path("data/raw/pierce-peoples-common-sense-medical-adviser-1890.pdf")
+def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), "utf-8")
+    os.replace(tmp, path)
 
-# Output directory & files
-if os.path.exists("/kaggle"):
-    OUT_DIR = Path("/kaggle/working/paddleocr_vl_results")
-    OUT_LAYOUT_JSONL = OUT_DIR / "paddleocr_vl_layout_results.jsonl"
-    OUT_FULLPAGE_JSONL = OUT_DIR / "paddleocr_vl_fullpage_results.jsonl"
-    OUT_SCORES_CSV = OUT_DIR / "paddleocr_vl_comparison_scores.csv"
-    OUT_REPORT_MD = OUT_DIR / "report.md"
-else:
-    OUT_DIR = Path("extras/paddleocr_vl_bench/output")
-    OUT_LAYOUT_JSONL = OUT_DIR / "paddleocr_vl_layout_results.jsonl"
-    OUT_FULLPAGE_JSONL = OUT_DIR / "paddleocr_vl_fullpage_results.jsonl"
-    OUT_SCORES_CSV = OUT_DIR / "paddleocr_vl_comparison_scores.csv"
-    OUT_REPORT_MD = OUT_DIR / "report.md"
 
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-
-# Discover paths
-if KAGGLE_DET_PATH.exists():
-    DET_PATH = KAGGLE_DET_PATH
-elif LOCAL_DET_PATH.exists():
-    DET_PATH = LOCAL_DET_PATH
-else:
-    found = list(Path(".").rglob("*ppdoclayout-v3/detections.jsonl")) + list(Path("/kaggle").rglob("*ppdoclayout-v3/detections.jsonl"))
-    DET_PATH = found[0] if found else KAGGLE_DET_PATH
-
-if KAGGLE_LABELS_PATH.exists():
-    LABELS_PATH = KAGGLE_LABELS_PATH
-elif LOCAL_LABELS_PATH.exists():
-    LABELS_PATH = LOCAL_LABELS_PATH
-else:
-    found = list(Path(".").rglob("labels.jsonl")) + list(Path("/kaggle").rglob("labels.jsonl"))
-    LABELS_PATH = found[0] if found else KAGGLE_LABELS_PATH
-
-IMAGES_DIR = KAGGLE_IMAGES_DIR if KAGGLE_IMAGES_DIR.exists() else (LOCAL_IMAGES_DIR if LOCAL_IMAGES_DIR.exists() else None)
-PDF_PATH = KAGGLE_PDF_PATH if KAGGLE_PDF_PATH.exists() else (LOCAL_PDF_PATH if LOCAL_PDF_PATH.exists() else None)
-
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-print("=" * 80)
-print("PADDLEOCR-VL-1.6 BENCHMARK (0.9B VLM DOCUMENT PARSER)")
-print(f"Device                : {DEVICE}")
-print(f"PyTorch Version       : {torch.__version__}")
-print(f"LAYOUT DETECTIONS PATH: {DET_PATH}")
-print(f"GROUND TRUTH PATH     : {LABELS_PATH}")
-print(f"HELDOUT IMAGES DIR    : {IMAGES_DIR}")
-print(f"PDF PATH              : {PDF_PATH}")
-print(f"OUTPUT DIRECTORY      : {OUT_DIR}")
-print("=" * 80)
-
-# ── 3. Helper Functions ───────────────────────────────────────────────────────
-def normalize(text: str) -> str:
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    text = text.replace("æ", "ae").replace("œ", "oe").replace("ﬁ", "fi").replace("ﬂ", "fl")
-    return text
-
-def compute_word_f1(ref: str, hyp: str) -> float:
-    ref_w = set(normalize(ref).lower().split())
-    hyp_w = set(normalize(hyp).lower().split())
-    tp = len(ref_w & hyp_w)
-    prec = tp / len(hyp_w) if hyp_w else 0.0
-    rec = tp / len(ref_w) if ref_w else 0.0
-    return (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
-
-# ── 4. Load Ground Truth Labels ──────────────────────────────────────────────
-print("Loading Ground Truth labels...")
-gt_labels: dict[str, str] = {}
-with LABELS_PATH.open(encoding="utf-8") as f:
-    for line in f:
-        if line.strip():
-            row = json.loads(line)
-            gt_labels[row["page_id"]] = row["text"]
-
-# In-memory GT alignment for p0041 and p0043 to evaluate real printed text
-if "p0041" in gt_labels and "A detailed black and white" in gt_labels["p0041"]:
-    gt_labels["p0041"] = "33\n\nTHE MUSCLES.\n\nA representation of the superficial layer of muscles on the anterior portion of the body."
-if "p0043" in gt_labels and "A detailed black and white" in gt_labels["p0043"]:
-    gt_labels["p0043"] = "35\n\nTHE MUSCLES.\n\nA representation of the superficial layer of muscles on the posterior portion of the body."
-
-test_page_ids = sorted(gt_labels.keys())
-print(f"Loaded {len(test_page_ids)} test pages: {test_page_ids}")
-
-# ── 5. Load PP-DocLayoutV3 Detections ─────────────────────────────────────────
-print("Loading PP-DocLayoutV3 detections...")
-det_blocks: dict[str, list[dict]] = defaultdict(list)
-if DET_PATH.exists():
-    with DET_PATH.open(encoding="utf-8") as f:
-        for line in f:
-            if line.strip():
-                row = json.loads(line)
-                pid = row.get("page_id")
-                if pid in gt_labels:
-                    det_blocks[pid].append(row)
-    print(f"Loaded layout detections for {len(det_blocks)} test set pages.")
-else:
-    print(f"[WARN] Layout detections {DET_PATH} not found!")
-
-# ── 6. Initialize PaddleOCR-VL-1.6 Engine ─────────────────────────────────────
-USE_OFFICIAL_PADDLE_ENGINE = False
-paddle_pipeline = None
-processor = None
-model = None
-
-try:
-    from paddleocr import PaddleOCRVL
-    print("Initializing Official PaddleOCRVL Engine (pipeline_version='v1.6')...")
-    paddle_pipeline = PaddleOCRVL(pipeline_version="v1.6")
-    USE_OFFICIAL_PADDLE_ENGINE = True
-    print("✅ Official PaddleOCRVL Engine ready!")
-except Exception as e_paddle:
-    print(f"[INFO] PaddleOCRVL native engine not available ({e_paddle}). Falling back to HuggingFace Transformers...")
-    from transformers import AutoProcessor, AutoModelForVision2Seq, AutoModelForCausalLM
-    MODEL_ID = "PaddlePaddle/PaddleOCR-VL-1.6"
-    print(f"Loading {MODEL_ID} via Transformers...")
-    t0 = time.time()
-    
-    try:
-        processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
-    except Exception as e:
-        print(f"[WARN] AutoProcessor fallback: {e}")
-        MODEL_ID = "PaddlePaddle/PaddleOCR-VL"
-        processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
-
-    torch_dtype = torch.bfloat16 if (torch.cuda.is_available() and torch.cuda.is_bf16_supported()) else torch.float16
-
-    try:
-        model = AutoModelForVision2Seq.from_pretrained(
-            MODEL_ID,
-            trust_remote_code=True,
-            torch_dtype=torch_dtype if DEVICE == "cuda" else torch.float32,
-        ).to(DEVICE)
-    except Exception as e:
-        print(f"[INFO] Fallback to AutoModelForCausalLM: {e}")
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID,
-            trust_remote_code=True,
-            torch_dtype=torch_dtype if DEVICE == "cuda" else torch.float32,
-        ).to(DEVICE)
-
-    model.eval()
-    print(f"Loaded {MODEL_ID} in {time.time()-t0:.1f}s.")
-
-pdf_doc = fitz.open(str(PDF_PATH)) if (PDF_PATH and PDF_PATH.exists()) else None
-
-def get_page_image(pid: str) -> Image.Image | None:
-    book_page_num = int(pid.replace("p", ""))
-    if IMAGES_DIR and IMAGES_DIR.exists():
-        for ext in [".jpg", ".png", ".jpeg"]:
-            img_file = IMAGES_DIR / f"{pid}{ext}"
-            if img_file.exists():
-                return Image.open(img_file).convert("RGB")
-    if pdf_doc is not None:
-        pix = pdf_doc[book_page_num - 1].get_pixmap(dpi=300)
-        return Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-    return None
-
-def run_paddle_vl_ocr(pil_img: Image.Image, prompt: str = "OCR:", max_new_tokens: int = 512) -> str:
-    if USE_OFFICIAL_PADDLE_ENGINE and paddle_pipeline is not None:
-        img_np = np.array(pil_img)
-        res = paddle_pipeline.predict(img_np)
-        if isinstance(res, list):
-            texts = []
-            for item in res:
-                if isinstance(item, str):
-                    texts.append(item)
-                elif hasattr(item, "text"):
-                    texts.append(item.text)
-                elif isinstance(item, dict):
-                    texts.append(item.get("text", "") or item.get("markdown", "") or item.get("content", "") or str(item))
-                else:
-                    texts.append(str(item))
-            return "\n".join(texts).strip()
-        return str(res).strip()
-    
-    # Transformers Inference
-    messages = [
-        {"role": "user", "content": [
-            {"type": "image", "image": pil_img},
-            {"type": "text", "text": prompt},
-        ]}
-    ]
-    with torch.inference_mode():
-        if hasattr(processor, "apply_chat_template"):
-            inputs = processor.apply_chat_template(
-                messages,
-                tokenize=True,
-                add_generation_prompt=True,
-                return_tensors="pt"
-            ).to(DEVICE)
-            generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
-            in_len = inputs["input_ids"].shape[1]
-            output_text = processor.batch_decode(generated_ids[:, in_len:], skip_special_tokens=True)[0]
-        else:
-            inputs = processor(images=pil_img, text=prompt, return_tensors="pt").to(DEVICE)
-            generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
-            output_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    return output_text.strip()
-
-# ── 7. Run Mode 1: Layout-Aware PaddleOCR-VL (PP-DocLayoutV3 Crops) ───────────
-print("\n" + "=" * 80)
-print("RUNNING MODE 1: LAYOUT-AWARE PADDLEOCR-VL (PP-DOCLAYOUT-V3 CROPS)")
-print("=" * 80)
-layout_results = []
-layout_scores = []
-start_time = time.time()
-
-for pid in test_page_ids:
-    page_start = time.time()
-    img_pil = get_page_image(pid)
-    if img_pil is None:
-        print(f"[ERROR] Could not load image for {pid}. Skipping.")
-        continue
-    
-    img_w, img_h = img_pil.size
-    blocks = det_blocks.get(pid, [])
-    text_blocks = [b for b in blocks if not b.get("is_figure", False)]
-    text_blocks.sort(key=lambda b: (b.get("bbox_norm", [0,0,0,0])[1], b.get("bbox_norm", [0,0,0,0])[0]))
-    
-    transcripts = []
-    for b in text_blocks:
-        norm = b.get("bbox_norm", [0, 0, 0, 0])
-        px0 = max(0, int(norm[0] * img_w))
-        py0 = max(0, int(norm[1] * img_h))
-        px1 = min(img_w, int(norm[2] * img_w))
-        py1 = min(img_h, int(norm[3] * img_h))
-        
-        if px1 <= px0 or py1 <= py0:
+def load_regions() -> dict[str, list[dict[str, Any]]]:
+    regions: dict[str, list[dict[str, Any]]] = {p: [] for p in PAGES}
+    for i, row in enumerate(read_jsonl(LAYOUT_PATH), 1):
+        pid = row.get("page_id")
+        if pid not in regions or bool(row.get("is_figure")):
             continue
-            
-        crop_pil = img_pil.crop((px0, py0, px1, py1))
-        crop_text = run_paddle_vl_ocr(crop_pil, prompt="OCR:", max_new_tokens=256)
-        if crop_text:
-            transcripts.append(crop_text)
-            
-    full_transcript = "\n\n".join(transcripts)
-    elapsed = time.time() - page_start
-    
-    layout_results.append({
-        "page_id": pid,
-        "text": full_transcript,
-        "n_blocks": len(text_blocks),
-        "elapsed_s": round(elapsed, 2)
-    })
-    
-    ref_norm = normalize(gt_labels[pid])
-    hyp_norm = normalize(full_transcript)
-    
-    cer = compute_cer(ref_norm, hyp_norm)
-    wer = compute_wer(ref_norm, hyp_norm)
-    f1 = compute_word_f1(ref_norm, hyp_norm)
-    
-    layout_scores.append({
-        "page_id": pid,
-        "cer": cer,
-        "wer": wer,
-        "f1": f1,
-        "gt_chars": len(ref_norm),
-        "hyp_chars": len(hyp_norm),
-        "elapsed_s": round(elapsed, 2)
-    })
-    print(f"  [Layout] {pid:7s}: CER={cer:8.4f} | WER={wer:8.4f} | Word F1={f1:8.4f} | Time={elapsed:5.2f}s")
+        box = row.get("bbox_norm", [])
+        if len(box) != 4:
+            continue
+        vals = [max(0.0, min(1.0, float(v))) for v in box]
+        if vals[2] <= vals[0] or vals[3] <= vals[1]:
+            continue
+        regions[pid].append({
+            "source_id": str(row.get("detection_id", f"line-{i}")),
+            "class_name": str(row.get("class_name", "text")),
+            "score": float(row.get("score", 0.0)),
+            "bbox_norm": vals,
+        })
+    for pid in PAGES:
+        regions[pid].sort(key=lambda r: (r["bbox_norm"][1], r["bbox_norm"][0]))
+    return regions
 
-layout_total_time = time.time() - start_time
-print(f"Completed Layout-Aware PaddleOCR-VL in {layout_total_time:.2f}s.")
 
-with OUT_LAYOUT_JSONL.open("w", encoding="utf-8") as f:
-    for row in layout_results:
-        f.write(json.dumps(row, ensure_ascii=False) + "\n")
-print(f"Saved layout predictions to: {OUT_LAYOUT_JSONL}")
+def bbox_pixels(box: list[float], w: int, h: int) -> list[int]:
+    l = max(0, min(w - 1, int(box[0] * w)))
+    t = max(0, min(h - 1, int(box[1] * h)))
+    r = max(l + 1, min(w, int(box[2] * w + 0.999999)))
+    b = max(t + 1, min(h, int(box[3] * h + 0.999999)))
+    return [l, t, r, b]
 
-# ── 8. Run Mode 2: Direct Full-Page PaddleOCR-VL (Un-cropped) ─────────────────
-print("\n" + "=" * 80)
-print("RUNNING MODE 2: DIRECT FULL-PAGE PADDLEOCR-VL (UN-CROPPED)")
-print("=" * 80)
-fullpage_results = []
-fullpage_scores = []
-start_time = time.time()
 
-for pid in test_page_ids:
-    page_start = time.time()
-    img_pil = get_page_image(pid)
-    if img_pil is None:
-        continue
-        
-    fullpage_text = run_paddle_vl_ocr(img_pil, prompt="OCR:", max_new_tokens=1024)
-    elapsed = time.time() - page_start
-    
-    fullpage_results.append({
-        "page_id": pid,
-        "text": fullpage_text,
-        "elapsed_s": round(elapsed, 2)
-    })
-    
-    ref_norm = normalize(gt_labels[pid])
-    hyp_norm = normalize(fullpage_text)
-    
-    cer = compute_cer(ref_norm, hyp_norm)
-    wer = compute_wer(ref_norm, hyp_norm)
-    f1 = compute_word_f1(ref_norm, hyp_norm)
-    
-    fullpage_scores.append({
-        "page_id": pid,
-        "cer": cer,
-        "wer": wer,
-        "f1": f1,
-        "gt_chars": len(ref_norm),
-        "hyp_chars": len(hyp_norm),
-        "elapsed_s": round(elapsed, 2)
-    })
-    print(f"  [FullPage] {pid:7s}: CER={cer:8.4f} | WER={wer:8.4f} | Word F1={f1:8.4f} | Time={elapsed:5.2f}s")
+def normalize(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
 
-fullpage_total_time = time.time() - start_time
-print(f"Completed Direct Full-Page PaddleOCR-VL in {fullpage_total_time:.2f}s.")
 
-with OUT_FULLPAGE_JSONL.open("w", encoding="utf-8") as f:
-    for row in fullpage_results:
-        f.write(json.dumps(row, ensure_ascii=False) + "\n")
-print(f"Saved fullpage predictions to: {OUT_FULLPAGE_JSONL}")
+def levenshtein(a: list | str, b: list | str) -> int:
+    if len(a) < len(b):
+        a, b = b, a
+    prev = list(range(len(b) + 1))
+    for i, av in enumerate(a, 1):
+        cur = [i]
+        for j, bv in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[-1] + 1, prev[j - 1] + (av != bv)))
+        prev = cur
+    return prev[-1]
 
-# ── 9. Final Side-by-Side Comparison & Reporting ────────────────────────────
-print("\n" + "=" * 110)
-print(f"{'PAGE':7s} | {'FULLPAGE CER':14s} | {'LAYOUT CER':12s} | {'FULLPAGE F1':14s} | {'LAYOUT F1':12s} | WINNER (BY F1)")
-print("=" * 110)
 
-comparison_rows = []
-for i, pid in enumerate(test_page_ids):
-    fp = fullpage_scores[i]
-    lay = layout_scores[i]
-    
-    winner = "🟢 LAYOUT-AWARE" if lay["f1"] > fp["f1"] else ("🔵 FULL-PAGE" if fp["f1"] > lay["f1"] else "⚪ TIE")
-    diff = lay["f1"] - fp["f1"]
-    
-    comparison_rows.append({
-        "page_id": pid,
-        "fullpage_cer": round(fp["cer"], 4),
-        "layout_cer": round(lay["cer"], 4),
-        "fullpage_wer": round(fp["wer"], 4),
-        "layout_wer": round(lay["wer"], 4),
-        "fullpage_f1": round(fp["f1"], 4),
-        "layout_f1": round(lay["f1"], 4),
-        "f1_delta": round(diff, 4),
-        "winner": winner
-    })
-    print(f"{pid:7s} | {fp['cer']:14.4f} | {lay['cer']:12.4f} | {fp['f1']:14.4f} | {lay['f1']:12.4f} | {winner:16s} ({diff:+.4f})")
+def word_f1(hyp: str, ref: str) -> float:
+    h = Counter(normalize(hyp).split())
+    r = Counter(normalize(ref).split())
+    tp = sum((h & r).values())
+    if not h and not r:
+        return 1.0
+    if not tp:
+        return 0.0
+    prec = tp / sum(h.values())
+    rec  = tp / sum(r.values())
+    return 2 * prec * rec / (prec + rec)
 
-fp_mean_cer = sum(s["cer"] for s in fullpage_scores) / len(fullpage_scores) if fullpage_scores else 0.0
-fp_mean_wer = sum(s["wer"] for s in fullpage_scores) / len(fullpage_scores) if fullpage_scores else 0.0
-fp_mean_f1 = sum(s["f1"] for s in fullpage_scores) / len(fullpage_scores) if fullpage_scores else 0.0
 
-lay_mean_cer = sum(s["cer"] for s in layout_scores) / len(layout_scores) if layout_scores else 0.0
-lay_mean_wer = sum(s["wer"] for s in layout_scores) / len(layout_scores) if layout_scores else 0.0
-lay_mean_f1 = sum(s["f1"] for s in layout_scores) / len(layout_scores) if layout_scores else 0.0
+def extract_text_from_result(result: Any) -> str:
+    """Extract plain text from a PaddleOCRVL pipeline result object."""
+    # Try .json() method (returns dict with markdown/text fields)
+    try:
+        data = result.json() if callable(getattr(result, "json", None)) else result
+        if isinstance(data, str):
+            data = json.loads(data)
+        if isinstance(data, dict):
+            # Try markdown output first (preserves structure)
+            md = data.get("res", {}).get("markdown", "")
+            if md:
+                return md.strip()
+            # Fall back to rec_texts (like classic PaddleOCR)
+            texts = data.get("res", {}).get("rec_texts", [])
+            if texts:
+                return "\n".join(str(t) for t in texts if str(t).strip())
+    except Exception:
+        pass
+    return str(result)
 
-print("=" * 110)
-print(f"DIRECT FULL-PAGE PADDLEOCR-VL MEAN : CER = {fp_mean_cer:.4f} ({fp_mean_cer*100:.2f}%) | WER = {fp_mean_wer:.4f} ({fp_mean_wer*100:.2f}%) | Word F1 = {fp_mean_f1:.4f} ({fp_mean_f1*100:.2f}%)")
-print(f"PP-DOCLAYOUT PADDLEOCR-VL MEAN     : CER = {lay_mean_cer:.4f} ({lay_mean_cer*100:.2f}%) | WER = {lay_mean_wer:.4f} ({lay_mean_wer*100:.2f}%) | Word F1 = {lay_mean_f1:.4f} ({lay_mean_f1*100:.2f}%)")
-print("=" * 110)
 
-with OUT_SCORES_CSV.open("w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=[
-        "page_id", "fullpage_cer", "layout_cer", "fullpage_wer", "layout_wer", "fullpage_f1", "layout_f1", "f1_delta", "winner"
-    ])
-    writer.writeheader()
-    writer.writerows(comparison_rows)
-print(f"Saved comparison CSV to: {OUT_SCORES_CSV}")
+def score(mode: str, labels: dict[str, str], page_rows: dict[str, dict]) -> dict:
+    per_page = []
+    total_ce = total_we = total_chars = total_words = 0
+    for pid in PAGES:
+        ref = normalize(labels[pid])
+        hyp = normalize(str(page_rows.get(pid, {}).get("text", "")))
+        ce = levenshtein(hyp, ref)
+        we = levenshtein(hyp.split(), ref.split())
+        per_page.append({
+            "page_id": pid,
+            "cer": ce / max(1, len(ref)),
+            "wer": we / max(1, len(ref.split())),
+            "word_f1": word_f1(hyp, ref),
+        })
+        total_ce    += ce;  total_chars += len(ref)
+        total_we    += we;  total_words += len(ref.split())
+    metrics = {
+        "engine":        "PaddleOCR-VL-1.6 (official pipeline)",
+        "mode":          mode,
+        "pages":         len(per_page),
+        "micro_cer":     total_ce / max(1, total_chars),
+        "micro_wer":     total_we / max(1, total_words),
+        "macro_word_f1": sum(r["word_f1"] for r in per_page) / len(per_page),
+        "per_page":      per_page,
+    }
+    (OUT / mode).mkdir(parents=True, exist_ok=True)
+    (OUT / mode / "metrics.json").write_text(
+        json.dumps(metrics, indent=2, ensure_ascii=False) + "\n", "utf-8"
+    )
+    return metrics
 
-report_md = f"""# PaddleOCR-VL-1.6 Benchmark Report: Layout-Aware vs. Direct Full-Page
 
-**Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)  
-**Layout Engine**: PP-DocLayoutV3 (`ppdoclayout-v3/detections.jsonl`)  
-**OCR Engine**: PaddlePaddle/PaddleOCR-VL-1.6 (0.9B Vision-Language Document Parser)  
-**Evaluation Set**: {len(test_page_ids)} Test Pages  
+def run_mode(
+    pipeline,
+    mode: str,
+    labels: dict[str, str],
+    layout_regions: dict[str, list[dict]],
+) -> dict:
+    from PIL import Image
 
-## Overall Benchmark Summary
+    mode_dir   = OUT / mode
+    mode_dir.mkdir(parents=True, exist_ok=True)
+    pages_path = mode_dir / "pages.jsonl"
 
-| Strategy | Mean CER ⬇️ | Mean WER ⬇️ | **Mean Word F1 Score ⬆️** |
-|---|---|---|---|
-| **Direct Full-Page PaddleOCR-VL** (Un-cropped) | `{fp_mean_cer:.4f}` ({fp_mean_cer*100:.2f}%) | `{fp_mean_wer:.4f}` ({fp_mean_wer*100:.2f}%) | **`{fp_mean_f1:.4f}` ({fp_mean_f1*100:.2f}%)** |
-| **PP-DocLayoutV3 + PaddleOCR-VL** (Layout-Aware) | `{lay_mean_cer:.4f}` ({lay_mean_cer*100:.2f}%) | `{lay_mean_wer:.4f}` ({lay_mean_wer*100:.2f}%) | **`{lay_mean_f1:.4f}` ({lay_mean_f1*100:.2f}%)** |
-| **Net Impact of Layout Cropping** | **`{lay_mean_cer - fp_mean_cer:+.4f}`** | **`{lay_mean_wer - fp_mean_wer:+.4f}`** | **`{lay_mean_f1 - fp_mean_f1:+.4f}`** |
+    # Resume: skip already-completed pages
+    done_rows  = {r["page_id"]: r for r in read_jsonl(pages_path) if r.get("status") == "complete"}
+    page_rows  = {}
+    all_pages  = []
 
-## Per-Page Breakdown
+    for pid in PAGES:
+        if pid in done_rows:
+            page_rows[pid] = done_rows[pid]
+            all_pages.append(done_rows[pid])
+            print(f"  [SKIP]  {pid}  (already complete)", flush=True)
+            continue
 
-| Page ID | Full-Page CER | Layout CER | Full-Page Word F1 | Layout Word F1 | Winner |
-|---|---|---|---|---|---|
-"""
-for r in comparison_rows:
-    report_md += f"| **`{r['page_id']}`** | `{r['fullpage_cer']:.4f}` | `{r['layout_cer']:.4f}` | `{r['fullpage_f1']:.4f}` | `{r['layout_f1']:.4f}` | {r['winner']} |\n"
+        t0  = time.perf_counter()
+        img = Image.open(HELDOUT / f"{pid}.jpg").convert("RGB")
 
-OUT_REPORT_MD.write_text(report_md, encoding="utf-8")
-print(f"Saved Markdown Report to: {OUT_REPORT_MD}")
+        if mode == "full-page":
+            # Feed the whole page directly to PaddleOCRVL
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tf:
+                img.save(tf.name, "JPEG")
+                tmp_path = tf.name
+            try:
+                texts = []
+                for res in pipeline.predict(tmp_path):
+                    texts.append(extract_text_from_result(res))
+            finally:
+                Path(tmp_path).unlink(missing_ok=True)
+            page_text = "\n\n".join(t for t in texts if t).strip()
+        else:
+            # Crop each non-figure PP-DocLayoutV3 region → OCR each crop
+            sources = layout_regions.get(pid, [])
+            region_texts = []
+            with tempfile.TemporaryDirectory(prefix=f"pvl-{pid}-") as scratch:
+                scratch = Path(scratch)
+                for ri, src in enumerate(sources):
+                    px = bbox_pixels(src["bbox_norm"], img.width, img.height)
+                    crop_path = scratch / f"{pid}-r{ri:04d}.jpg"
+                    img.crop(px).save(crop_path, "JPEG")
+                    try:
+                        crop_texts = []
+                        for res in pipeline.predict(str(crop_path)):
+                            crop_texts.append(extract_text_from_result(res))
+                        region_text = "\n".join(t for t in crop_texts if t).strip()
+                    except Exception as e:
+                        region_text = ""
+                        print(f"    [WARN] {pid} region {ri} failed: {e}", flush=True)
+                    if region_text:
+                        region_texts.append(region_text)
+                    print(f"    [{pid}] region {ri+1}/{len(sources)} -> {repr(region_text[:40])}", flush=True)
+            page_text = "\n\n".join(region_texts).strip()
+
+        elapsed = time.perf_counter() - t0
+        ref     = normalize(labels[pid])
+        hyp     = normalize(page_text)
+        ce      = levenshtein(hyp, ref)
+        we      = levenshtein(hyp.split(), ref.split())
+        f1      = word_f1(hyp, ref)
+
+        row = {
+            "page_id": pid,
+            "mode":    mode,
+            "status":  "complete",
+            "text":    page_text,
+            "cer":     ce / max(1, len(ref)),
+            "wer":     we / max(1, len(ref.split())),
+            "word_f1": f1,
+            "elapsed_seconds": round(elapsed, 3),
+        }
+        page_rows[pid] = row
+        all_pages.append(row)
+        write_jsonl(pages_path, all_pages)
+        print(f"  [{mode}] {pid}: CER={row['cer']:.4f} | WER={row['wer']:.4f} | F1={f1:.4f} | {elapsed:.1f}s", flush=True)
+
+    return score(mode, labels, page_rows)
+
+
+def main() -> None:
+    import paddle
+    from paddleocr import PaddleOCRVL
+
+    print(f"PaddlePaddle version : {paddle.__version__}", flush=True)
+    print(f"CUDA available       : {paddle.is_compiled_with_cuda()}", flush=True)
+
+    labels         = ensure_repository()
+    layout_regions = load_regions()
+
+    device = "gpu:0" if paddle.is_compiled_with_cuda() else "cpu"
+    print(f"Loading PaddleOCRVL pipeline (device={device}) ...", flush=True)
+    pipeline = PaddleOCRVL(pipeline_version="v1.6", device=device)
+    print("PaddleOCRVL pipeline loaded.", flush=True)
+
+    OUT.mkdir(parents=True, exist_ok=True)
+
+    # ── Mode 1: full-page ──────────────────────────────────────────────────────
+    print("\n" + "=" * 80, flush=True)
+    print("RUNNING MODE 1: DIRECT FULL-PAGE PADDLEOCR-VL", flush=True)
+    print("=" * 80, flush=True)
+    m1 = run_mode(pipeline, "full-page", labels, layout_regions)
+
+    # ── Mode 2: PP-DocLayoutV3 crops ──────────────────────────────────────────
+    print("\n" + "=" * 80, flush=True)
+    print("RUNNING MODE 2: PP-DOCLAYOUT-V3 CROPS PADDLEOCR-VL", flush=True)
+    print("=" * 80, flush=True)
+    m2 = run_mode(pipeline, "ppdoclayout-v3", labels, layout_regions)
+
+    # ── Summary ───────────────────────────────────────────────────────────────
+    print("\n" + "=" * 80, flush=True)
+    print("PADDLEOCR-VL-1.6 BENCHMARK SUMMARY", flush=True)
+    print("=" * 80, flush=True)
+    for label, m in [("Full-Page", m1), ("PP-DocLayoutV3", m2)]:
+        print(f"  {label:15s}: micro_CER={m['micro_cer']:.4f} | micro_WER={m['micro_wer']:.4f} | macro_Word_F1={m['macro_word_f1']:.4f}", flush=True)
+
+    archive = shutil.make_archive("/kaggle/working/paddleocr-vl-benchmark", "zip", root_dir=OUT)
+    print(f"\nDownload: {archive}", flush=True)
+
+
+if __name__ == "__main__":
+    main()
