@@ -13,11 +13,13 @@ This directory contains the experimental framework to evaluate and justify all d
   - Respects Markdown section headings (`#`, `##`), paragraph breaks (`\n\n`), and sentence boundaries (`.?!\n`), ensuring medical recipes and anatomical descriptions are not sliced mid-sentence.
 
 ### 2. Embedding Models
-- `sentence-transformers/all-MiniLM-L6-v2` (384-d, 22M parameters)
-- `BAAI/bge-small-en-v1.5` (384-d, 33M parameters)
-- `BAAI/bge-base-en-v1.5` (768-d, 110M parameters)
-- `sentence-transformers/all-mpnet-base-v2` (768-d, 110M parameters)
-- `Alibaba-NLP/gte-Qwen2-1.5B-instruct` (1536-d, 1.5B parameters)
+- `sentence-transformers/all-MiniLM-L6-v2` (384-d baseline)
+- `BAAI/bge-small-en-v1.5` (384-d compact MTEB leader)
+- `Qwen/Qwen3-Embedding-0.6B` (1024-d compact Qwen3 text embedder)
+- `Qwen/Qwen3-Embedding-4B` (2560-d high-capacity Qwen3 text embedder)
+- `Qwen/Qwen3-VL-Embedding-2B` (1536-d multimodal embedder for text + figures)
+- `shihab17/bangla-sentence-transformer` (768-d dedicated Bengali embedder)
+- `BAAI/bge-m3` (1024-d universal multilingual dense + sparse model)
 
 ### 3. Vector Index Architectures (FAISS)
 - **`IndexFlatIP`**: Exact Inner Product / Cosine Similarity baseline (100% recall, zero approximation error, ultra-fast for corpora $\le 10,000$ chunks).

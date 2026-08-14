@@ -12,6 +12,8 @@ This directory contains the Kaggle asset builder script to package multiple sent
 | `Qwen/Qwen3-Embedding-4B` | `qwen3-embedding-4b` | Text Embed | 2560 | ~8.2 GB | High-capacity 4.0B param Qwen3 dense text embedder |
 | `Qwen/Qwen3-Reranker-0.6B` | `qwen3-reranker-0-6b` | Reranker | — | ~1.2 GB | Fast 0.6B param Qwen3 instruction-tuned cross-encoder reranker |
 | `Qwen/Qwen3-VL-Embedding-2B` | `qwen3-vl-embedding-2b` | Multimodal Embed | 1536 | ~4.2 GB | 2.0B Qwen3 Vision-Language multimodal embedder for text + figures |
+| `shihab17/bangla-sentence-transformer` | `bangla-sentence-transformer` | Text Embed | 768 | ~440 MB | Dedicated Bengali SBERT model for Bangla semantic retrieval |
+| `BAAI/bge-m3` | `bge-m3` | Text Embed | 1024 | ~2.2 GB | Universal multilingual SOTA model (dense + sparse + multi-vector) |
 | `cross-encoder/ms-marco-MiniLM-L6-v2` | `ms-marco-minilm-l6-v2` | Reranker | — | ~90 MB | 22M param baseline cross-encoder reranker |
 
 ## Packaged Python Wheels

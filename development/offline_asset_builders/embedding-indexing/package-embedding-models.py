@@ -92,6 +92,22 @@ MODEL_SPECS = [
         "description": "2.0B param Qwen3 Vision-Language multimodal embedding model for text + figures",
     },
     {
+        "id": "shihab17/bangla-sentence-transformer",
+        "name": "bangla-sentence-transformer",
+        "dim": 768,
+        "type": "text-embedding",
+        "license": "mit",
+        "description": "Dedicated 768-d Bengali sentence transformer for Bangla semantic retrieval",
+    },
+    {
+        "id": "BAAI/bge-m3",
+        "name": "bge-m3",
+        "dim": 1024,
+        "type": "text-embedding",
+        "license": "mit",
+        "description": "Universal multilingual SOTA model (dense + sparse + multi-vector) supporting Bangla & English",
+    },
+    {
         "id": "cross-encoder/ms-marco-MiniLM-L6-v2",
         "name": "ms-marco-minilm-l6-v2",
         "dim": None,
