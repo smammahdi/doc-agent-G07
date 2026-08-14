@@ -1,40 +1,37 @@
-# Embedding Models & Indexing Tools — Offline Asset Builder
+# Embedding Models & Indexing Tools — Offline Asset Builders
 
-This directory contains the Kaggle asset builder script to package multiple sentence embedding models (MiniLM, BGE, GTE-Qwen2, MPNet) and vector indexing dependencies for 100% network-free execution.
+This directory contains modular Kaggle asset builder scripts to package embedding models and indexing dependencies for 100% network-free execution.
 
-## Packaged Models
+## Available Modular Asset Builders
 
-| Model ID | Short Name | Type | Dims | Size | Description |
-|:---|:---|:---:|:---:|:---:|:---|
-| `sentence-transformers/all-MiniLM-L6-v2` | `all-minilm-l6-v2` | Text Embed | 384 | ~90 MB | Lightweight 22M param fast dense baseline (starter default) |
-| `BAAI/bge-small-en-v1.5` | `bge-small-en-v1-5` | Text Embed | 384 | ~133 MB | SOTA compact 33M param MTEB retrieval champion |
-| `nomic-ai/nomic-embed-text-v1.5` | `nomic-embed-text-v1-5` | Text Embed | 768 | ~540 MB | 137M param 8k long-context model with Matryoshka (MRL) |
-| `Qwen/Qwen3-Embedding-0.6B` | `qwen3-embedding-0-6b` | Text Embed | 1024 | ~1.2 GB | SOTA 0.6B compact Qwen3 instruction-aware text embedder |
-| `Qwen/Qwen3-Embedding-0.6B-GGUF` | `qwen3-embedding-0-6b-gguf` | Quantized GGUF | 1024 | ~400 MB | Single Q4_K_M quantized 0.6B GGUF for lightweight inference |
-| `Qwen/Qwen3-Embedding-4B-GGUF` | `qwen3-embedding-4b-gguf` | Quantized GGUF | 2560 | ~2.4 GB | Single Q4_K_M quantized 4.0B GGUF for memory-efficient 4B embedding |
-| `Qwen/Qwen3-Reranker-0.6B` | `qwen3-reranker-0-6b` | Reranker | — | ~1.2 GB | Fast 0.6B param Qwen3 instruction-tuned cross-encoder reranker |
-| `Qwen/Qwen3-VL-Embedding-2B` | `qwen3-vl-embedding-2b` | Multimodal Embed | 1536 | ~4.2 GB | 2.0B Qwen3 Vision-Language multimodal embedder for text + figures |
-| `BAAI/bge-m3` | `bge-m3` | Text Embed | 1024 | ~2.2 GB | Universal SOTA model (dense + sparse + multi-vector) |
-| `cross-encoder/ms-marco-MiniLM-L6-v2` | `ms-marco-minilm-l6-v2` | Reranker | — | ~90 MB | 22M param baseline cross-encoder reranker |
+| Script | Dataset Name | Size | Included Models | Best Use Case |
+|:---|:---|:---:|:---|:---|
+| **[`package-core-embeddings.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-core-embeddings.py)** | `core-embeddings-offline-assets` | **~2.2 GB** | `MiniLM-L6-v2`, `bge-small-en-v1.5`, `nomic-embed-text-v1.5`, `Qwen3-Embedding-0.6B`, `ms-marco-MiniLM` | ⚡ **Fastest build (<45s)**, covers all core dense benchmarking. |
+| **[`package-qwen3-family.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-qwen3-family.py)** | `qwen3-embedding-reranker-assets` | **~5.2 GB** | `Qwen3-Embedding-0.6B`, `Qwen3-Embedding-0.6B-GGUF` (Q4_K_M), `Qwen3-Embedding-4B-GGUF` (Q4_K_M), `Qwen3-Reranker-0.6B` | 🚀 **Dedicated Qwen3 Suite**: Modern instruction-aware embedders & rerankers. |
+| **[`package-multimodal-vl.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-multimodal-vl.py)** | `multimodal-vl-embedding-assets` | **~6.4 GB** | `Qwen3-VL-Embedding-2B` (text + figures), `bge-m3` (dense + sparse BM25) | 🎨 **Multimodal & Hybrid**: Joint medical text and figure crops indexing. |
+| **[`package-embedding-models.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-embedding-models.py)** | `embedding-indexing-offline-assets` | **~12.4 GB** | All 10 models combined + wheels | 📦 **Unified Full Suite**: Everything in one single Kaggle dataset. |
 
-## Packaged Python Wheels
-- `sentence-transformers`
-- `transformers`
-- `faiss-cpu`
-- `tiktoken`
-- `safetensors`
-- `accelerate`
-- `einops`
-- `rank-bm25` (for hybrid dense + sparse retrieval)
-- `langchain-text-splitters` (for recursive & semantic chunking)
+---
+
+## Packaged Python Wheels (Included in every builder)
+- `sentence-transformers>=3.0.0`
+- `transformers>=4.44.0`
+- `faiss-cpu>=1.8.0`
+- `tiktoken>=0.7.0`
+- `safetensors>=0.4.0`
+- `accelerate>=0.30.0`
+- `einops>=0.7.0`
+- `rank-bm25>=0.2.2` (hybrid search)
+- `langchain-text-splitters>=0.2.0` (semantic & recursive chunking)
+
+---
 
 ## How to Build on Kaggle
 
-1. Create a new Kaggle notebook.
-2. Configure settings:
-   - **Accelerator**: None (CPU)
-   - **Internet**: **ON**
-3. Paste the contents of [`package-embedding-models.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-embedding-models.py) into a notebook cell and run it.
-4. When finished, create a new private Kaggle Dataset from the notebook's output:
-   - Name: `embedding-indexing-offline-assets`
-5. Attach the resulting dataset to your offline indexing and retrieval benchmark notebooks with **Internet: OFF**.
+1. Create a new Kaggle notebook (**CPU / No accelerator**, **Internet: ON**).
+2. Paste the contents of your chosen builder script into a notebook cell and run it:
+   - For quick baseline & Stage 4 tests: use [`package-core-embeddings.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-core-embeddings.py).
+   - For Qwen3 embeddings & rerankers: use [`package-qwen3-family.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-qwen3-family.py).
+   - For multimodal figures: use [`package-multimodal-vl.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/development/offline_asset_builders/embedding-indexing/package-multimodal-vl.py).
+3. When finished, create a private Kaggle Dataset from the output folder using the matching dataset name.
+4. Attach the dataset to your offline indexing/benchmarking notebook with **Internet: OFF**.
