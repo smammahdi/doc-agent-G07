@@ -4,13 +4,15 @@ This directory contains the Kaggle asset builder script to package multiple sent
 
 ## Packaged Models
 
-| Model ID | Short Name | Dims | Size | Description |
-|:---|:---|:---:|:---:|:---|
-| `sentence-transformers/all-MiniLM-L6-v2` | `all-minilm-l6-v2` | 384 | ~90 MB | Lightweight 22M param fast dense baseline (starter default) |
-| `BAAI/bge-small-en-v1.5` | `bge-small-en-v1-5` | 384 | ~133 MB | SOTA compact 33M param MTEB retrieval champion |
-| `BAAI/bge-base-en-v1.5` | `bge-base-en-v1-5` | 768 | ~438 MB | Standard 110M param dense retriever |
-| `sentence-transformers/all-mpnet-base-v2` | `all-mpnet-base-v2` | 768 | ~438 MB | High-accuracy RoBERTa/MPNet 110M embedder |
-| `Alibaba-NLP/gte-Qwen2-1.5B-instruct` | `gte-qwen2-1-5b-instruct` | 1536 | ~3.1 GB | SOTA 1.5B param Qwen2 instruction-aware embedding model |
+| Model ID | Short Name | Type | Dims | Size | Description |
+|:---|:---|:---:|:---:|:---:|:---|
+| `sentence-transformers/all-MiniLM-L6-v2` | `all-minilm-l6-v2` | Text Embed | 384 | ~90 MB | Lightweight 22M param fast dense baseline (starter default) |
+| `BAAI/bge-small-en-v1.5` | `bge-small-en-v1-5` | Text Embed | 384 | ~133 MB | SOTA compact 33M param MTEB retrieval champion |
+| `Qwen/Qwen3-Embedding-0.6B` | `qwen3-embedding-0-6b` | Text Embed | 1024 | ~1.2 GB | SOTA 0.6B compact Qwen3 instruction-aware text embedder |
+| `Qwen/Qwen3-Embedding-4B` | `qwen3-embedding-4b` | Text Embed | 2560 | ~8.2 GB | High-capacity 4.0B param Qwen3 dense text embedder |
+| `Qwen/Qwen3-Reranker-0.6B` | `qwen3-reranker-0-6b` | Reranker | — | ~1.2 GB | Fast 0.6B param Qwen3 instruction-tuned cross-encoder reranker |
+| `Qwen/Qwen3-VL-Embedding-2B` | `qwen3-vl-embedding-2b` | Multimodal Embed | 1536 | ~4.2 GB | 2.0B Qwen3 Vision-Language multimodal embedder for text + figures |
+| `cross-encoder/ms-marco-MiniLM-L6-v2` | `ms-marco-minilm-l6-v2` | Reranker | — | ~90 MB | 22M param baseline cross-encoder reranker |
 
 ## Packaged Python Wheels
 - `sentence-transformers`

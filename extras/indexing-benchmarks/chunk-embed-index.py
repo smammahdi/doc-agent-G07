@@ -502,7 +502,11 @@ def run_benchmark() -> None:
     if asset_root:
         models_dir = asset_root / "models"
         if models_dir.is_dir():
-            candidate_models = [str(p) for p in models_dir.iterdir() if p.is_dir()]
+            candidate_models = [
+                str(p)
+                for p in models_dir.iterdir()
+                if p.is_dir() and "reranker" not in p.name.lower()
+            ]
 
     embed_summary = []
     embeddings_store = {}
