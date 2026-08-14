@@ -24,7 +24,10 @@ def _settings(cfg: dict[str, Any]) -> tuple[Path, int]:
     m = index_cfg.get("hnsw_m", 32)
     if isinstance(m, bool) or not isinstance(m, int) or m <= 0:
         raise ValueError("index.hnsw_m must be a positive integer")
-    return Path(path_value), m
+    target_path = Path(path_value)
+    if not target_path.is_absolute() and not target_path.exists() and (Path.cwd().parent / target_path).exists():
+        target_path = Path.cwd().parent / target_path
+    return target_path, m
 
 
 def _atomic_json(path: Path, rows: list[dict[str, Any]]) -> None:
