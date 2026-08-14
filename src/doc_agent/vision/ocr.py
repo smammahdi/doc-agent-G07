@@ -247,8 +247,12 @@ class Reader:
         device_name = _trocr_device(self.cfg["trocr_device"])
         self._trocr_torch = torch
         self._trocr_device_name = device_name
-        self._trocr_processor = TrOCRProcessor.from_pretrained(self.cfg["trocr_model"])
-        self._trocr_model = VisionEncoderDecoderModel.from_pretrained(self.cfg["trocr_model"])
+        self._trocr_processor = TrOCRProcessor.from_pretrained(
+            self.cfg["trocr_model"]
+        )  # nosec B615
+        self._trocr_model = VisionEncoderDecoderModel.from_pretrained(
+            self.cfg["trocr_model"]
+        )  # nosec B615
         self._trocr_model.to(device_name).eval()
 
     def _transcribe_tesseract(self, region: Region) -> str:

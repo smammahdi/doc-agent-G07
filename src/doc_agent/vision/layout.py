@@ -581,7 +581,8 @@ def detect(pages: list[Page], cfg: dict[str, Any]) -> list[Region]:
             elif options["mode"] == "projection":
                 page_regions = _projection(page, options)
             elif options["mode"] == "orphan_ink":
-                assert pdf_document is not None
+                if pdf_document is None:
+                    raise RuntimeError("orphan_ink mode requires an open pdf_document")
                 try:
                     page_number = int(page.id.removeprefix("p")) - 1
                 except ValueError as error:
@@ -595,7 +596,8 @@ def detect(pages: list[Page], cfg: dict[str, Any]) -> list[Region]:
                     )
                 page_regions = _orphan_regions(page, pdf_document.load_page(page_number), options)
             elif options["mode"] == "doclayout_yolo":
-                assert doclayout_bundle is not None
+                if doclayout_bundle is None:
+                    raise RuntimeError("doclayout_yolo mode requires loaded doclayout_bundle")
                 page_regions = _doclayout_regions(page, options, *doclayout_bundle)
             elif page.id in chandra_rows:
                 page_regions = _chandra_regions(page, chandra_rows[page.id])
