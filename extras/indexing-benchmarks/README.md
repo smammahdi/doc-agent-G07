@@ -18,8 +18,7 @@ This directory contains the experimental framework to evaluate and justify all d
 - `Qwen/Qwen3-Embedding-0.6B` (1024-d compact Qwen3 text embedder)
 - `Qwen/Qwen3-Embedding-4B` (2560-d high-capacity Qwen3 text embedder)
 - `Qwen/Qwen3-VL-Embedding-2B` (1536-d multimodal embedder for text + figures)
-- `shihab17/bangla-sentence-transformer` (768-d dedicated Bengali embedder)
-- `BAAI/bge-m3` (1024-d universal multilingual dense + sparse model)
+- `BAAI/bge-m3` (1024-d universal dense + sparse model)
 
 ### 3. Vector Index Architectures (FAISS)
 - **`IndexFlatIP`**: Exact Inner Product / Cosine Similarity baseline (100% recall, zero approximation error, ultra-fast for corpora $\le 10,000$ chunks).
