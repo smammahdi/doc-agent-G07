@@ -10,7 +10,9 @@ This directory contains the Kaggle asset builder script to package multiple sent
 | `BAAI/bge-small-en-v1.5` | `bge-small-en-v1-5` | Text Embed | 384 | ~133 MB | SOTA compact 33M param MTEB retrieval champion |
 | `nomic-ai/nomic-embed-text-v1.5` | `nomic-embed-text-v1-5` | Text Embed | 768 | ~540 MB | 137M param 8k long-context model with Matryoshka (MRL) |
 | `Qwen/Qwen3-Embedding-0.6B` | `qwen3-embedding-0-6b` | Text Embed | 1024 | ~1.2 GB | SOTA 0.6B compact Qwen3 instruction-aware text embedder |
+| `Qwen/Qwen3-Embedding-0.6B-GGUF` | `qwen3-embedding-0-6b-gguf` | Quantized GGUF | 1024 | ~450 MB | 0.6B Qwen3 GGUF (Q4_K_M/Q8_0) for llama.cpp/Ollama |
 | `Qwen/Qwen3-Embedding-4B` | `qwen3-embedding-4b` | Text Embed | 2560 | ~8.2 GB | High-capacity 4.0B param Qwen3 dense text embedder |
+| `Qwen/Qwen3-Embedding-4B-GGUF` | `qwen3-embedding-4b-gguf` | Quantized GGUF | 2560 | ~2.5 GB | 4.0B Qwen3 GGUF (Q4_K_M/Q8_0) for memory-constrained setups |
 | `Qwen/Qwen3-Reranker-0.6B` | `qwen3-reranker-0-6b` | Reranker | — | ~1.2 GB | Fast 0.6B param Qwen3 instruction-tuned cross-encoder reranker |
 | `Qwen/Qwen3-VL-Embedding-2B` | `qwen3-vl-embedding-2b` | Multimodal Embed | 1536 | ~4.2 GB | 2.0B Qwen3 Vision-Language multimodal embedder for text + figures |
 | `BAAI/bge-m3` | `bge-m3` | Text Embed | 1024 | ~2.2 GB | Universal SOTA model (dense + sparse + multi-vector) |

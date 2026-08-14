@@ -76,12 +76,28 @@ MODEL_SPECS = [
         "description": "Compact SOTA 0.6B param Qwen3 instruction-aware text embedding model",
     },
     {
+        "id": "Qwen/Qwen3-Embedding-0.6B-GGUF",
+        "name": "qwen3-embedding-0-6b-gguf",
+        "dim": 1024,
+        "type": "quantized-gguf",
+        "license": "apache-2.0",
+        "description": "Quantized GGUF 0.6B Qwen3 embedding model for llama.cpp / lightweight inference",
+    },
+    {
         "id": "Qwen/Qwen3-Embedding-4B",
         "name": "qwen3-embedding-4b",
         "dim": 2560,
         "type": "text-embedding",
         "license": "apache-2.0",
         "description": "High-capacity 4.0B param Qwen3 dense text embedding model",
+    },
+    {
+        "id": "Qwen/Qwen3-Embedding-4B-GGUF",
+        "name": "qwen3-embedding-4b-gguf",
+        "dim": 2560,
+        "type": "quantized-gguf",
+        "license": "apache-2.0",
+        "description": "Quantized GGUF 4.0B Qwen3 embedding model for llama.cpp / memory-constrained inference",
     },
     {
         "id": "Qwen/Qwen3-Reranker-0.6B",
@@ -231,11 +247,17 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
     if not revision:
         raise RuntimeError(f"Hugging Face returned no immutable revision for {model_id}")
 
+    is_gguf = spec.get("type") == "quantized-gguf" or "gguf" in model_id.lower()
+    ignore_patterns = ["pytorch_model.bin", "*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot"]
+    if is_gguf:
+        # Avoid downloading unnecessary massive FP16/BF16/quant files; keep Q4_K_M, Q8_0, Q5_K_M, and configs
+        ignore_patterns = ["*f16*", "*F16*", "*bf16*", "*BF16*", "*q2_*", "*q3_*"]
+
     resolved = snapshot_download(
         repo_id=model_id,
         revision=revision,
         local_dir=model_dir,
-        ignore_patterns=["pytorch_model.bin", "*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot"],
+        ignore_patterns=ignore_patterns,
         max_workers=8,
     )
     if Path(resolved).resolve() != model_dir.resolve():
@@ -246,10 +268,14 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
 
     # Validate essential files
     files = {path.name for path in model_dir.rglob("*") if path.is_file()}
-    if "config.json" not in files:
-        raise FileNotFoundError(f"{model_id} missing config.json")
-    if not any(f.endswith(".safetensors") for f in files):
-        raise FileNotFoundError(f"{model_id} missing .safetensors weights")
+    if not is_gguf:
+        if "config.json" not in files:
+            raise FileNotFoundError(f"{model_id} missing config.json")
+        if not any(f.endswith(".safetensors") for f in files):
+            raise FileNotFoundError(f"{model_id} missing .safetensors weights")
+    else:
+        if not any(f.endswith(".gguf") for f in files):
+            raise FileNotFoundError(f"{model_id} missing .gguf weights")
 
     return {
         "model_id": model_id,
