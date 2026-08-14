@@ -285,7 +285,10 @@ def benchmark_embedding_model(
 
     print(f"Loading embedding model: {model_name_or_path} on {device}...", flush=True)
     start_load = time.perf_counter()
-    model = SentenceTransformer(model_name_or_path, device=device)
+    try:
+        model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
+    except Exception:
+        model = SentenceTransformer(model_name_or_path, device=device)
     load_time = time.perf_counter() - start_load
 
     texts = [c.text for c in chunks]
@@ -522,7 +525,10 @@ def run_benchmark() -> None:
     base_embeddings = embeddings_store[first_model]
     from sentence_transformers import SentenceTransformer
 
-    st_model = SentenceTransformer(first_model, device="cpu")
+    try:
+        st_model = SentenceTransformer(first_model, device="cpu", trust_remote_code=True)
+    except Exception:
+        st_model = SentenceTransformer(first_model, device="cpu")
     query_texts = [q["query"] for q in BENCHMARK_QUERIES]
     query_vectors = st_model.encode(query_texts, normalize_embeddings=True).astype(np.float32)
 

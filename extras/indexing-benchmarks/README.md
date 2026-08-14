@@ -32,6 +32,6 @@ This directory contains the experimental framework to evaluate and justify all d
 1. Attach the `embedding-indexing-offline-assets` dataset to your Kaggle notebook.
 2. Attach the Pierce OCR layout output bundle.
 3. Turn **Internet: OFF**.
-4. Run [`benchmark.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/indexing-benchmarks/benchmark.py).
+4. Run [`chunk-embed-index.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/indexing-benchmarks/chunk-embed-index.py).
 5. Download the resulting `indexing-benchmark-outputs.zip` containing `indexing_comparison_results.json`.
 6. Use the metrics to populate the **Stage 4** row of [`configs/design_choices.md`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/configs/design_choices.md).
