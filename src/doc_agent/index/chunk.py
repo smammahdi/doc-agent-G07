@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -121,6 +122,51 @@ def build_image_index(pages_md_path: Path) -> dict[str, list[dict[str, str]]]:
     """
     _, img_idx = load_from_pages_markdown(pages_md_path, doc_id="")
     return img_idx
+
+
+# ---------------------------------------------------------------------------
+# MinerU pages.jsonl ingestion
+# ---------------------------------------------------------------------------
+
+
+def load_from_mineru_jsonl(
+    pages_jsonl_path: Path,
+    doc_id: str,
+    image_index: dict[str, list[dict[str, str]]] | None = None,
+) -> tuple[list[Chunk], dict[str, list[dict[str, str]]]]:
+    """Parse MinerU full-page ``pages.jsonl`` into one ``Chunk`` per book page.
+
+    Returns
+    -------
+    page_chunks : list[Chunk]
+        One Chunk per non-empty page.
+    image_index : dict[str, list[dict]]
+        ``{page_id: [{caption, webp}, ...]}`` for all illustrated pages.
+    """
+    img_idx = dict(image_index) if image_index is not None else {}
+    page_chunks: list[Chunk] = []
+
+    with pages_jsonl_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            page_id = row.get("page_id", "")
+            raw_text = row.get("text", "")
+            clean = _clean_markdown(raw_text)
+            if not clean or not page_id:
+                continue
+
+            page_chunks.append(
+                Chunk(
+                    id=f"{doc_id}-{page_id}" if doc_id else page_id,
+                    doc_id=doc_id,
+                    text=clean,
+                    page_ids=[page_id],
+                )
+            )
+
+    return page_chunks, img_idx
 
 
 # ---------------------------------------------------------------------------

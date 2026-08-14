@@ -27,7 +27,12 @@ sys.path.insert(0, str(REPO / "src"))
 
 import yaml
 
-from doc_agent.index.chunk import load_from_pages_markdown, split
+from doc_agent.index.chunk import (
+    build_image_index,
+    load_from_mineru_jsonl,
+    load_from_pages_markdown,
+    split,
+)
 from doc_agent.index.store import build
 
 # ---------------------------------------------------------------------------
@@ -35,6 +40,7 @@ from doc_agent.index.store import build
 # ---------------------------------------------------------------------------
 
 CFG_PATH = REPO / "configs" / "config.yaml"
+MINERU_PAGES = REPO / "extras" / "output" / "mineru-ocr-full-book" / "full-page" / "pages.jsonl"
 PAGES_MD = REPO / "chandra" / "pages.md"
 CHANDRA_DIR = REPO / "chandra"
 
@@ -47,20 +53,31 @@ def main() -> None:
     doc_id = cfg.get("ingest", {}).get("doc_id", "pierce-1890")
     index_path = Path(cfg["index"]["path"])
 
+    # Prefer MinerU (98.52% F1) if available, with Chandra as fallback
+    use_mineru = MINERU_PAGES.is_file()
+    source_desc = f"MinerU ({MINERU_PAGES})" if use_mineru else f"Chandra ({PAGES_MD})"
+
     print("=" * 70)
     print("  Doc-Agent G07 — Stage 4 Index Build")
-    print(f"  Source : {PAGES_MD}")
+    print(f"  Source : {source_desc}")
     print(f"  doc_id : {doc_id}")
     print(f"  Index  : {index_path}")
     print("=" * 70)
 
-    # ── Step 1: Parse chandra/pages.md into one Chunk per page ───────────────
-    print("\n[1/4] Parsing chandra/pages.md ...", flush=True)
-    page_chunks, image_index = load_from_pages_markdown(PAGES_MD, doc_id)
-    print(f"      → {len(page_chunks)} non-empty pages loaded", flush=True)
+    # ── Step 1: Load and link pages + image index ────────────────────────────
+    print("\n[1/4] Loading pages and building multimodal image index ...", flush=True)
+    image_index = build_image_index(PAGES_MD) if PAGES_MD.is_file() else {}
+
+    if use_mineru:
+        page_chunks, _ = load_from_mineru_jsonl(MINERU_PAGES, doc_id, image_index=image_index)
+        print(f"      → Loaded {len(page_chunks)} pages from MinerU SOTA OCR", flush=True)
+    else:
+        page_chunks, image_index = load_from_pages_markdown(PAGES_MD, doc_id)
+        print(f"      → Loaded {len(page_chunks)} pages from Chandra OCR", flush=True)
+
     print(
-        f"      → {sum(len(v) for v in image_index.values())} image references "
-        f"across {len(image_index)} pages",
+        f"      → {sum(len(v) for v in image_index.values())} figure references "
+        f"linked across {len(image_index)} illustrated pages",
         flush=True,
     )
 

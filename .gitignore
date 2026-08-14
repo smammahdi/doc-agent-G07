@@ -60,3 +60,6 @@ chandra
 !extras/output/chandra/**
 !extras/output/trocr/chandra/
 !extras/output/trocr/chandra/**
+
+
+extras/transcripts
