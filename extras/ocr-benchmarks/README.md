@@ -8,6 +8,7 @@ for the evaluation workflow:
 - `mineru-ocr.py` — MinerU2.5-Pro (`opendatalab/MinerU2.5-Pro-2604-1.2B`) on full pages and PP-DocLayoutV3 regions;
 - `paddle-ocr.py` — PaddleOCR 3.7.0 (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) on the committed held-out pages;
 - `trocr.py` — TrOCR (`microsoft/trocr-large-printed`) line recognition on full pages and PP-DocLayoutV3 regions.
+- `compare-results.py` — reusable scorer for saved page JSONL, including Chandra block output.
 
 All runners are standalone Python scripts formatted as Jupytext percent notebooks. Their generated text, metrics, archives, caches, and model checkpoints belong in Kaggle working storage, not in Git.
 
@@ -57,4 +58,20 @@ To convert all benchmark runners at once:
 
 ```bash
 jupytext --to notebook extras/ocr-benchmarks/*.py
+```
+
+## Reusing the comparison scorer
+
+Pass one or more saved JSONL sources as `NAME=PATH`.  The scorer applies the
+same normalization and reports both macro and micro CER/WER plus multiset
+Word-F1 for every source:
+
+```bash
+python extras/ocr-benchmarks/compare-results.py \
+  --labels grading_kit/labels.jsonl \
+  --engine "Chandra=extras/output/chandra/chunks.jsonl" \
+  --engine "MinerU=extras/output/mineru-ocr-full-book/full-page/pages.jsonl" \
+  --engine "Tesseract=extras/tesseract_layout_bench/result/tesseract_ppdoclayout_v3_results.jsonl" \
+  --json /tmp/ocr-comparison.json \
+  --markdown /tmp/ocr-comparison.md
 ```
