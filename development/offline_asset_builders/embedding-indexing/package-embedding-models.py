@@ -239,6 +239,7 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
     if not revision:
         raise RuntimeError(f"Hugging Face returned no immutable revision for {model_id}")
 
+    is_gguf = spec.get("type") == "quantized-gguf" or "gguf" in model_id.lower()
     allow_patterns = None
     ignore_patterns = ["*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot", "*.flax*"]
     if is_gguf:
