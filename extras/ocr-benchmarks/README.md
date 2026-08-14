@@ -1,29 +1,60 @@
 # OCR benchmarks
 
-This folder contains the three editable Kaggle OCR runners maintained for the
-current experiment:
+This directory contains the editable Kaggle OCR benchmark runners maintained
+for the evaluation workflow:
 
-- `deepseek-ocr.py` — DeepSeek-OCR-2 on the committed evaluation pages;
-- `paddle-ocr.py` — PaddleOCR PP-OCRv6 on the committed evaluation pages;
-- `trocr.py` — TrOCR over existing DocLayout-YOLO text regions.
-- `glm-ocr.py` — the official `zai-org/GLM-OCR` checkpoint on the same pages.
-- `mineru-ocr.py` — MinerU2.5-Pro on full pages and PP-DocLayoutV3 regions.
+- `deepseek-ocr.py` — DeepSeek-OCR-2 (`deepseek-ai/DeepSeek-OCR-2`) on the committed held-out pages;
+- `glm-ocr.py` — GLM-OCR (`zai-org/GLM-OCR`) on the committed held-out pages;
+- `mineru-ocr.py` — MinerU2.5-Pro (`opendatalab/MinerU2.5-Pro-2604-1.2B`) on full pages and PP-DocLayoutV3 regions;
+- `paddle-ocr.py` — PaddleOCR 3.7.0 (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) on the committed held-out pages;
+- `trocr.py` — TrOCR (`microsoft/trocr-large-printed`) line recognition on full pages and PP-DocLayoutV3 regions.
 
-All runners are Python files. Their generated text, metrics, archives, caches,
-and model weights belong in Kaggle working storage, not in Git. Results should
-only be added back after the page labels and measurements have been reviewed.
+All runners are standalone Python scripts formatted as Jupytext percent notebooks. Their generated text, metrics, archives, caches, and model checkpoints belong in Kaggle working storage, not in Git.
 
-Each runner writes one archive to `/kaggle/working/`:
+## Input Contract
+
+Each runner evaluates the same 24 committed held-out Pierce pages (`p0024` through `p0047`):
+- Page images: `grading_kit/heldout_pages/p0024.jpg`–`p0047.jpg`
+- Ground-truth reference labels: `grading_kit/labels.jsonl`
+- Pre-extracted layout detections: `extras/output/ppdoclayout-v3/detections.jsonl`
+
+## Execution Modes
+
+Every runner evaluates two modes:
+1. `full-page`: feeds the full rendered page image directly to the OCR engine.
+2. `ppdoclayout-v3`: crops the existing non-figure bounding boxes from the committed `PP-DocLayoutV3` detections and feeds each crop to the engine.
+
+No layout detector is re-executed by these runners.
+
+## Output Archive
+
+Each runner writes one downloadable ZIP archive to `/kaggle/working/<engine>-ocr-benchmark.zip` structured as:
 
 ```text
 <engine>-ocr-benchmark.zip
-├── full-page/{pages.jsonl,regions.jsonl,metrics.json}
-├── ppdoclayout-v3/{pages.jsonl,regions.jsonl,metrics.json}
+├── full-page/
+│   ├── pages.jsonl
+│   ├── regions.jsonl
+│   └── metrics.json
+├── ppdoclayout-v3/
+│   ├── pages.jsonl
+│   ├── regions.jsonl
+│   └── metrics.json
 └── comparison.json
 ```
 
-Both modes process the same 24 pages and report CER, WER, and word-F1 from the
-saved `pages.jsonl` text. Primary scores use the same Unicode-normalized,
-case-insensitive, punctuation-insensitive text for every engine; exact raw-text
-scores are retained separately. The PP-DocLayoutV3 boxes are the committed
-layout input; no layout model is rerun by these OCR runners.
+Both modes report character error rate (CER), word error rate (WER), and word-level F1 score against the reference labels. Primary metrics use Unicode NFKC normalization, case-folding, and punctuation stripping for fair cross-model comparison; exact raw-text metrics are also retained.
+
+## Jupytext Conversion
+
+To convert any `.py` runner into an editable `.ipynb` notebook for Kaggle:
+
+```bash
+jupytext --to notebook extras/ocr-benchmarks/<runner>.py
+```
+
+To convert all benchmark runners at once:
+
+```bash
+jupytext --to notebook extras/ocr-benchmarks/*.py
+```

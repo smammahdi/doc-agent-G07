@@ -13,7 +13,7 @@ these files are not imported by the runtime pipeline.
 | `kaggle_ocr_comparison.ipynb` | Partner-owned OCR comparison notebook |
 | `layout_research/` | Mahdi's figure extraction, detector comparison, and Chandra-reference evaluation code |
 | `ocr_research/` | Mahdi's OCR bake-off and offline Document AI reference-generation code |
-| `ocr-benchmarks/` | Mahdi's editable Kaggle runners for DeepSeek OCR, PaddleOCR, and TrOCR |
+| `ocr-benchmarks/` | Mahdi's editable Kaggle runners for DeepSeek-OCR-2, GLM-OCR, MinerU, PaddleOCR, and TrOCR |
 | `chandra_research/` | Mahdi's direct Kaggle Chandra notebook and output-normalization utilities |
 | `output/` | Curated layout and Document AI reference artifacts |
 
