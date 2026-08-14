@@ -2,9 +2,12 @@
 """Compare saved OCR page text with one reusable, explicit scorer.
 
 The script deliberately scores *saved text*, not model-specific temporary
-variables.  It accepts ordinary page JSONL files (``page_id`` + ``text``) and
-the Chandra block JSONL (``book_page`` + ``content``).  Chandra image-like
-blocks are excluded before the remaining block text is joined in source order.
+variables. It accepts ordinary page JSONL files (``page_id`` + ``text``),
+the Chandra block JSONL (``book_page`` + ``content``), and the raw Qwen
+chunk-text export (``--qwen-raw NAME=TXT``). Chandra image-like blocks are
+excluded before the remaining block text is joined in source order. Qwen
+chunks are grouped by page and their repeated overlap is removed before
+scoring.
 
 Example::
 
@@ -14,6 +17,7 @@ Example::
       --engine "MinerU 2605=extras/output/mineru-ocr-full-book/full-page/pages.jsonl" \
       --engine "Tesseract full=extras/tesseract_fullpage_bench/result/tesseract_fullpage_results.jsonl" \
       --engine "TrOCR layout=extras/output_reports/trocr-ocr-benchmark/ppdoclayout-v3/pages.jsonl" \
+      --qwen-raw "Qwen3.5 raw=extras/ocr_results/qwen3.5-ocr.txt" \
       --json /tmp/ocr-comparison.json \
       --markdown /tmp/ocr-comparison.md
 
@@ -46,6 +50,7 @@ NORMALIZATION = (
     "letters/numbers only, collapsed whitespace"
 )
 FIGURE_LABELS = {"image", "figure", "diagram"}
+QWEN_RAW_HEADER = re.compile(r"^\[pcma_(p\d{4})_c(\d+)\]\s+\(([^)]*)\)\s+.*$", re.MULTILINE)
 
 
 def normalize_text(text: str) -> str:
@@ -132,6 +137,76 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def read_qwen_raw_chunks(path: Path) -> list[tuple[str, int, str, str]]:
+    """Read the raw Qwen readable export as page/chunk records.
+
+    The export is a plain-text stream whose headers contain the stable page and
+    chunk IDs.  Content is retained verbatim apart from surrounding whitespace;
+    the caller performs the page grouping and overlap repair.
+    """
+
+    records: list[tuple[str, int, str, str]] = []
+    raw_text = path.read_text(encoding="utf-8")
+    matches = list(QWEN_RAW_HEADER.finditer(raw_text))
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else None
+        content = raw_text[match.end() : end].strip()
+        if content:
+            records.append((match.group(1), int(match.group(2)), match.group(3), content))
+    if not records:
+        raise ValueError(f"no Qwen raw chunk headers found in {path}")
+    return records
+
+
+def merge_qwen_chunks(chunks: Sequence[str]) -> str:
+    """Join ordered Qwen chunks while removing repeated chunk overlap.
+
+    Qwen's readable export is made from overlapping retrieval chunks rather than
+    page records.  A later chunk may begin inside the final part of the previous
+    chunk, so the longest repeated prefix found near the previous tail is replaced
+    instead of appended a second time.  Chunks without a reliable overlap are
+    separated by one newline and preserved.
+    """
+
+    merged = ""
+    for chunk in chunks:
+        current = " ".join(chunk.split())
+        if not current:
+            continue
+        if not merged:
+            merged = current
+            continue
+        overlap: tuple[int, int] | None = None
+        for length in range(min(512, len(current)), 31, -1):
+            prefix = current[:length]
+            position = merged.rfind(prefix, max(0, len(merged) - 1024))
+            if position >= max(0, len(merged) - 512):
+                overlap = position, length
+                break
+        if overlap is None:
+            merged = f"{merged}\n{current}"
+        else:
+            position, _ = overlap
+            merged = merged[:position] + current
+    return merged
+
+
+def load_qwen_raw_texts(path: Path) -> dict[str, str]:
+    """Load page transcripts from Qwen's raw chunk-text export."""
+
+    grouped: defaultdict[str, list[tuple[int, str]]] = defaultdict(list)
+    for page_id, chunk_id, modality, content in read_qwen_raw_chunks(path):
+        if modality.casefold() == "text":
+            grouped[page_id].append((chunk_id, content))
+    page_texts = {
+        page_id: merge_qwen_chunks([content for _, content in sorted(chunks)])
+        for page_id, chunks in grouped.items()
+    }
+    if not page_texts:
+        raise ValueError(f"no text-mode Qwen chunks found in {path}")
+    return page_texts
+
+
 def read_labels(path: Path) -> tuple[list[str], dict[str, str]]:
     """Read ordered page labels and reject duplicate page IDs."""
 
@@ -198,10 +273,11 @@ def score_engine(
     source: Path,
     page_ids: Iterable[str],
     labels: dict[str, str],
+    loader: Any = load_page_texts,
 ) -> dict[str, Any]:
     """Score one source and return reproducible per-page plus summary metrics."""
 
-    page_texts = load_page_texts(source)
+    page_texts = loader(source)
     ordered_page_ids = list(page_ids)
     missing = [page_id for page_id in ordered_page_ids if page_id not in page_texts]
     if missing:
@@ -243,6 +319,12 @@ def parse_engine_spec(spec: str) -> tuple[str, Path]:
     if not path.is_file():
         raise argparse.ArgumentTypeError(f"engine source does not exist: {path}")
     return name.strip(), path
+
+
+def parse_qwen_raw_spec(spec: str) -> tuple[str, Path]:
+    """Parse the CLI form ``NAME=QWEN_RAW_TEXT_PATH``."""
+
+    return parse_engine_spec(spec)
 
 
 def markdown_report(results: list[dict[str, Any]], excluded_pages: Iterable[str] = ()) -> str:
@@ -291,6 +373,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="saved page/block JSONL; repeat for every engine or mode",
     )
     parser.add_argument(
+        "--qwen-raw",
+        action="append",
+        default=[],
+        metavar="NAME=TXT",
+        help="raw Qwen readable chunk export; repeat for Qwen variants",
+    )
+    parser.add_argument(
         "--exclude-page",
         action="append",
         default=[],
@@ -312,11 +401,16 @@ def main() -> None:
     scored_page_ids = [page_id for page_id in page_ids if page_id not in excluded_pages]
     if not scored_page_ids:
         raise ValueError("page exclusion removed every labelled page")
-    specs = [parse_engine_spec(spec) for spec in args.engine]
-    names = [name for name, _ in specs]
+    specs = [(name, path, load_page_texts) for name, path in map(parse_engine_spec, args.engine)]
+    specs.extend(
+        (name, path, load_qwen_raw_texts) for name, path in map(parse_qwen_raw_spec, args.qwen_raw)
+    )
+    names = [name for name, _, _ in specs]
     if len(names) != len(set(names)):
         raise ValueError("engine names must be unique")
-    results = [score_engine(name, path, scored_page_ids, labels) for name, path in specs]
+    results = [
+        score_engine(name, path, scored_page_ids, labels, loader) for name, path, loader in specs
+    ]
     payload = {
         "labels": str(args.labels),
         "pages": scored_page_ids,

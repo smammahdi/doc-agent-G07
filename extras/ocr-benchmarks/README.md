@@ -8,7 +8,7 @@ for the evaluation workflow:
 - `mineru-ocr.py` — MinerU2.5-Pro (`opendatalab/MinerU2.5-Pro-2604-1.2B`) on full pages and PP-DocLayoutV3 regions;
 - `paddle-ocr.py` — PaddleOCR 3.7.0 (`PP-OCRv6_medium_det` + `PP-OCRv6_medium_rec`) on the committed held-out pages;
 - `trocr.py` — TrOCR (`microsoft/trocr-large-printed`) line recognition on full pages and PP-DocLayoutV3 regions.
-- `compare-results.py` — reusable scorer for saved page JSONL, including Chandra block output.
+- `compare-results.py` — reusable scorer for saved page JSONL, Chandra block output, and the raw Qwen readable chunk export.
 
 All runners are standalone Python scripts formatted as Jupytext percent notebooks. Their generated text, metrics, archives, caches, and model checkpoints belong in Kaggle working storage, not in Git.
 
@@ -76,4 +76,20 @@ python extras/ocr-benchmarks/compare-results.py \
   --exclude-page p0043 \
   --json /tmp/ocr-comparison.json \
   --markdown /tmp/ocr-comparison.md
+```
+
+Qwen's committed `extras/ocr_results/qwen3.5-ocr.txt` is a readable chunk
+export rather than page JSONL. Add it with `--qwen-raw`; the scorer groups
+chunks by page and removes repeated chunk overlap before applying the same
+metrics:
+
+```bash
+python extras/ocr-benchmarks/compare-results.py \
+  --labels grading_kit/labels.jsonl \
+  --engine "Chandra=extras/output/chandra/chunks.jsonl" \
+  --qwen-raw "Qwen3.5 raw chunks=extras/ocr_results/qwen3.5-ocr.txt" \
+  --exclude-page p0041 \
+  --exclude-page p0043 \
+  --json /tmp/ocr-comparison-with-qwen.json \
+  --markdown /tmp/ocr-comparison-with-qwen.md
 ```
