@@ -1,60 +1,35 @@
-# Held-out OCR benchmark comparison
+# OCR comparison
 
-This report compares four OCR engines on the same 24 held-out Pierce pages
-(`p0024`–`p0047`). Each engine was evaluated in two modes:
+Normalization: HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace.
+CER/WER are lower-is-better; Word-F1 is higher-is-better.
 
-- **Full page:** one OCR input per page.
-- **PP-DocLayoutV3:** OCR over the same 188 stored non-figure regions, ordered
-  top-to-bottom and then left-to-right.
+| Engine | Pages | Macro CER | Macro WER | Macro Word-F1 | Micro CER | Micro WER |
+|---|---:|---:|---:|---:|---:|---:|
+| Chandra | 24 | 0.1230 | 0.1567 | 0.9827 | 0.1147 | 0.1450 |
+| MinerU 2605 PP-DocLayout | 24 | 0.1248 | 0.1475 | 0.9730 | 0.1183 | 0.1412 |
+| GLM PP-DocLayout | 24 | 0.1259 | 0.1479 | 0.9730 | 0.1193 | 0.1412 |
+| Paddle PP-DocLayout | 24 | 0.1276 | 0.1734 | 0.9510 | 0.1213 | 0.1683 |
+| MinerU 2605 full | 24 | 0.1286 | 0.1606 | 0.9853 | 0.1196 | 0.1471 |
+| Tesseract PP-DocLayout | 24 | 0.1293 | 0.1815 | 0.9403 | 0.1229 | 0.1771 |
+| MinerU 2604 full | 24 | 0.1330 | 0.1667 | 0.9840 | 0.1243 | 0.1530 |
+| GLM full | 24 | 0.1340 | 0.1515 | 0.9283 | 0.1232 | 0.1397 |
+| MinerU 2604 PP-DocLayout | 24 | 0.1343 | 0.1606 | 0.9606 | 0.1257 | 0.1505 |
+| Document AI | 24 | 0.1487 | 0.2060 | 0.9606 | 0.1317 | 0.1851 |
+| Paddle full | 24 | 0.1529 | 0.2085 | 0.9609 | 0.1445 | 0.1992 |
+| Tesseract full | 24 | 0.1731 | 0.2668 | 0.9115 | 0.1591 | 0.2437 |
+| TrOCR PP-DocLayout | 24 | 0.1869 | 0.2840 | 0.8489 | 0.1710 | 0.2592 |
+| DeepSeek full | 24 | 0.2855 | 0.3659 | 0.8353 | 0.2385 | 0.2993 |
+| TrOCR full | 24 | 0.4194 | 0.5510 | 0.6086 | 0.3382 | 0.4582 |
+| DeepSeek PP-DocLayout | 24 | 0.6931 | 0.8924 | 0.7183 | 0.7224 | 0.9103 |
 
-CER, WER, and word F1 are macro averages of the 24 per-page scores. Lower CER
-and WER are better; higher word F1 is better. All four engines were rescored
-from their saved page text with the same normalization: Unicode NFKC,
-case-folding, letters/numbers only, and collapsed whitespace.
+Scores are computed from the saved JSONL text. They are not claims of
+human OCR accuracy unless the reference labels are manually verified.
 
-## Full-page OCR
+## Included and unavailable sources
 
-| Rank by CER | Engine | Pages | Regions | CER | WER | Word F1 |
-|---:|---|---:|---:|---:|---:|---:|
-| 1 | MinerU2.5-Pro-2604-1.2B | 24 | 24 | **0.1330** | 0.1667 | **0.9840** |
-| 2 | GLM-OCR | 24 | 24 | 0.1391 | **0.1581** | 0.9247 |
-| 3 | DeepSeek-OCR-2 | 24 | 24 | 0.2058 | 0.2436 | 0.8928 |
-| 4 | TrOCR large-printed | 24 | 24 | 0.4194 | 0.5510 | 0.6086 |
-
-## PP-DocLayoutV3 region OCR
-
-| Rank by CER | Engine | Pages | Regions | CER | WER | Word F1 |
-|---:|---|---:|---:|---:|---:|---:|
-| 1 | MinerU2.5-Pro-2604-1.2B | 24 | 188 | **0.1343** | **0.1606** | **0.9606** |
-| 2 | GLM-OCR | 24 | 188 | 0.1535 | 0.1834 | 0.9540 |
-| 3 | TrOCR large-printed | 24 | 188 | 0.1869 | 0.2840 | 0.8489 |
-| 4 | DeepSeek-OCR-2 | 24 | 188 | 1.0085 | 1.4950 | 0.6747 |
-
-## Interpretation
-
-- **MinerU is best overall on this held-out set.** It has the lowest CER in
-  both modes and the highest word F1.
-- **GLM-OCR is a close second.** Full-page GLM has the lowest WER, while its
-  CER is only 0.0061 above MinerU.
-- **Layout cropping helps TrOCR substantially.** Its normalized CER falls
-  from 0.4194 to 0.1869.
-- **The DeepSeek region result is a failed pipeline configuration, not a fair
-  model-quality result.** Overlapping PP-DocLayoutV3 boxes and hallucinated
-  crop outputs inflate some pages to several times the reference length.
-- **MinerU does not need the external layout to perform well.** Its full-page
-  and region CER are nearly identical. Its full-page word F1 is higher,
-  suggesting that splitting text into PP-DocLayoutV3 regions can lose useful
-  context or alter reading order.
-
-## Method correspondence
-
-The scoring follows the same core procedure as the supplied Tesseract example:
-calculate CER, WER, and word F1 per page, then average the 24 page scores. The
-benchmark runners additionally save micro CER/WER and both full-page and
-PP-DocLayoutV3 outputs. The `regions` count corresponds to the example's
-`BLOCKS` concept: 1 parent region per page in full-page mode and 188 total
-non-figure regions in PP-DocLayoutV3 mode.
-
-These are held-out benchmark results, not whole-book OCR accuracy claims.
-See `ocr-page-by-page-comparison.md` and its wide-canvas PDF companion for the
-per-page metrics and actual side-by-side text.
+The table includes the saved 24-page outputs for Chandra, Document AI,
+MinerU 2.5 Pro 2604/2605, GLM-OCR, DeepSeek-OCR-2, PaddleOCR, TrOCR, and
+Tesseract.  Florence-2 is not scored because the repository contains its
+runner and notebook but no executed prediction JSONL.  The Document AI row
+is assembled from its saved word boxes in file order; it is included as a
+separate OCR export, not treated as manually verified ground truth.
