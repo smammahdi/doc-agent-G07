@@ -1,0 +1,9 @@
+# Production Knowledge Base Configuration (Locked in Stage 4)
+doc_agent:
+  index:
+    chunk_strategy: "fixed_128_16"
+    embedding_model: "Qwen3-Embedding-0.6B"
+    dimension: 1024
+    index_type: "IndexFlatIP"
+    metric: "INNER_PRODUCT"
+    abstention_threshold: 0.55

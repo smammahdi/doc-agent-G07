@@ -1,0 +1,7 @@
+{
+  "locked_threshold": 0.55,
+  "abstention_precision": 1.0,
+  "abstention_recall": 1.0,
+  "abstention_f1": 1.0,
+  "abstention_accuracy": 1.0
+}

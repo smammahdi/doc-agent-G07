@@ -1,0 +1,25 @@
+{
+  "canonical_model_id": "Qwen3-Embedding-0.6B",
+  "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b",
+  "strategy": "fixed_128_16",
+  "dimension": 1024,
+  "num_chunks": 3830,
+  "single_page_recall@1": 0.8666666666666667,
+  "single_page_recall@5": 1.0,
+  "single_page_mrr@10": 0.9333333333333333,
+  "single_page_span_containment@5": 0.0,
+  "multi_page_coverage@10": 0.7666666666666666,
+  "multi_page_all_found@10": 0.6,
+  "single_query_latency_ms": 1.84,
+  "recall@5_ci_95": [
+    1.0,
+    1.0
+  ],
+  "abstention_evaluation": {
+    "locked_threshold": 0.55,
+    "abstention_precision": 1.0,
+    "abstention_recall": 1.0,
+    "abstention_f1": 1.0,
+    "abstention_accuracy": 1.0
+  }
+}

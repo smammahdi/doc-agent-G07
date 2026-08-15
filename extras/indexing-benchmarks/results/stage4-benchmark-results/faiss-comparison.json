@@ -1,0 +1,17 @@
+{
+  "IndexFlatIP": {
+    "build_time_sec": 0.0009,
+    "query_latency_ms": 0.0155,
+    "top10_agreement_with_exact": 1.0
+  },
+  "IndexHNSWFlat": {
+    "build_time_sec": 0.0228,
+    "query_latency_ms": 0.0069,
+    "top10_agreement_with_exact": 0.995
+  },
+  "IndexIVFFlat": {
+    "build_time_sec": 0.1508,
+    "query_latency_ms": 0.2989,
+    "top10_agreement_with_exact": 0.835
+  }
+}

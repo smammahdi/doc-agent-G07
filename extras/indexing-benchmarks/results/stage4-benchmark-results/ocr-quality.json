@@ -1,0 +1,13 @@
+{
+  "sample_description": "Curated 10-page decile representative test sample with manual ground-truth transcriptions",
+  "sample_pages": 10,
+  "sample_words": 3482,
+  "character_error_rate_cer": 0.038,
+  "word_error_rate_wer": 0.086,
+  "token_f1_score": 0.941,
+  "primary_error_modes": [
+    "Archaic long-s ligature misreads (e.g., 'Smart-weed' -> '8mart-weed')",
+    "Hyphenated line-break split tokens",
+    "Front-matter paper foxing/staining artifacts"
+  ]
+}

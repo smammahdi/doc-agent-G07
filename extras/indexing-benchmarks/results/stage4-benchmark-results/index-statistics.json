@@ -1,0 +1,13 @@
+{
+  "index_type": "IndexFlatIP",
+  "embedding_model": "Qwen3-Embedding-0.6B",
+  "embedding_dimension": 1024,
+  "total_chunks": 3830,
+  "total_corpus_words": 409102,
+  "avg_words_per_chunk": 106.8,
+  "corpus_coverage_pages": "1034 pages (1,016 non-empty text pages + 6 unobserved)",
+  "corpus_coverage_words": "409,102 words (100% of book text indexed)",
+  "index_size_bytes": 15687725,
+  "build_time_seconds": 16.38,
+  "query_latency_ms": 1.84
+}

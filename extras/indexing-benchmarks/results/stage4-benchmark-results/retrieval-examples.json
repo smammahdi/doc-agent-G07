@@ -1,0 +1,33 @@
+{
+  "successful_example": {
+    "query_id": "q_test_02",
+    "question": "What are the two primary physiological offices of perspiration in the human body?",
+    "top_chunk_id": "pierce-1890_p0078_c0197",
+    "top_chunk_page": "p0078",
+    "gold_pages": [
+      "p0078"
+    ],
+    "is_correct_page": true,
+    "retrieved_snippet": "70 COMMON SENSE MEDICAL ADVISER. of it passes off as insensible transpiration, yet it often accumulates in drops of sweat, during long-continued exercise Fig. 48. A perspiratory gland, highly magnifie...",
+    "analysis": "Exact semantic alignment between modern anatomical symptom question and 19th-century medical reference text; correct page retrieved at Rank 1."
+  },
+  "worst_failure_example": {
+    "query_id": "q_multi_test_02",
+    "question": "What are the therapeutic purposes and physiological effects of hydrotherapy and medicinal baths according to Dr. Pierce?",
+    "top_chunk_id": "pierce-1890_p0373_c1173",
+    "top_chunk_page": "p0373",
+    "gold_pages": [
+      "p0365",
+      "p0366",
+      "p0364"
+    ],
+    "is_correct_page": false,
+    "retrieved_snippet": "classes unless they live near the sea-shore. The Shower Bath produces a shock to the nervous system by suddenly coming in contact with the skin. Numerous streams of cold water fall upon the neck, shou...",
+    "analysis": "Lexical & orthographical mismatch caused by archaic botanical nomenclature and token-local ligature OCR misreads (e.g. '8mart-weed' for 'Smart-weed'), displacing the gold passage beyond top-5 candidates."
+  },
+  "figure_linked_example": {
+    "page_id": "p0024",
+    "figure_reference": "Plate I - Woodcut anatomical illustration",
+    "note": "Visual illustration metadata explicitly indexed with adjacent descriptive text block on page p0024."
+  }
+}

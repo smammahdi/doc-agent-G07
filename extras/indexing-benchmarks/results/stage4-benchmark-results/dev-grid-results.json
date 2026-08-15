@@ -1,0 +1,452 @@
+[
+  {
+    "canonical_model_id": "Qwen3-Embedding-0.6B",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b",
+    "strategy": "fixed_128_16",
+    "dimension": 1024,
+    "num_chunks": 3830,
+    "single_page_recall@1": 0.8333333333333334,
+    "single_page_recall@5": 0.9833333333333333,
+    "single_page_mrr@10": 0.9013888888888889,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.975,
+    "multi_page_all_found@10": 0.95,
+    "single_query_latency_ms": 1.48,
+    "recall@5_ci_95": [
+      0.95,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "Qwen3-Embedding-0.6B",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b",
+    "strategy": "parent_child_128_512",
+    "dimension": 1024,
+    "num_chunks": 3958,
+    "single_page_recall@1": 0.8333333333333334,
+    "single_page_recall@5": 0.9833333333333333,
+    "single_page_mrr@10": 0.9013888888888889,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.975,
+    "multi_page_all_found@10": 0.95,
+    "single_query_latency_ms": 1.48,
+    "recall@5_ci_95": [
+      0.95,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "bge-small-en-v1.5",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5",
+    "strategy": "fixed_128_16",
+    "dimension": 384,
+    "num_chunks": 3830,
+    "single_page_recall@1": 0.7,
+    "single_page_recall@5": 0.9833333333333333,
+    "single_page_mrr@10": 0.8130555555555555,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.8833333333333332,
+    "multi_page_all_found@10": 0.75,
+    "single_query_latency_ms": 0.21,
+    "recall@5_ci_95": [
+      0.95,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "bge-small-en-v1.5",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5",
+    "strategy": "parent_child_128_512",
+    "dimension": 384,
+    "num_chunks": 3958,
+    "single_page_recall@1": 0.7,
+    "single_page_recall@5": 0.9833333333333333,
+    "single_page_mrr@10": 0.8130555555555555,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.8583333333333332,
+    "multi_page_all_found@10": 0.7,
+    "single_query_latency_ms": 0.21,
+    "recall@5_ci_95": [
+      0.95,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "Qwen3-Embedding-0.6B",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b",
+    "strategy": "paragraph_header_aware",
+    "dimension": 1024,
+    "num_chunks": 1844,
+    "single_page_recall@1": 0.8166666666666667,
+    "single_page_recall@5": 0.9666666666666667,
+    "single_page_mrr@10": 0.8825000000000001,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.95,
+    "multi_page_all_found@10": 0.9,
+    "single_query_latency_ms": 1.46,
+    "recall@5_ci_95": [
+      0.9166666666666666,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "Qwen3-Embedding-0.6B",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b",
+    "strategy": "fixed_256_32",
+    "dimension": 1024,
+    "num_chunks": 2071,
+    "single_page_recall@1": 0.8,
+    "single_page_recall@5": 0.9666666666666667,
+    "single_page_mrr@10": 0.8727777777777778,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.975,
+    "multi_page_all_found@10": 0.95,
+    "single_query_latency_ms": 1.47,
+    "recall@5_ci_95": [
+      0.9166666666666666,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "Qwen3-Embedding-0.6B",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b",
+    "strategy": "fixed_512_64",
+    "dimension": 1024,
+    "num_chunks": 1144,
+    "single_page_recall@1": 0.7833333333333333,
+    "single_page_recall@5": 0.9666666666666667,
+    "single_page_mrr@10": 0.8527777777777777,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 1.0,
+    "multi_page_all_found@10": 1.0,
+    "single_query_latency_ms": 1.45,
+    "recall@5_ci_95": [
+      0.9166666666666666,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "all-MiniLM-L6-v2",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2",
+    "strategy": "parent_child_128_512",
+    "dimension": 384,
+    "num_chunks": 3958,
+    "single_page_recall@1": 0.8,
+    "single_page_recall@5": 0.95,
+    "single_page_mrr@10": 0.8690476190476191,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.925,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.13,
+    "recall@5_ci_95": [
+      0.8833333333333333,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "all-MiniLM-L6-v2",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2",
+    "strategy": "fixed_128_16",
+    "dimension": 384,
+    "num_chunks": 3830,
+    "single_page_recall@1": 0.8,
+    "single_page_recall@5": 0.95,
+    "single_page_mrr@10": 0.8690476190476191,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.925,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.33,
+    "recall@5_ci_95": [
+      0.8833333333333333,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "bge-m3",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3",
+    "strategy": "fixed_512_64",
+    "dimension": 1024,
+    "num_chunks": 1144,
+    "single_page_recall@1": 0.75,
+    "single_page_recall@5": 0.95,
+    "single_page_mrr@10": 0.8421031746031746,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.975,
+    "multi_page_all_found@10": 0.95,
+    "single_query_latency_ms": 0.73,
+    "recall@5_ci_95": [
+      0.8833333333333333,
+      1.0
+    ]
+  },
+  {
+    "canonical_model_id": "bge-small-en-v1.5",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5",
+    "strategy": "paragraph_header_aware",
+    "dimension": 384,
+    "num_chunks": 1844,
+    "single_page_recall@1": 0.7666666666666667,
+    "single_page_recall@5": 0.9333333333333333,
+    "single_page_mrr@10": 0.8433796296296295,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.9333333333333332,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.2,
+    "recall@5_ci_95": [
+      0.8666666666666667,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "bge-m3",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3",
+    "strategy": "fixed_128_16",
+    "dimension": 1024,
+    "num_chunks": 3830,
+    "single_page_recall@1": 0.75,
+    "single_page_recall@5": 0.9333333333333333,
+    "single_page_mrr@10": 0.83125,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.9583333333333333,
+    "multi_page_all_found@10": 0.9,
+    "single_query_latency_ms": 0.75,
+    "recall@5_ci_95": [
+      0.8666666666666667,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "bge-m3",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3",
+    "strategy": "parent_child_128_512",
+    "dimension": 1024,
+    "num_chunks": 3958,
+    "single_page_recall@1": 0.75,
+    "single_page_recall@5": 0.9333333333333333,
+    "single_page_mrr@10": 0.83125,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.9583333333333333,
+    "multi_page_all_found@10": 0.9,
+    "single_query_latency_ms": 0.75,
+    "recall@5_ci_95": [
+      0.8666666666666667,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "bge-small-en-v1.5",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5",
+    "strategy": "fixed_256_32",
+    "dimension": 384,
+    "num_chunks": 2071,
+    "single_page_recall@1": 0.7333333333333333,
+    "single_page_recall@5": 0.9333333333333333,
+    "single_page_mrr@10": 0.8297883597883599,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.925,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.21,
+    "recall@5_ci_95": [
+      0.8666666666666667,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "bge-m3",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3",
+    "strategy": "paragraph_header_aware",
+    "dimension": 1024,
+    "num_chunks": 1844,
+    "single_page_recall@1": 0.7166666666666667,
+    "single_page_recall@5": 0.9333333333333333,
+    "single_page_mrr@10": 0.8257407407407408,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 1.0,
+    "multi_page_all_found@10": 1.0,
+    "single_query_latency_ms": 0.74,
+    "recall@5_ci_95": [
+      0.8666666666666667,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "all-MiniLM-L6-v2",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2",
+    "strategy": "fixed_256_32",
+    "dimension": 384,
+    "num_chunks": 2071,
+    "single_page_recall@1": 0.7333333333333333,
+    "single_page_recall@5": 0.9333333333333333,
+    "single_page_mrr@10": 0.8180555555555554,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.925,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.13,
+    "recall@5_ci_95": [
+      0.8666666666666667,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "bge-m3",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3",
+    "strategy": "fixed_256_32",
+    "dimension": 1024,
+    "num_chunks": 2071,
+    "single_page_recall@1": 0.6833333333333333,
+    "single_page_recall@5": 0.9166666666666666,
+    "single_page_mrr@10": 0.7929365079365079,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.975,
+    "multi_page_all_found@10": 0.95,
+    "single_query_latency_ms": 0.74,
+    "recall@5_ci_95": [
+      0.85,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "all-MiniLM-L6-v2",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2",
+    "strategy": "paragraph_header_aware",
+    "dimension": 384,
+    "num_chunks": 1844,
+    "single_page_recall@1": 0.6166666666666667,
+    "single_page_recall@5": 0.9166666666666666,
+    "single_page_mrr@10": 0.7495833333333334,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.975,
+    "multi_page_all_found@10": 0.95,
+    "single_query_latency_ms": 0.13,
+    "recall@5_ci_95": [
+      0.8495833333333337,
+      0.9833333333333333
+    ]
+  },
+  {
+    "canonical_model_id": "bge-small-en-v1.5",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5",
+    "strategy": "fixed_512_64",
+    "dimension": 384,
+    "num_chunks": 1144,
+    "single_page_recall@1": 0.7333333333333333,
+    "single_page_recall@5": 0.8833333333333333,
+    "single_page_mrr@10": 0.7938888888888889,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.925,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.2,
+    "recall@5_ci_95": [
+      0.7995833333333338,
+      0.95
+    ]
+  },
+  {
+    "canonical_model_id": "all-MiniLM-L6-v2",
+    "resolved_model_path": "/kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2",
+    "strategy": "fixed_512_64",
+    "dimension": 384,
+    "num_chunks": 1144,
+    "single_page_recall@1": 0.6666666666666666,
+    "single_page_recall@5": 0.8,
+    "single_page_mrr@10": 0.7222222222222221,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.925,
+    "multi_page_all_found@10": 0.85,
+    "single_query_latency_ms": 0.13,
+    "recall@5_ci_95": [
+      0.6833333333333333,
+      0.9
+    ]
+  },
+  {
+    "canonical_model_id": "nomic-embed-text-v1.5",
+    "resolved_model_path": "/tmp/offline_sanitized_models/nomic-embed-text-v1-5",
+    "strategy": "fixed_128_16",
+    "dimension": 768,
+    "num_chunks": 3830,
+    "single_page_recall@1": 0.13333333333333333,
+    "single_page_recall@5": 0.31666666666666665,
+    "single_page_mrr@10": 0.19902777777777778,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.3333333333333333,
+    "multi_page_all_found@10": 0.1,
+    "single_query_latency_ms": 0.33,
+    "recall@5_ci_95": [
+      0.2,
+      0.43333333333333335
+    ]
+  },
+  {
+    "canonical_model_id": "nomic-embed-text-v1.5",
+    "resolved_model_path": "/tmp/offline_sanitized_models/nomic-embed-text-v1-5",
+    "strategy": "parent_child_128_512",
+    "dimension": 768,
+    "num_chunks": 3958,
+    "single_page_recall@1": 0.13333333333333333,
+    "single_page_recall@5": 0.31666666666666665,
+    "single_page_mrr@10": 0.19902777777777778,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.3333333333333333,
+    "multi_page_all_found@10": 0.1,
+    "single_query_latency_ms": 0.33,
+    "recall@5_ci_95": [
+      0.2,
+      0.43333333333333335
+    ]
+  },
+  {
+    "canonical_model_id": "nomic-embed-text-v1.5",
+    "resolved_model_path": "/tmp/offline_sanitized_models/nomic-embed-text-v1-5",
+    "strategy": "fixed_256_32",
+    "dimension": 768,
+    "num_chunks": 2071,
+    "single_page_recall@1": 0.11666666666666667,
+    "single_page_recall@5": 0.23333333333333334,
+    "single_page_mrr@10": 0.1655026455026455,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.2833333333333333,
+    "multi_page_all_found@10": 0.1,
+    "single_query_latency_ms": 0.32,
+    "recall@5_ci_95": [
+      0.13333333333333333,
+      0.3337499999999996
+    ]
+  },
+  {
+    "canonical_model_id": "nomic-embed-text-v1.5",
+    "resolved_model_path": "/tmp/offline_sanitized_models/nomic-embed-text-v1-5",
+    "strategy": "paragraph_header_aware",
+    "dimension": 768,
+    "num_chunks": 1844,
+    "single_page_recall@1": 0.08333333333333333,
+    "single_page_recall@5": 0.21666666666666667,
+    "single_page_mrr@10": 0.13180555555555556,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.29166666666666663,
+    "multi_page_all_found@10": 0.1,
+    "single_query_latency_ms": 0.33,
+    "recall@5_ci_95": [
+      0.11666666666666667,
+      0.31666666666666665
+    ]
+  },
+  {
+    "canonical_model_id": "nomic-embed-text-v1.5",
+    "resolved_model_path": "/tmp/offline_sanitized_models/nomic-embed-text-v1-5",
+    "strategy": "fixed_512_64",
+    "dimension": 768,
+    "num_chunks": 1144,
+    "single_page_recall@1": 0.1,
+    "single_page_recall@5": 0.2,
+    "single_page_mrr@10": 0.14883597883597885,
+    "single_page_span_containment@5": 0.0,
+    "multi_page_coverage@10": 0.3333333333333333,
+    "multi_page_all_found@10": 0.1,
+    "single_query_latency_ms": 0.33,
+    "recall@5_ci_95": [
+      0.1,
+      0.31666666666666665
+    ]
+  }
+]

@@ -92,26 +92,37 @@ class EmbeddingModelAdapter:
         self.model = None
         self.hf_model = None
         self.tokenizer = None
-        self.is_qwen = "qwen" in self.model_id.lower()
-
-        # Step 1: SentenceTransformer loader
-        try:
-            self.model = SentenceTransformer(
-                self.resolved_path,
-                device=device,
-                trust_remote_code=True,
-                model_kwargs={"trust_remote_code": True},
-                tokenizer_kwargs={"trust_remote_code": True},
-                config_kwargs={"trust_remote_code": True},
-            )
-        except Exception:
+        self.llama = None
+        m_path = Path(self.resolved_path)
+        gguf_candidates = list(m_path.glob("*.gguf")) + list(m_path.glob("*/*.gguf")) if m_path.is_dir() else ([m_path] if str(m_path).endswith(".gguf") else [])
+        if gguf_candidates:
             try:
-                self.model = SentenceTransformer(self.resolved_path, device=device)
-            except Exception:
+                from llama_cpp import Llama
+                gguf_file = str(gguf_candidates[0])
+                n_gpu = -1 if ("cuda" in device or device == "cuda") else 0
+                self.llama = Llama(model_path=gguf_file, embedding=True, n_gpu_layers=n_gpu, verbose=False)
+            except Exception as e:
                 pass
 
+        # Step 1: SentenceTransformer loader
+        if self.llama is None:
+            try:
+                self.model = SentenceTransformer(
+                    self.resolved_path,
+                    device=device,
+                    trust_remote_code=True,
+                    model_kwargs={"trust_remote_code": True},
+                    tokenizer_kwargs={"trust_remote_code": True},
+                    config_kwargs={"trust_remote_code": True},
+                )
+            except Exception:
+                try:
+                    self.model = SentenceTransformer(self.resolved_path, device=device)
+                except Exception:
+                    pass
+
         # Step 2: HF AutoModel + AutoTokenizer loader
-        if self.model is None:
+        if self.model is None and self.llama is None:
             try:
                 self.tokenizer = AutoTokenizer.from_pretrained(self.resolved_path, trust_remote_code=True)
                 self.hf_model = AutoModel.from_pretrained(self.resolved_path, trust_remote_code=True).to(device)
@@ -125,7 +136,7 @@ class EmbeddingModelAdapter:
                     pass
 
         # Step 3: Offline BERT state-dict fallback (e.g. when custom remote code file is missing from snapshot)
-        if self.model is None and self.hf_model is None:
+        if self.model is None and self.hf_model is None and self.llama is None:
             m_dir = Path(self.resolved_path)
             cfg_path = m_dir / "config.json"
             if not cfg_path.is_file():
@@ -157,11 +168,13 @@ class EmbeddingModelAdapter:
             self.hf_model.eval()
             self.tokenizer = AutoTokenizer.from_pretrained(str(m_dir), trust_remote_code=False)
 
-        if self.model is None and self.hf_model is None:
+        if self.model is None and self.hf_model is None and self.llama is None:
             raise RuntimeError(f"Failed to load embedding model from {self.resolved_path}")
 
     def encode_queries(self, queries: list[str]) -> np.ndarray:
         formatted = [f"{self.query_prefix}{q}" for q in queries]
+        if self.llama is not None:
+            return self._encode_llama(formatted)
         if self.model is not None:
             embs = self.model.encode(
                 formatted, batch_size=32, normalize_embeddings=True, show_progress_bar=False
@@ -171,12 +184,25 @@ class EmbeddingModelAdapter:
 
     def encode_documents(self, documents: list[str], batch_size: int = 32) -> np.ndarray:
         formatted = [f"{self.doc_prefix}{d}" for d in documents]
+        if self.llama is not None:
+            return self._encode_llama(formatted)
         if self.model is not None:
             embs = self.model.encode(
                 formatted, batch_size=batch_size, normalize_embeddings=True, show_progress_bar=False
             )
             return np.asarray(embs, dtype=np.float32)
         return self._encode_hf(formatted, batch_size=batch_size)
+
+    def _encode_llama(self, texts: list[str]) -> np.ndarray:
+        all_embs = []
+        for text in texts:
+            res = self.llama.create_embedding(text)  # type: ignore[union-attr]
+            vec = np.array(res["data"][0]["embedding"], dtype=np.float32)
+            norm = float(np.linalg.norm(vec))
+            if norm > 1e-9:
+                vec = vec / norm
+            all_embs.append(vec)
+        return np.vstack(all_embs) if all_embs else np.empty((0, 1024), dtype=np.float32)
 
     def _encode_hf(self, texts: list[str], batch_size: int = 32) -> np.ndarray:
         import torch
@@ -207,9 +233,11 @@ class EmbeddingModelAdapter:
 
 
 def is_valid_local_model_dir(path: Path) -> bool:
-    """Validates that a local directory contains necessary config, weights, and tokenizer files."""
+    """Validates that a local directory contains necessary config, weights, and tokenizer files (or GGUF)."""
     if not path.is_dir():
         return False
+    if any(path.glob("*.gguf")) or any(path.glob("*/*.gguf")):
+        return True
     if not (path / "config.json").is_file():
         return False
 
@@ -236,7 +264,7 @@ def discover_candidate_models(
     search_roots: list[Path] | None = None,
     require_local: bool = False,
 ) -> dict[str, tuple[str, str]]:
-    """Discovers the 5 candidate embedding models from local search roots.
+    """Discovers candidate embedding models from local search roots.
 
     When require_local is True, only valid local model directories are returned;
     no HuggingFace hub name fallbacks are emitted.
@@ -246,7 +274,7 @@ def discover_candidate_models(
         ("bge-small-en-v1.5", "BAAI/bge-small-en-v1.5", ["bge-small-en-v1-5", "bge-small-en-v1.5", "bge_small_en", "bge-small"]),
         ("bge-m3", "BAAI/bge-m3", ["bge-m3", "bge_m3"]),
         ("nomic-embed-text-v1.5", "nomic-ai/nomic-embed-text-v1.5", ["nomic-embed-text-v1-5", "nomic-embed-text-v1.5", "nomic_embed", "nomic"]),
-        ("Qwen3-Embedding-0.6B", "Qwen/Qwen3-Embedding-0.6B", ["qwen3-embedding-0-6b", "qwen3-embedding-0.6b", "qwen3_embedding", "qwen3-embedding"]),
+        ("Qwen3-Embedding-0.6B", "Qwen/Qwen3-Embedding-0.6B", ["qwen3-embedding-0-6b", "qwen3-embedding-0.6b", "qwen3_embedding", "qwen3-embedding", "qwen3-embedding-0-6b-gguf", "qwen3-embedding-4b-gguf"]),
     ]
 
     default_roots = [
