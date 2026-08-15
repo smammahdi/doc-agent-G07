@@ -24,6 +24,7 @@ def load_canonical_corpus(search_root: Path | None = None) -> list[CanonicalPage
         Path("extras/indexing-benchmarks/data"),
         Path("extras/indexing-benchmarks"),
         Path("/kaggle/input"),
+        Path("extras/ocr-benchmarks/outputs/full-book/chandra"),
         Path("extras/ocr-benchmarks/extractions/chandra (full book)"),
         Path("extras/ocr-benchmarks"),
     ])

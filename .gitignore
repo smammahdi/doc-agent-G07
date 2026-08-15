@@ -27,11 +27,11 @@ wandb/
 output/
 outputs/
 out/
-# The curated research-release tree under extras/ocr-benchmarks/extractions is explicit.
-!extras/ocr-benchmarks/extractions/
-!extras/ocr-benchmarks/extractions/**
-!extras/ocr-benchmarks/extractions/*/
-!extras/ocr-benchmarks/extractions/*/**
+# The curated research-release trees are explicit.
+!extras/ocr-benchmarks/outputs/
+!extras/ocr-benchmarks/outputs/**
+!extras/layout-benchmarks/outputs/
+!extras/layout-benchmarks/outputs/**
 *.ckpt
 *.onnx
 *.pt
