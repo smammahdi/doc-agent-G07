@@ -1,0 +1,14 @@
+{
+  "strategy": "parent_child_128_512",
+  "total_chunks": 3823,
+  "embedding_model": "all-minilm-l6-v2",
+  "dimension": 1024,
+  "accuracy": {
+    "evaluated_tasks": 20,
+    "mrr": 0.9167,
+    "recall@1": 0.85,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0
+  }
+}

@@ -707,8 +707,9 @@ def generate_benchmark_plots(
     embed_results: list[dict[str, Any]],
     score_logs: list[dict[str, Any]],
     output_dir: Path,
+    faiss_results: dict[str, Any] | None = None,
 ) -> None:
-    """Generates 4 high-resolution publication-quality PNG charts."""
+    """Generates 5 high-resolution publication-quality PNG charts."""
     output_dir.mkdir(parents=True, exist_ok=True)
     plt.style.use(
         "seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default"
@@ -918,13 +919,59 @@ def generate_benchmark_plots(
         plt.close()
         print(f"Generated visual artifact: {plot4_path}")
 
+    # -------------------------------------------------------------
+    # Plot 5: FAISS Vector Index Architecture Trade-Offs
+    # -------------------------------------------------------------
+    plot5_path = output_dir / "plot5_faiss_index_comparison.png"
+    if faiss_results:
+        plt.figure(figsize=(10, 4.5), dpi=300)
+        idx_names = list(faiss_results.keys())
+        latencies = [faiss_results[k].get("avg_query_latency_ms", 0) for k in idx_names]
+        recalls = [faiss_results[k].get("recall_at_10_vs_exact", 1.0) * 100 for k in idx_names]
+
+        x = np.arange(len(idx_names))
+        width = 0.35
+
+        fig, ax1 = plt.subplots(figsize=(9, 4.5), dpi=300)
+        ax2 = ax1.twinx()
+
+        ax1.bar(
+            x - width / 2, latencies, width, label="Query Latency (ms)", color="#4e79a7", alpha=0.9
+        )
+        ax2.bar(
+            x + width / 2,
+            recalls,
+            width,
+            label="Recall@10 vs. Exact (%)",
+            color="#59a14f",
+            alpha=0.9,
+        )
+
+        ax1.set_xlabel("FAISS Index Architecture", fontsize=11, weight="semibold")
+        ax1.set_ylabel("Query Latency (ms)", color="#4e79a7", fontsize=11, weight="semibold")
+        ax2.set_ylabel("Recall@10 Accuracy (%)", color="#59a14f", fontsize=11, weight="semibold")
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(idx_names, fontsize=10, weight="semibold")
+        ax2.set_ylim(80, 105)
+
+        plt.title(
+            "FAISS Index Architectures: Query Latency vs. Recall Accuracy",
+            fontsize=13,
+            weight="bold",
+            pad=12,
+        )
+        fig.tight_layout()
+        plt.savefig(plot5_path, bbox_inches="tight")
+        plt.close()
+        print(f"Generated visual artifact: {plot5_path}")
+
     # Display all generated plots inline in notebook cell output
     try:
         from IPython.display import Image as IPImage
         from IPython.display import display as ip_display
 
         print("\n=== Displaying Benchmark Visualizations Inline ===")
-        for p in [plot1_path, plot2_path, plot3_path, plot4_path]:
+        for p in [plot1_path, plot2_path, plot3_path, plot4_path, plot5_path]:
             if p.is_file():
                 ip_display(IPImage(filename=str(p)))
     except Exception:
@@ -1244,7 +1291,7 @@ def load_curated_tasks() -> list[dict[str, Any]]:
 def discover_all_candidate_models(
     asset_roots: list[tuple[Path, dict[str, Any]]],
 ) -> list[str]:
-    """Discovers all dense and GGUF embedding models (filters out cross-encoder rerankers)."""
+    """Discovers all dense, vision-language, and GGUF quantized embedding models (filters out cross-encoders)."""
     embed_models: list[str] = []
     seen_names: set[str] = set()
 
@@ -1252,23 +1299,35 @@ def discover_all_candidate_models(
         models_dir = asset_dir / "models"
         if models_dir.is_dir():
             for m_dir in sorted(models_dir.iterdir()):
-                if (
-                    m_dir.is_dir()
-                    and m_dir.name not in seen_names
-                    and "reranker" not in m_dir.name.lower()
-                ):
+                if "reranker" in m_dir.name.lower():
+                    continue
+                if m_dir.is_dir() and m_dir.name not in seen_names:
+                    seen_names.add(m_dir.name)
+                    embed_models.append(str(m_dir))
+                elif m_dir.suffix.lower() == ".gguf" and m_dir.name not in seen_names:
                     seen_names.add(m_dir.name)
                     embed_models.append(str(m_dir))
 
-    if not embed_models and INPUT_ROOT.is_dir():
+        for gguf_file in sorted(asset_dir.rglob("*.gguf")):
+            if gguf_file.name not in seen_names and "reranker" not in gguf_file.name.lower():
+                seen_names.add(gguf_file.name)
+                embed_models.append(str(gguf_file))
+
+    if INPUT_ROOT.is_dir():
         for m_dir in sorted(INPUT_ROOT.rglob("models/*")):
-            if (
-                m_dir.is_dir()
-                and m_dir.name not in seen_names
-                and "reranker" not in m_dir.name.lower()
-            ):
+            if "reranker" in m_dir.name.lower():
+                continue
+            if m_dir.is_dir() and m_dir.name not in seen_names:
                 seen_names.add(m_dir.name)
                 embed_models.append(str(m_dir))
+            elif m_dir.suffix.lower() == ".gguf" and m_dir.name not in seen_names:
+                seen_names.add(m_dir.name)
+                embed_models.append(str(m_dir))
+
+        for gguf_file in sorted(INPUT_ROOT.rglob("*.gguf")):
+            if gguf_file.name not in seen_names and "reranker" not in gguf_file.name.lower():
+                seen_names.add(gguf_file.name)
+                embed_models.append(str(gguf_file))
 
     return embed_models
 
@@ -1604,12 +1663,30 @@ def run_benchmark() -> None:
             dim=base_embeddings.shape[1],
             k=10,
         )
-        print("\n=== Vector Index Architectures Comparison ===")
-        print(json.dumps(faiss_summary, indent=2))
+        print("\n" + "=" * 105)
+        print(f"FAISS VECTOR INDEX ARCHITECTURE BENCHMARK ({len(base_embeddings)} Vectors)")
+        print("=" * 105)
+        faiss_head = (
+            f"{'Index Architecture':<22} {'Index Type':<16} {'Build Time (s)':<16} "
+            f"{'Query Latency (ms)':<22} {'Recall@10 vs Exact':<18}"
+        )
+        print(faiss_head)
+        print("-" * 105)
+        for idx_name, idx_info in faiss_summary.items():
+            b_time = f"{idx_info.get('build_time_seconds', 0.0):.4f}"
+            q_lat = f"{idx_info.get('avg_query_latency_ms', 0.0):.4f}"
+            r10 = (
+                f"{idx_info.get('recall_at_10_vs_exact', 1.0)*100:.1f}%"
+                if "recall_at_10_vs_exact" in idx_info
+                else "N/A"
+            )
+            i_type = idx_info.get("type", "unknown")
+            print(f"{idx_name:<22} {i_type:<16} {b_time:<16} {q_lat:<22} {r10:<18}")
+        print("=" * 105)
     else:
         faiss_summary = {}
 
-    # 7. Generate 4 Publication-Grade Visual Plots
+    # 7. Generate 5 Publication-Grade Visual Plots
     print("\nGenerating publication-grade benchmark figures...")
     generate_benchmark_plots(
         chunk_suites,
@@ -1617,6 +1694,7 @@ def run_benchmark() -> None:
         ranked_embed_models,
         all_score_logs,
         PLOTS_DIR,
+        faiss_results=faiss_summary,
     )
 
     # 8. Save All Candidate Knowledge Bases to disk for downstream experimentation
