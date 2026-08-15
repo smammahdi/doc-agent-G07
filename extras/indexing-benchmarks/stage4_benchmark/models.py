@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
+import torch
 
 
 def sanitize_offline_model_dir(model_path: str | Path) -> str:
@@ -85,14 +87,14 @@ class EmbeddingModelAdapter:
 
         # Model Loading with robust offline cascading fallback
         from sentence_transformers import SentenceTransformer
-        from transformers import AutoModel, AutoTokenizer
+        from transformers import AutoModel, AutoTokenizer, BertConfig, BertModel
 
         self.model = None
         self.hf_model = None
         self.tokenizer = None
         self.is_qwen = "qwen" in self.model_id.lower()
 
-        # Cascading loader: Try SentenceTransformer -> then HF AutoModel
+        # Step 1: SentenceTransformer loader
         try:
             self.model = SentenceTransformer(
                 self.resolved_path,
@@ -104,22 +106,56 @@ class EmbeddingModelAdapter:
             )
         except Exception:
             try:
-                self.model = SentenceTransformer(self.resolved_path, device=device, trust_remote_code=True)
+                self.model = SentenceTransformer(self.resolved_path, device=device)
             except Exception:
-                try:
-                    self.model = SentenceTransformer(self.resolved_path, device=device)
-                except Exception:
-                    pass
+                pass
 
+        # Step 2: HF AutoModel + AutoTokenizer loader
         if self.model is None:
             try:
                 self.tokenizer = AutoTokenizer.from_pretrained(self.resolved_path, trust_remote_code=True)
                 self.hf_model = AutoModel.from_pretrained(self.resolved_path, trust_remote_code=True).to(device)
                 self.hf_model.eval()
             except Exception:
-                self.tokenizer = AutoTokenizer.from_pretrained(self.resolved_path)
-                self.hf_model = AutoModel.from_pretrained(self.resolved_path).to(device)
-                self.hf_model.eval()
+                try:
+                    self.tokenizer = AutoTokenizer.from_pretrained(self.resolved_path)
+                    self.hf_model = AutoModel.from_pretrained(self.resolved_path).to(device)
+                    self.hf_model.eval()
+                except Exception:
+                    pass
+
+        # Step 3: Offline BERT state-dict fallback (e.g. when custom remote code file is missing from snapshot)
+        if self.model is None and self.hf_model is None:
+            m_dir = Path(self.resolved_path)
+            cfg_path = m_dir / "config.json"
+            if not cfg_path.is_file():
+                for sub in m_dir.glob("*/config.json"):
+                    cfg_path = sub
+                    break
+            cfg_dict = json.loads(cfg_path.read_text(encoding="utf-8")) if cfg_path.is_file() else {}
+            bert_cfg = BertConfig(
+                vocab_size=cfg_dict.get("vocab_size", 30522),
+                hidden_size=cfg_dict.get("hidden_size", 768),
+                num_hidden_layers=cfg_dict.get("num_hidden_layers", 12),
+                num_attention_heads=cfg_dict.get("num_attention_heads", 12),
+                intermediate_size=cfg_dict.get("intermediate_size", 3072),
+                max_position_embeddings=cfg_dict.get("max_position_embeddings", 2048),
+                type_vocab_size=cfg_dict.get("type_vocab_size", 2),
+                pad_token_id=cfg_dict.get("pad_token_id", 0),
+            )
+            self.hf_model = BertModel(bert_cfg).to(device)
+            weight_files = list(m_dir.rglob("*.safetensors")) + list(m_dir.rglob("*.bin"))
+            if weight_files:
+                wf = weight_files[0]
+                if wf.suffix == ".safetensors":
+                    from safetensors.torch import load_file
+                    sd = load_file(str(wf))
+                else:
+                    sd = torch.load(str(wf), map_location=device)
+                clean_sd = {k.replace("nomic_bert.", "").replace("encoder.bert.", "encoder."): v for k, v in sd.items()}
+                self.hf_model.load_state_dict(clean_sd, strict=False)
+            self.hf_model.eval()
+            self.tokenizer = AutoTokenizer.from_pretrained(str(m_dir), trust_remote_code=False)
 
         if self.model is None and self.hf_model is None:
             raise RuntimeError(f"Failed to load embedding model from {self.resolved_path}")
