@@ -12,7 +12,7 @@ extras/indexing-benchmarks/
 ├── data/
 │   ├── canonical-pages.jsonl   # Full 1,034-page normalized text corpus (364,824 words)
 │   └── retrieval-queries.jsonl # 60 verified whole-book retrieval queries with exact character spans
-├── code/                   # Reusable, modular Python package
+├── stage4_benchmark/       # Reusable, modular Python package
 │   ├── __init__.py
 │   ├── corpus.py           # Corpus loader & 6-page missing policy handler
 │   ├── queries.py          # Query schema validation & dev/test/out-of-corpus splitting
@@ -22,10 +22,9 @@ extras/indexing-benchmarks/
 │   ├── faiss_benchmark.py  # Inner Product Flat, HNSW, and IVFFlat latency/agreement suite
 │   └── runner.py           # Master 5x5 factorial benchmark orchestrator
 ├── notebooks/
-│   ├── 01-run-benchmark.ipynb    # Thin execution notebook for Kaggle/local runs
-│   └── 02-review-results.ipynb   # Visual inspection & failure analysis
-├── results/                # Output directory for validated JSON reports and per-query logs
-└── bundles/                # Packaged Kaggle input archives (`indexing-benchmark-data.zip`)
+│   └── stage4-benchmark.ipynb    # Unified single-pass execution notebook
+├── data/                   # Canonical corpus (1,034 pages) & 110 retrieval queries
+└── results/                # Output directory for validated JSON reports and logs
 ```
 
 ---
@@ -70,7 +69,7 @@ All indexes use **L2-normalized embeddings with `METRIC_INNER_PRODUCT`** to comp
    ```bash
    python3 -c "from stage4_benchmark.runner import run_stage4_unified_benchmark; from pathlib import Path; run_stage4_unified_benchmark(Path('results'))"
    ```
-2. **Kaggle Offline Run**:
-   - Attach `bundles/indexing-benchmark-data.zip` and the offline model weights/wheels.
+2. **Kaggle Run**:
+   - Attach the project repository or dataset assets (model weights).
    - Run `notebooks/stage4-benchmark.ipynb` (Single-pass Run All).
    - Download the generated `stage4-benchmark-results.zip` containing all artifacts and the production FAISS index.
