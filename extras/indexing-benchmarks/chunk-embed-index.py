@@ -429,19 +429,51 @@ def benchmark_faiss_indexes(
     scores_hnsw, ids_hnsw = index_hnsw.search(query_vectors, k)
     query_time_hnsw = (time.perf_counter() - start_q) / len(query_vectors)
 
-    recalls = []
+    recalls_hnsw = []
     for i in range(len(query_vectors)):
         gt_set = set(ids_flat[i])
         hnsw_set = set(ids_hnsw[i])
-        recalls.append(len(gt_set.intersection(hnsw_set)) / k)
+        recalls_hnsw.append(len(gt_set.intersection(hnsw_set)) / k)
 
     results["IndexHNSWFlat"] = {
         "type": "graph_ann",
         "build_time_seconds": round(build_time_hnsw, 4),
         "avg_query_latency_ms": round(query_time_hnsw * 1000, 3),
-        "recall_at_10_vs_exact": round(float(np.mean(recalls)), 3),
+        "recall_at_10_vs_exact": round(float(np.mean(recalls_hnsw)), 3),
         "description": "Graph-based ANN with efSearch=64, M=32",
     }
+
+    # C. IndexIVFFlat (Inverted File Clustering)
+    if len(embeddings) >= 64:
+        try:
+            start = time.perf_counter()
+            nlist = min(32, max(4, len(embeddings) // 16))
+            quantizer = faiss.IndexFlatIP(dim)
+            index_ivf = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss.METRIC_INNER_PRODUCT)
+            index_ivf.train(embeddings)
+            index_ivf.add(embeddings)
+            index_ivf.nprobe = min(8, nlist)
+            build_time_ivf = time.perf_counter() - start
+
+            start_q = time.perf_counter()
+            scores_ivf, ids_ivf = index_ivf.search(query_vectors, k)
+            query_time_ivf = (time.perf_counter() - start_q) / len(query_vectors)
+
+            recalls_ivf = []
+            for i in range(len(query_vectors)):
+                gt_set = set(ids_flat[i])
+                ivf_set = set(ids_ivf[i])
+                recalls_ivf.append(len(gt_set.intersection(ivf_set)) / k)
+
+            results["IndexIVFFlat"] = {
+                "type": "inverted_file",
+                "build_time_seconds": round(build_time_ivf, 4),
+                "avg_query_latency_ms": round(query_time_ivf * 1000, 3),
+                "recall_at_10_vs_exact": round(float(np.mean(recalls_ivf)), 3),
+                "description": f"Inverted list clustering (nlist={nlist}, nprobe=8)",
+            }
+        except Exception as e:
+            results["IndexIVFFlat"] = {"error": str(e)}
 
     return results
 
