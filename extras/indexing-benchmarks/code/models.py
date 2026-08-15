@@ -119,31 +119,101 @@ class EmbeddingModelAdapter:
         return np.vstack(all_embs) if all_embs else np.empty((0, 384), dtype=np.float32)
 
 
-def discover_candidate_models(search_roots: list[Path] | None = None) -> dict[str, tuple[str, str]]:
-    """Returns mapping of canonical_id -> (canonical_id, resolved_path_or_hub_name)."""
-    candidates = [
-        ("all-MiniLM-L6-v2", "sentence-transformers/all-MiniLM-L6-v2"),
-        ("bge-small-en-v1.5", "BAAI/bge-small-en-v1.5"),
-        ("bge-m3", "BAAI/bge-m3"),
-        ("nomic-embed-text-v1.5", "nomic-ai/nomic-embed-text-v1.5"),
-        ("Qwen3-Embedding-0.6B", "Qwen/Qwen3-Embedding-0.6B"),
+def is_valid_local_model_dir(path: Path) -> bool:
+    """Validates that a local directory contains necessary config, weights, and tokenizer files."""
+    if not path.is_dir():
+        return False
+    if not (path / "config.json").is_file():
+        return False
+
+    has_weights = any(
+        (path / name).is_file() or list(path.glob(f"*{ext}"))
+        for name in ["model.safetensors", "pytorch_model.bin", "model.onnx"]
+        for ext in [".safetensors", ".bin", ".onnx"]
+    )
+    has_tokenizer = any(
+        (path / name).is_file()
+        for name in [
+            "tokenizer.json",
+            "tokenizer_config.json",
+            "vocab.txt",
+            "tokenizer.model",
+            "spiece.model",
+            "vocab.json",
+        ]
+    )
+    return has_weights and has_tokenizer
+
+
+def discover_candidate_models(
+    search_roots: list[Path] | None = None,
+    require_local: bool = False,
+) -> dict[str, tuple[str, str]]:
+    """Discovers the 5 candidate embedding models from local search roots.
+
+    When require_local is True, only valid local model directories are returned;
+    no HuggingFace hub name fallbacks are emitted.
+    """
+    model_specs = [
+        ("all-MiniLM-L6-v2", "sentence-transformers/all-MiniLM-L6-v2", ["all-minilm-l6-v2", "minilm", "all_minilm"]),
+        ("bge-small-en-v1.5", "BAAI/bge-small-en-v1.5", ["bge-small-en-v1-5", "bge-small-en-v1.5", "bge_small_en", "bge-small"]),
+        ("bge-m3", "BAAI/bge-m3", ["bge-m3", "bge_m3"]),
+        ("nomic-embed-text-v1.5", "nomic-ai/nomic-embed-text-v1.5", ["nomic-embed-text-v1-5", "nomic-embed-text-v1.5", "nomic_embed", "nomic"]),
+        ("Qwen3-Embedding-0.6B", "Qwen/Qwen3-Embedding-0.6B", ["qwen3-embedding-0-6b", "qwen3-embedding-0.6b", "qwen3_embedding", "qwen3-embedding"]),
     ]
 
-    roots = search_roots or [Path("/kaggle/input"), Path("extras/indexing-benchmarks"), Path(".")]
-    discovered = {}
+    default_roots = [
+        Path("/kaggle/input"),
+        Path("extras/indexing-benchmarks/models"),
+        Path("extras/indexing-benchmarks"),
+        Path("models"),
+        Path("."),
+    ]
+    roots = search_roots or default_roots
 
-    for c_id, default_hub in candidates:
-        c_short = c_id.lower().replace(".", "-")
-        found_path = None
+    discovered: dict[str, tuple[str, str]] = {}
+    missing: list[str] = []
+
+    for c_id, default_hub, aliases in model_specs:
+        found_path: str | None = None
         for r in roots:
             if not r or not r.exists():
                 continue
-            for d in r.rglob(f"*{c_short}*"):
-                if d.is_dir() and "reranker" not in d.name.lower() and (d / "config.json").is_file():
-                    found_path = str(d)
+
+            # 1. Direct directory match
+            for alias in aliases:
+                direct = r / alias
+                if is_valid_local_model_dir(direct):
+                    found_path = str(direct.resolve())
                     break
+
             if found_path:
                 break
-        discovered[c_id] = (c_id, found_path or default_hub)
+
+            # 2. Recursive search
+            for alias in aliases:
+                for d in r.rglob(f"*{alias}*"):
+                    if is_valid_local_model_dir(d) and "reranker" not in d.name.lower():
+                        found_path = str(d.resolve())
+                        break
+                if found_path:
+                    break
+
+            if found_path:
+                break
+
+        if found_path:
+            discovered[c_id] = (c_id, found_path)
+        elif require_local:
+            missing.append(c_id)
+        else:
+            discovered[c_id] = (c_id, default_hub)
+
+    if require_local and missing:
+        raise FileNotFoundError(
+            f"Offline Model Preflight Failed: Could not find valid local model directories for: {missing}. "
+            f"Searched roots: {[str(r) for r in roots if r and r.exists()]}. "
+            f"Ensure all 5 model datasets are attached to the Kaggle notebook."
+        )
 
     return discovered

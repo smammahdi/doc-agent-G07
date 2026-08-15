@@ -17,7 +17,11 @@ from .evaluation import (
 from .faiss_benchmark import benchmark_faiss_architectures
 from .models import EmbeddingModelAdapter, discover_candidate_models
 from .queries import RetrievalQuery, load_retrieval_queries
-from .runner import run_stage4_dev_grid, run_stage4_final_evidence
+from .runner import (
+    run_stage4_dev_grid,
+    run_stage4_final_evidence,
+    run_stage4_unified_benchmark,
+)
 
 __all__ = [
     "CanonicalPage",
@@ -38,4 +42,5 @@ __all__ = [
     "benchmark_faiss_architectures",
     "run_stage4_dev_grid",
     "run_stage4_final_evidence",
+    "run_stage4_unified_benchmark",
 ]
