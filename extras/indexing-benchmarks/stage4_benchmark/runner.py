@@ -403,9 +403,10 @@ def run_stage4_unified_benchmark(
         raise ValueError(f"Expected exactly 5 chunking suites, found {len(chunk_suites)}")
 
     # 3. Discover Candidate Models
-    discovered = discover_candidate_models(
-        [search_root] if search_root else None, require_local=require_local_models
-    )
+    # Benchmark data and model snapshots are separate Kaggle inputs. The explicit
+    # search_root selects corpus/query data; model discovery keeps its standard
+    # offline roots (notably /kaggle/input) so attached model assets remain visible.
+    discovered = discover_candidate_models(require_local=require_local_models)
     if len(discovered) != 5:
         raise ValueError(f"Expected exactly 5 candidate models, found {len(discovered)}")
 
