@@ -45,6 +45,12 @@ WORK = Path("/kaggle/working")
 OUT_DIR = WORK / "indexing-benchmark-outputs"
 ASSET_NAME = "embedding-indexing-offline-assets"
 
+# Runtime hardware selection:
+# Set USE_GPU = False to benchmark in realistic CPU-only mode.
+# Set USE_GPU = True to use CUDA acceleration if available.
+USE_GPU = True
+BATCH_SIZE = 32
+
 
 # %%
 def install_offline_runtime(asset_root: Path) -> None:
@@ -621,7 +627,7 @@ def interactive_search(
     if _INTERACTIVE_CACHE["index"] is None or _INTERACTIVE_CACHE["model_name"] != model_name:
         import torch
 
-        dev = "cuda" if torch.cuda.is_available() else "cpu"
+        dev = "cuda" if (USE_GPU and torch.cuda.is_available()) else "cpu"
         build_interactive_index(model_name=model_name, device=dev)
 
     model = _INTERACTIVE_CACHE["model"]
@@ -664,8 +670,8 @@ def interactive_search(
 def run_benchmark() -> None:
     import torch
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Execution environment: PyTorch device = {device.upper()}")
+    device = "cuda" if (USE_GPU and torch.cuda.is_available()) else "cpu"
+    print(f"Execution environment: PyTorch device = {device.upper()} (USE_GPU={USE_GPU})")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     asset_root, receipt = find_asset_root()
