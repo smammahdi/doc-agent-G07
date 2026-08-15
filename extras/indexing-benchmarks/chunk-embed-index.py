@@ -709,269 +709,283 @@ def generate_benchmark_plots(
     output_dir: Path,
     faiss_results: dict[str, Any] | None = None,
 ) -> None:
-    """Generates 5 high-resolution publication-quality PNG charts."""
+    """Generates 3 minimalist, publication-grade benchmark figures."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    plt.style.use(
-        "seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default"
-    )
-    plt.rcParams.update({"font.size": 11, "figure.autolayout": True})
+    plt.rcParams.update({"font.size": 10, "font.family": "sans-serif", "figure.autolayout": True})
 
-    # -------------------------------------------------------------
-    # Plot 1: Token Length Distribution Across Chunking Strategies
-    # -------------------------------------------------------------
-    plt.figure(figsize=(10, 5), dpi=300)
-    data = []
-    labels = []
-    for name, c_list in chunk_suites.items():
-        lengths = [c.token_count for c in c_list]
-        if lengths:
-            data.append(lengths)
-            labels.append(name.replace("_", "\n"))
-
-    box = plt.boxplot(
-        data,
-        tick_labels=labels,
-        patch_artist=True,
-        showmeans=True,
-        meanprops={
-            "marker": "o",
-            "markerfacecolor": "#d9534f",
-            "markeredgecolor": "#d9534f",
-        },
-    )
-    colors = [
-        "#4e79a7",
-        "#f28e2b",
-        "#e15759",
-        "#76b7b2",
-        "#59a14f",
-        "#edc948",
-        "#b07aa1",
-    ]
-    for patch, color in zip(box["boxes"], colors[: len(data)]):
-        patch.set_facecolor(color)
-        patch.set_alpha(0.7)
-
-    plt.axhline(
-        256,
-        color="crimson",
-        linestyle="--",
-        alpha=0.7,
-        label="Target Limit (256)",
-    )
-    plt.title(
-        "Token Length Distribution Across Chunking Strategies",
-        fontsize=13,
-        weight="bold",
-        pad=12,
-    )
-    plt.xlabel("Chunking Strategy", fontsize=11, weight="semibold")
-    plt.ylabel("Token Count per Chunk", fontsize=11, weight="semibold")
-    plt.legend(loc="upper right")
-    plot1_path = output_dir / "plot1_chunk_length_distributions.png"
-    plt.savefig(plot1_path, bbox_inches="tight")
-    plt.close()
-    print(f"Generated visual artifact: {plot1_path}")
-
-    # -------------------------------------------------------------
-    # Plot 2: Embedding Models MRR vs. Throughput (Pareto Frontier)
-    # -------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Figure 1: Embedding Models Pareto Frontier (MRR vs. Throughput ch/s)
+    # -------------------------------------------------------------------------
+    fig1_path = output_dir / "figure1_pareto_frontier.png"
     if embed_results:
-        plt.figure(figsize=(9, 6), dpi=300)
-        tputs = [m.get("chunks_per_second", 1) for m in embed_results]
-        mrrs = [m.get("mrr", 0) for m in embed_results]
-        dims = [m.get("dimension", 384) for m in embed_results]
-        names = [m.get("model", "unknown") for m in embed_results]
+        fig, ax = plt.subplots(figsize=(8.5, 5.0), dpi=300)
+        ax.set_facecolor("#fafafa")
+        fig.patch.set_facecolor("#ffffff")
+        ax.grid(True, linestyle="--", alpha=0.5, color="#d0d0d0")
 
-        scatter = plt.scatter(
-            tputs,
-            mrrs,
-            s=[d / 2 for d in dims],
-            c=mrrs,
-            cmap="viridis",
-            alpha=0.85,
-            edgecolors="black",
-            linewidth=1.2,
-        )
-        for i, name in enumerate(names):
-            plt.annotate(
-                name,
-                (tputs[i], mrrs[i]),
+        models = [m for m in embed_results if m.get("mrr", 0) > 0]
+        colors = ["#1f77b4", "#2ca02c", "#d62728", "#ff7f0e", "#9467bd", "#8c564b"]
+
+        for i, m in enumerate(models):
+            tput = m.get("chunks_per_second", 1)
+            mrr = m.get("mrr", 0)
+            dim = m.get("dimension", 384)
+            name = m.get("model", "unknown")
+            clean_name = (
+                name.replace("sentence-transformers/", "").replace("BAAI/", "").replace("Qwen/", "")
+            )
+
+            ax.scatter(
+                tput,
+                mrr,
+                s=max(120, dim * 0.7),
+                color=colors[i % len(colors)],
+                alpha=0.85,
+                edgecolors="#333333",
+                linewidth=1.2,
+                zorder=4,
+            )
+
+            # Smart annotation placement to prevent overlap
+            if "minilm" in clean_name.lower():
+                xy_text = (-130, 18)
+            elif "bge-small" in clean_name.lower():
+                xy_text = (15, -24)
+            elif "bge-m3" in clean_name.lower():
+                xy_text = (15, 12)
+            elif "qwen" in clean_name.lower():
+                xy_text = (15, -18)
+            else:
+                xy_text = (15, 15)
+
+            ax.annotate(
+                f"{clean_name}\n({dim}-d | {tput:.0f} ch/s)",
+                xy=(tput, mrr),
+                xytext=xy_text,
                 textcoords="offset points",
-                xytext=(8, 6),
-                fontsize=8,
-                weight="semibold",
+                fontsize=8.5,
+                fontweight="bold",
+                color="#222222",
+                bbox=dict(
+                    boxstyle="round,pad=0.3",
+                    facecolor="white",
+                    alpha=0.9,
+                    edgecolor="#cccccc",
+                    linewidth=0.8,
+                ),
+                arrowprops=dict(arrowstyle="->", color="#666666", lw=0.8),
+                zorder=5,
             )
 
-        plt.xscale("log")
-        plt.title(
-            "Embedding Models: MRR vs. Throughput (Bubble Size = Dims)",
-            fontsize=13,
-            weight="bold",
-            pad=12,
-        )
-        plt.xlabel(
+        ax.set_xscale("log")
+        ax.set_xlim(50, 4500)
+        ax.set_ylim(0.75, 1.0)
+        ax.set_xlabel(
             "Encoding Throughput (chunks/sec, log scale)",
-            fontsize=11,
-            weight="semibold",
+            fontsize=10.5,
+            fontweight="bold",
+            color="#333333",
+            labelpad=8,
         )
-        plt.ylabel("Mean Reciprocal Rank (MRR)", fontsize=11, weight="semibold")
-        plt.ylim(0.0, 1.08)
-        cbar = plt.colorbar(scatter)
-        cbar.set_label("MRR Score", fontsize=10)
-        plot2_path = output_dir / "plot2_mrr_vs_throughput_pareto.png"
-        plt.savefig(plot2_path, bbox_inches="tight")
-        plt.close()
-        print(f"Generated visual artifact: {plot2_path}")
-
-    # -------------------------------------------------------------
-    # Plot 3: Downstream Retrieval Accuracy by Chunking Strategy
-    # -------------------------------------------------------------
-    if chunk_accuracy:
-        plt.figure(figsize=(11, 5), dpi=300)
-        c_names = list(chunk_accuracy.keys())
-        r1_vals = [chunk_accuracy[k].get("recall@1", 0) for k in c_names]
-        r5_vals = [chunk_accuracy[k].get("recall@5", 0) for k in c_names]
-        mrr_vals = [chunk_accuracy[k].get("mrr", 0) for k in c_names]
-
-        x = np.arange(len(c_names))
-        width = 0.26
-
-        plt.bar(
-            x - width,
-            r1_vals,
-            width,
-            label="Recall@1",
-            color="#4e79a7",
-            alpha=0.9,
+        ax.set_ylabel(
+            "Mean Reciprocal Rank (MRR)",
+            fontsize=10.5,
+            fontweight="bold",
+            color="#333333",
+            labelpad=8,
         )
-        plt.bar(x, r5_vals, width, label="Recall@5", color="#59a14f", alpha=0.9)
-        plt.bar(
-            x + width,
-            mrr_vals,
-            width,
-            label="MRR",
-            color="#f28e2b",
-            alpha=0.9,
-        )
-
-        plt.xticks(x, [c.replace("_", "\n") for c in c_names], fontsize=9)
-        plt.title(
-            "Downstream Retrieval Accuracy Across Chunking Strategies",
-            fontsize=13,
-            weight="bold",
+        ax.set_title(
+            "Embedding Models: Retrieval Accuracy vs. Throughput Pareto Frontier",
+            fontsize=12,
+            fontweight="bold",
             pad=12,
+            color="#111111",
         )
-        plt.xlabel("Chunking Strategy", fontsize=11, weight="semibold")
-        plt.ylabel("Retrieval Score (0 - 1.0)", fontsize=11, weight="semibold")
-        plt.ylim(0.0, 1.1)
-        plt.legend(loc="lower right")
-        plot3_path = output_dir / "plot3_chunking_retrieval_accuracy.png"
-        plt.savefig(plot3_path, bbox_inches="tight")
+        plt.tight_layout()
+        plt.savefig(fig1_path, bbox_inches="tight")
         plt.close()
-        print(f"Generated visual artifact: {plot3_path}")
+        print(f"Generated visual artifact: {fig1_path}")
 
-    # -------------------------------------------------------------
-    # Plot 4: Cosine Similarity Score Margin (Grounded vs. Negative Tasks)
-    # -------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Figure 2: Ranked Chunking Strategy Comparison (1,028 Pages)
+    # -------------------------------------------------------------------------
+    fig2_path = output_dir / "figure2_chunking_comparison.png"
+    if chunk_accuracy:
+        fig, ax = plt.subplots(figsize=(8.5, 4.8), dpi=300)
+        ax.set_facecolor("#fafafa")
+        fig.patch.set_facecolor("#ffffff")
+        ax.grid(True, axis="x", linestyle="--", alpha=0.5, color="#d0d0d0")
+
+        sorted_chunks = sorted(
+            chunk_accuracy.items(), key=lambda x: x[1].get("mrr", 0), reverse=True
+        )
+        names = [k for k, _ in sorted_chunks]
+        mrrs = [v.get("mrr", 0) for _, v in sorted_chunks]
+        r1s = [v.get("recall@1", 0) for _, v in sorted_chunks]
+        counts = [len(chunk_suites.get(k, [])) for k, _ in sorted_chunks]
+        toks = [
+            (
+                round(float(np.mean([c.token_count for c in chunk_suites.get(k, [])])), 0)
+                if chunk_suites.get(k)
+                else 0
+            )
+            for k, _ in sorted_chunks
+        ]
+
+        y_pos = np.arange(len(names))
+        height = 0.36
+
+        ax.barh(
+            y_pos - height / 2,
+            mrrs,
+            height,
+            label="MRR (Rank Precision)",
+            color="#1f77b4",
+            alpha=0.9,
+            edgecolor="#333333",
+            linewidth=0.8,
+        )
+        ax.barh(
+            y_pos + height / 2,
+            r1s,
+            height,
+            label="Recall@1 (Top-1 Exact)",
+            color="#2ca02c",
+            alpha=0.9,
+            edgecolor="#333333",
+            linewidth=0.8,
+        )
+
+        for i in range(len(names)):
+            ax.text(
+                mrrs[i] + 0.01,
+                y_pos[i] - height / 2,
+                f"{mrrs[i]:.3f} (MRR)",
+                va="center",
+                fontsize=8,
+                fontweight="bold",
+                color="#1f77b4",
+            )
+            ax.text(
+                r1s[i] + 0.01,
+                y_pos[i] + height / 2,
+                f"{r1s[i]:.3f} (R@1)",
+                va="center",
+                fontsize=8,
+                fontweight="bold",
+                color="#2ca02c",
+            )
+
+        custom_labels = [
+            f"{names[i]}\n[{counts[i]} chunks | avg {toks[i]:.0f} tok]" for i in range(len(names))
+        ]
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(custom_labels, fontsize=8.5, fontweight="semibold")
+        ax.invert_yaxis()
+        ax.set_xlim(0.65, 1.08)
+        ax.set_xlabel(
+            "Retrieval Score (0 - 1.0)",
+            fontsize=10.5,
+            fontweight="bold",
+            color="#333333",
+            labelpad=8,
+        )
+        ax.set_title(
+            "Downstream Retrieval Performance Across Chunking Strategies (1,028 Pages)",
+            fontsize=12,
+            fontweight="bold",
+            pad=12,
+            color="#111111",
+        )
+        ax.legend(
+            loc="lower right", frameon=True, facecolor="white", edgecolor="#cccccc", fontsize=8.5
+        )
+        plt.tight_layout()
+        plt.savefig(fig2_path, bbox_inches="tight")
+        plt.close()
+        print(f"Generated visual artifact: {fig2_path}")
+
+    # -------------------------------------------------------------------------
+    # Figure 3: Score Margin & Decision Boundary (weak_threshold = 0.35)
+    # -------------------------------------------------------------------------
+    fig3_path = output_dir / "figure3_score_margin.png"
     if score_logs:
-        plt.figure(figsize=(9, 5), dpi=300)
-        grounded_scores = [s["top1_score"] for s in score_logs if s["is_grounded"]]
-        negative_scores = [s["top1_score"] for s in score_logs if not s["is_grounded"]]
+        fig, ax = plt.subplots(figsize=(8.5, 4.2), dpi=300)
+        ax.set_facecolor("#fafafa")
+        fig.patch.set_facecolor("#ffffff")
+        ax.grid(True, linestyle="--", alpha=0.5, color="#d0d0d0")
 
-        if grounded_scores:
-            plt.hist(
-                grounded_scores,
-                bins=10,
-                alpha=0.6,
-                color="royalblue",
-                label="Grounded Tasks (t01-t20)",
-                density=True,
-            )
-        if negative_scores:
-            plt.hist(
-                negative_scores,
-                bins=8,
-                alpha=0.6,
-                color="crimson",
-                label="Ungrounded / Abstention (t21-t25)",
-                density=True,
-            )
-
-        plt.axvline(
+        ax.axvspan(0.0, 0.35, alpha=0.12, color="#e74c3c", label="Abstention Zone (< 0.35)")
+        ax.axvspan(
+            0.35, 1.0, alpha=0.08, color="#2ecc71", label="Grounded Retrieval Zone (>= 0.35)"
+        )
+        ax.axvline(
             0.35,
-            color="black",
+            color="#c0392b",
             linestyle="--",
             linewidth=1.8,
             label="Decision Boundary (weak_threshold = 0.35)",
         )
-        plt.title(
-            "Retrieval Score Margin: Grounded vs. Negative Abstention Tasks",
-            fontsize=13,
-            weight="bold",
+
+        grounded_scores = [s["top1_score"] for s in score_logs if s["is_grounded"]]
+        negative_scores = [s["top1_score"] for s in score_logs if not s["is_grounded"]]
+
+        if grounded_scores:
+            ax.hist(
+                grounded_scores,
+                bins=8,
+                alpha=0.75,
+                color="#2b7bba",
+                label="Grounded Tasks (t01-t20)",
+                density=True,
+                edgecolor="#1c5580",
+                linewidth=0.8,
+            )
+        if negative_scores:
+            ax.hist(
+                negative_scores,
+                bins=5,
+                alpha=0.75,
+                color="#e74c3c",
+                label="Negative Tasks (t21-t25)",
+                density=True,
+                edgecolor="#962d22",
+                linewidth=0.8,
+            )
+
+        ax.set_xlim(0.2, 0.9)
+        ax.set_xlabel(
+            "Top-1 Cosine Similarity Score",
+            fontsize=10.5,
+            fontweight="bold",
+            color="#333333",
+            labelpad=8,
+        )
+        ax.set_ylabel(
+            "Probability Density", fontsize=10.5, fontweight="bold", color="#333333", labelpad=8
+        )
+        ax.set_title(
+            "Retrieval Score Margin: Grounded vs. Negative Abstention Queries",
+            fontsize=12,
+            fontweight="bold",
             pad=12,
+            color="#111111",
         )
-        plt.xlabel("Top-1 Cosine Similarity Score", fontsize=11, weight="semibold")
-        plt.ylabel("Density", fontsize=11, weight="semibold")
-        plt.legend(loc="upper left")
-        plot4_path = output_dir / "plot4_retrieval_score_margin.png"
-        plt.savefig(plot4_path, bbox_inches="tight")
+        ax.legend(
+            loc="upper right", frameon=True, facecolor="white", edgecolor="#cccccc", fontsize=8.5
+        )
+        plt.tight_layout()
+        plt.savefig(fig3_path, bbox_inches="tight")
         plt.close()
-        print(f"Generated visual artifact: {plot4_path}")
+        print(f"Generated visual artifact: {fig3_path}")
 
-    # -------------------------------------------------------------
-    # Plot 5: FAISS Vector Index Architecture Trade-Offs
-    # -------------------------------------------------------------
-    plot5_path = output_dir / "plot5_faiss_index_comparison.png"
-    if faiss_results:
-        plt.figure(figsize=(10, 4.5), dpi=300)
-        idx_names = list(faiss_results.keys())
-        latencies = [faiss_results[k].get("avg_query_latency_ms", 0) for k in idx_names]
-        recalls = [faiss_results[k].get("recall_at_10_vs_exact", 1.0) * 100 for k in idx_names]
-
-        x = np.arange(len(idx_names))
-        width = 0.35
-
-        fig, ax1 = plt.subplots(figsize=(9, 4.5), dpi=300)
-        ax2 = ax1.twinx()
-
-        ax1.bar(
-            x - width / 2, latencies, width, label="Query Latency (ms)", color="#4e79a7", alpha=0.9
-        )
-        ax2.bar(
-            x + width / 2,
-            recalls,
-            width,
-            label="Recall@10 vs. Exact (%)",
-            color="#59a14f",
-            alpha=0.9,
-        )
-
-        ax1.set_xlabel("FAISS Index Architecture", fontsize=11, weight="semibold")
-        ax1.set_ylabel("Query Latency (ms)", color="#4e79a7", fontsize=11, weight="semibold")
-        ax2.set_ylabel("Recall@10 Accuracy (%)", color="#59a14f", fontsize=11, weight="semibold")
-        ax1.set_xticks(x)
-        ax1.set_xticklabels(idx_names, fontsize=10, weight="semibold")
-        ax2.set_ylim(80, 105)
-
-        plt.title(
-            "FAISS Index Architectures: Query Latency vs. Recall Accuracy",
-            fontsize=13,
-            weight="bold",
-            pad=12,
-        )
-        fig.tight_layout()
-        plt.savefig(plot5_path, bbox_inches="tight")
-        plt.close()
-        print(f"Generated visual artifact: {plot5_path}")
-
-    # Display all generated plots inline in notebook cell output
+    # Display all 3 figures inline in notebook cell output
     try:
         from IPython.display import Image as IPImage
         from IPython.display import display as ip_display
 
         print("\n=== Displaying Benchmark Visualizations Inline ===")
-        for p in [plot1_path, plot2_path, plot3_path, plot4_path, plot5_path]:
+        for p in [fig1_path, fig2_path, fig3_path]:
             if p.is_file():
                 ip_display(IPImage(filename=str(p)))
     except Exception:
