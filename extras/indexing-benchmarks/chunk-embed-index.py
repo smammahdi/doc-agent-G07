@@ -79,6 +79,7 @@ PLOTS_DIR = OUT_DIR / "plots"
 # Set USE_GPU = True to use CUDA acceleration if available.
 USE_GPU = True
 BATCH_SIZE = 32
+GENERATE_PLOTS = False  # Set False on Kaggle to maximize speed; plots can be generated locally
 
 
 # %%
@@ -416,6 +417,63 @@ def recursive_semantic_chunking(
 
 
 # %%
+# %%
+class HuggingFaceTransformerWrapper:
+    """Pure HuggingFace AutoModel + AutoTokenizer wrapper with attention-weighted mean pooling.
+    Guarantees compatibility with custom architectures (e.g. Nomic BERT, Qwen VL) when SentenceTransformer fails.
+    """
+
+    def __init__(self, model_path: str, device: str = "cpu"):
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+
+        self.device = device
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        self.model = AutoModel.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+        ).to(device)
+        self.model.eval()
+        self.model_name = Path(model_path).name
+
+    def encode(
+        self,
+        texts: list[str],
+        batch_size: int = 32,
+        normalize_embeddings: bool = True,
+        show_progress_bar: bool = False,
+    ) -> np.ndarray:
+        import torch
+
+        all_embs = []
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i : i + batch_size]
+            encoded = self.tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=512,
+                return_tensors="pt",
+            ).to(self.device)
+            with torch.no_grad():
+                outputs = self.model(**encoded)
+                last_hidden = (
+                    outputs.last_hidden_state
+                    if hasattr(outputs, "last_hidden_state")
+                    else outputs[0]
+                )
+                mask = encoded["attention_mask"].unsqueeze(-1).expand(last_hidden.size())
+                sum_embeddings = torch.sum(last_hidden * mask, 1)
+                sum_mask = torch.clamp(mask.sum(1), min=1e-9)
+                pooled = sum_embeddings / sum_mask
+
+                if normalize_embeddings:
+                    pooled = torch.nn.functional.normalize(pooled, p=2, dim=1)
+                all_embs.append(pooled.cpu().to(torch.float32).numpy())
+        return np.vstack(all_embs) if all_embs else np.empty((0, 384), dtype=np.float32)
+
+
 class GGUFEmbeddingWrapper:
     """Wrapper for running GGUF quantized embedding models (0.6B / 4B) via llama_cpp."""
 
@@ -424,13 +482,17 @@ class GGUFEmbeddingWrapper:
             from llama_cpp import Llama
         except ImportError as err:
             raise ImportError(
-                "llama-cpp-python is required to run GGUF models. Ensure"
-                " llama-cpp-python wheel is installed."
+                "llama-cpp-python runtime is not installed for Python 3.12. "
+                "GGUF models will be skipped gracefully."
             ) from err
 
         p = Path(model_path)
         if p.is_dir():
-            gguf_files = list(p.glob("*.gguf")) + list(p.glob("*.GGUF"))
+            gguf_files = sorted(
+                list(p.glob("*.gguf")) + list(p.glob("*.GGUF")),
+                key=lambda x: x.stat().st_size,
+                reverse=True,
+            )
             if not gguf_files:
                 raise FileNotFoundError(f"No .gguf file found in {model_path}")
             gguf_file = str(gguf_files[0])
@@ -444,7 +506,7 @@ class GGUFEmbeddingWrapper:
             n_threads=n_threads,
             verbose=False,
         )
-        self.model_name = p.name
+        self.model_name = Path(gguf_file).stem
 
     def encode(
         self,
@@ -465,53 +527,91 @@ class GGUFEmbeddingWrapper:
         return np.array(vectors, dtype=np.float32)
 
 
+def load_model_instance(model_name_or_path: str, device: str = "cpu") -> tuple[Any, str]:
+    """Instantiates an embedding model using a cascading 3-tier fallback strategy."""
+    is_gguf = (
+        "gguf" in model_name_or_path.lower() or Path(model_name_or_path).suffix.lower() == ".gguf"
+    )
+    if is_gguf:
+        return GGUFEmbeddingWrapper(model_name_or_path), "GGUF-Q4_K_M"
+
+    is_vl = any(
+        k in model_name_or_path.lower()
+        for k in ["qwen3-vl", "qwen2-vl", "vl-embedding", "multimodal-vl"]
+    )
+    if is_vl:
+        # Vision-Language models use direct HuggingFace AutoModel with attention mean pooling
+        return HuggingFaceTransformerWrapper(model_name_or_path, device=device), "Multimodal-VL"
+
+    from sentence_transformers import SentenceTransformer
+
+    # Strategy 1: SentenceTransformer with full kwargs propagated to AutoConfig and AutoModel
+    try:
+        model = SentenceTransformer(
+            model_name_or_path,
+            device=device,
+            trust_remote_code=True,
+            model_kwargs={"trust_remote_code": True},
+            tokenizer_kwargs={"trust_remote_code": True},
+            config_kwargs={"trust_remote_code": True},
+        )
+        return model, "PyTorch-Dense"
+    except Exception:
+        pass
+
+    # Strategy 2: Standard SentenceTransformer
+    try:
+        model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
+        return model, "PyTorch-Dense"
+    except Exception:
+        pass
+
+    # Strategy 3: Pure HuggingFace AutoModel + AutoTokenizer with attention mean pooling
+    try:
+        model = HuggingFaceTransformerWrapper(model_name_or_path, device=device)
+        return model, "HF-AutoModel-Dense"
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to load model {model_name_or_path} across all loaders: {e}"
+        ) from e
+
+
 def benchmark_embedding_model(
     model_name_or_path: str,
     chunks: list[BenchmarkChunk],
     device: str = "cpu",
     batch_size: int = 32,
-) -> tuple[Any, np.ndarray, dict[str, Any]]:
+) -> tuple[Any | None, np.ndarray, dict[str, Any]]:
     is_gguf = (
         "gguf" in model_name_or_path.lower() or Path(model_name_or_path).suffix.lower() == ".gguf"
     )
+    type_label = "GGUF" if is_gguf else "PyTorch"
+    print(f"\n--- Benchmarking {type_label} Model: {model_name_or_path} ({device.upper()}) ---")
 
-    if is_gguf:
-        print(f"\n--- Benchmarking GGUF Model: {model_name_or_path} ({device.upper()}) ---")
-        start_load = time.perf_counter()
-        model = GGUFEmbeddingWrapper(model_name_or_path)
-        load_time_s = time.perf_counter() - start_load
-    else:
-        print(f"\n--- Benchmarking PyTorch Model: {model_name_or_path} ({device.upper()}) ---")
-        from sentence_transformers import SentenceTransformer
-
-        start_load = time.perf_counter()
-        try:
-            model = SentenceTransformer(
-                model_name_or_path,
-                device=device,
-                trust_remote_code=True,
-                local_files_only=True,
+    start_load = time.perf_counter()
+    try:
+        model, model_type = load_model_instance(model_name_or_path, device=device)
+    except Exception as e:
+        if is_gguf and (
+            "llama_cpp" in str(e).lower() or "runtime is not installed" in str(e).lower()
+        ):
+            print(
+                f"[GGUF SKIPPED] llama-cpp-python runtime is not available: {Path(model_name_or_path).name}"
             )
-        except Exception:
-            try:
-                model = SentenceTransformer(
-                    model_name_or_path,
-                    device=device,
-                    local_files_only=True,
-                )
-            except Exception:
-                model = SentenceTransformer(model_name_or_path, device=device)
-        load_time_s = time.perf_counter() - start_load
+        else:
+            print(f"[ERROR] Failed to load {model_name_or_path}: {e}")
+        return None, np.empty((0, 0), dtype=np.float32), {}
 
+    load_time_s = time.perf_counter() - start_load
     texts = [c.text for c in chunks]
 
     # Warmup
     if len(texts) > 0:
-        _ = model.encode(
-            texts[: min(4, len(texts))],
-            batch_size=4,
-            normalize_embeddings=True,
-        )
+        try:
+            _ = model.encode(texts[: min(4, len(texts))], batch_size=4, normalize_embeddings=True)
+        except Exception as e:
+            print(f"[ERROR] Warmup failed for {model_name_or_path}: {e}")
+            return None, np.empty((0, 0), dtype=np.float32), {}
 
     # Bulk Throughput Measurement (batch_size=32)
     start_enc = time.perf_counter()
@@ -523,7 +623,7 @@ def benchmark_embedding_model(
     )
     enc_time_s = time.perf_counter() - start_enc
 
-    # Single-Query Latency Measurement (batch_size=1, 10 sample queries)
+    # Single-Query Latency Measurement (batch_size=1, 3 sample queries)
     sample_queries = [
         "What is the treatment for catarrh?",
         "Describe the medicinal virtues of Golden Seal.",
@@ -552,7 +652,7 @@ def benchmark_embedding_model(
     metrics = {
         "model": Path(model_name_or_path).name,
         "device": device,
-        "type": "GGUF-Q4_K_M" if is_gguf else "PyTorch-Dense",
+        "type": model_type,
         "dimension": dim,
         "total_chunks": len(texts),
         "load_time_seconds": round(load_time_s, 3),
@@ -1382,9 +1482,10 @@ CANDIDATE_MODEL_CATALOG = [
 def discover_all_candidate_models(
     asset_roots: list[tuple[Path, dict[str, Any]]],
 ) -> list[str]:
-    """Audits and discovers all candidate embedding models across all attached Kaggle inputs."""
+    """Audits and discovers all candidate embedding models across all attached Kaggle inputs without duplicates."""
     embed_models: list[str] = []
-    seen_names: set[str] = set()
+    seen_model_ids: set[str] = set()
+    seen_paths: set[str] = set()
 
     print("\n" + "=" * 105)
     print("EMBEDDING MODEL DISCOVERY & ASSET ATTACHMENT AUDIT")
@@ -1406,7 +1507,6 @@ def discover_all_candidate_models(
 
         for search_dir in all_search_dirs:
             for alias in aliases:
-                # 1. Check direct path or models/alias
                 cand1 = search_dir / alias
                 cand2 = search_dir / "models" / alias
                 if cand1.exists():
@@ -1416,7 +1516,6 @@ def discover_all_candidate_models(
                     found_path = cand2
                     break
 
-                # 2. Check rglob for alias
                 matches = list(search_dir.rglob(f"*{alias}*"))
                 if matches:
                     found_path = matches[0]
@@ -1424,40 +1523,51 @@ def discover_all_candidate_models(
             if found_path:
                 break
 
-        if found_path and str(found_path) not in seen_names:
-            seen_names.add(str(found_path))
+        if found_path and m_id not in seen_model_ids:
+            seen_model_ids.add(m_id)
+            seen_paths.add(str(found_path.resolve()))
             embed_models.append(str(found_path))
             print(f"{m_id:<26} {entry['format']:<15} {'ATTACHED':<12} {str(found_path):<48}")
-        else:
+        elif m_id not in seen_model_ids:
             print(
                 f"{m_id:<26} {entry['format']:<15} {'NOT FOUND':<12} Attach '{entry['package_source']}' dataset"
             )
 
-    # Also discover any uncataloged models in asset_roots or input
+    # Discovered directories for strict subtree checks
+    discovered_dirs = [
+        Path(p).resolve() if Path(p).is_dir() else Path(p).resolve().parent for p in embed_models
+    ]
+
+    # Discover any uncataloged standalone models
     for search_dir in all_search_dirs:
         for m_dir in sorted(search_dir.rglob("models/*")):
-            if "reranker" in m_dir.name.lower():
+            if "reranker" in m_dir.name.lower() or not m_dir.is_dir():
                 continue
-            if (
-                m_dir.is_dir()
-                and str(m_dir) not in seen_names
-                and m_dir.name not in [e["id"] for e in CANDIDATE_MODEL_CATALOG]
+            resolved_dir = m_dir.resolve()
+            if m_dir.name in seen_model_ids or any(
+                resolved_dir == d or resolved_dir.is_relative_to(d) for d in discovered_dirs
             ):
-                seen_names.add(str(m_dir))
-                embed_models.append(str(m_dir))
-                print(f"{m_dir.name:<26} {'PyTorch-Dense':<15} {'ATTACHED':<12} {str(m_dir):<48}")
+                continue
+            seen_model_ids.add(m_dir.name)
+            seen_paths.add(str(resolved_dir))
+            embed_models.append(str(m_dir))
+            print(f"{m_dir.name:<26} {'PyTorch-Dense':<15} {'ATTACHED':<12} {str(m_dir):<48}")
 
         for gguf_file in sorted(search_dir.rglob("*.gguf")):
-            if "reranker" in gguf_file.name.lower():
+            if "reranker" in gguf_file.name.lower() or not gguf_file.is_file():
                 continue
-            if str(gguf_file) not in seen_names and gguf_file.name not in [
-                e["id"] for e in CANDIDATE_MODEL_CATALOG
-            ]:
-                seen_names.add(str(gguf_file))
-                embed_models.append(str(gguf_file))
-                print(
-                    f"{gguf_file.name:<26} {'GGUF-Q4_K_M':<15} {'ATTACHED':<12} {str(gguf_file):<48}"
-                )
+            resolved_file = gguf_file.resolve()
+            base_stem = gguf_file.stem.lower().replace("-q4_k_m", "").replace("-q8_0", "")
+            if (
+                base_stem in seen_model_ids
+                or gguf_file.name in seen_model_ids
+                or any(resolved_file.is_relative_to(d) for d in discovered_dirs)
+            ):
+                continue
+            seen_model_ids.add(base_stem)
+            seen_paths.add(str(resolved_file))
+            embed_models.append(str(gguf_file))
+            print(f"{gguf_file.name:<26} {'GGUF-Q4_K_M':<15} {'ATTACHED':<12} {str(gguf_file):<48}")
 
     print("=" * 105 + "\n")
     return embed_models
@@ -1761,26 +1871,10 @@ def run_benchmark() -> None:
             first_model,
         )
 
-        is_gguf = "gguf" in matching_path.lower() or Path(matching_path).suffix.lower() == ".gguf"
-        if is_gguf:
-            st_model = GGUFEmbeddingWrapper(matching_path)
-        else:
-            from sentence_transformers import SentenceTransformer
-
-            try:
-                st_model = SentenceTransformer(
-                    matching_path,
-                    device=device,
-                    trust_remote_code=True,
-                    local_files_only=True,
-                )
-            except Exception:
-                try:
-                    st_model = SentenceTransformer(
-                        matching_path, device=device, local_files_only=True
-                    )
-                except Exception:
-                    st_model = SentenceTransformer(matching_path, device=device)
+        try:
+            st_model, _ = load_model_instance(matching_path, device=device)
+        except Exception:
+            st_model = best_model_obj
 
         eval_queries = (
             [t["question"] for t in tasks if (t.get("target_pages") or t.get("gold_pages"))]
@@ -1820,16 +1914,19 @@ def run_benchmark() -> None:
     else:
         faiss_summary = {}
 
-    # 7. Generate 5 Publication-Grade Visual Plots
-    print("\nGenerating publication-grade benchmark figures...")
-    generate_benchmark_plots(
-        chunk_suites,
-        chunk_accuracy,
-        ranked_embed_models,
-        all_score_logs,
-        PLOTS_DIR,
-        faiss_results=faiss_summary,
-    )
+    # 7. Optional Visual Figures Generation (Default OFF in Kaggle to prioritize speed)
+    if GENERATE_PLOTS:
+        print("\nGenerating publication-grade benchmark figures...")
+        generate_benchmark_plots(
+            chunk_suites,
+            chunk_accuracy,
+            ranked_embed_models,
+            all_score_logs,
+            PLOTS_DIR,
+            faiss_results=faiss_summary,
+        )
+    else:
+        print("\nSkipping figure rendering on remote runner (Plots can be generated locally).")
 
     # 8. Save All Candidate Knowledge Bases to disk for downstream experimentation
     kb_dir = OUT_DIR / "knowledge_bases"
