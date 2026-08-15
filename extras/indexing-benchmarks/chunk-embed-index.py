@@ -64,8 +64,13 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_DATASETS_OFFLINE"] = "1"
 
 # %%
-INPUT_ROOT = Path("/kaggle/input")
-WORK = Path("/kaggle/working")
+if Path("/kaggle/working").is_dir():
+    INPUT_ROOT = Path("/kaggle/input")
+    WORK = Path("/kaggle/working")
+else:
+    INPUT_ROOT = Path("extras/indexing-benchmarks")
+    WORK = Path("extras/indexing-benchmarks/output")
+
 OUT_DIR = WORK / "indexing-benchmark-outputs"
 PLOTS_DIR = OUT_DIR / "plots"
 
@@ -1628,4 +1633,7 @@ MY_QUERY = "What are the medicinal preparations and healing properties of Golden
 CHOSEN_MODEL = "qwen3-embedding-0-6b"
 TOP_K = 5
 
-results = interactive_search(query=MY_QUERY, top_k=TOP_K, model_name=CHOSEN_MODEL)
+try:
+    results = interactive_search(query=MY_QUERY, top_k=TOP_K, model_name=CHOSEN_MODEL)
+except Exception as e:
+    print(f"Interactive search note: {e}")
