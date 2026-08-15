@@ -1,22 +1,22 @@
 """Stage-4 Indexing, Chunking, and Embedding Benchmark Package."""
 
-from .corpus import CanonicalPage, load_canonical_corpus
-from .queries import RetrievalQuery, load_retrieval_queries
 from .chunking import (
     BenchmarkChunk,
-    fixed_window_word_chunking,
-    paragraph_header_aware_chunking,
-    hierarchical_parent_child_chunking,
     build_chunk_suites,
+    fixed_window_word_chunking,
+    hierarchical_parent_child_chunking,
+    paragraph_header_aware_chunking,
 )
-from .models import EmbeddingModelAdapter, discover_candidate_models
+from .corpus import CanonicalPage, load_canonical_corpus
 from .evaluation import (
-    evaluate_retrieval_suite,
     calculate_bootstrap_ci,
     calibrate_abstention_threshold,
     evaluate_abstention_on_queries,
+    evaluate_retrieval_suite,
 )
 from .faiss_benchmark import benchmark_faiss_architectures
+from .models import EmbeddingModelAdapter, discover_candidate_models
+from .queries import RetrievalQuery, load_retrieval_queries
 from .runner import run_stage4_dev_grid, run_stage4_final_evidence
 
 __all__ = [
