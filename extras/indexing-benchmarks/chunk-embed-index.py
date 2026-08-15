@@ -1015,15 +1015,48 @@ def benchmark_faiss_indexes(
 
 # %%
 def load_source_pages() -> list[dict[str, str]]:
-    """Loads full 1,034-page corpus from attached Kaggle datasets, local files, or fallback."""
+    """Loads full 1,034-page corpus from attached Kaggle datasets (Chandra chunks.jsonl or pages.jsonl), local files, or fallback."""
     pages: list[dict[str, str]] = []
 
-    # 1. Prioritize full-book pages.jsonl across all attached inputs
+    # 1. Prioritize Chandra chunks.jsonl or full-book pages.jsonl across all attached inputs
     if INPUT_ROOT.is_dir():
+        # Check for Chandra chunks.jsonl first (groups 8,544 OCR blocks into 1,034 book pages)
+        for path in sorted(INPUT_ROOT.rglob("*.jsonl")):
+            if "chunk" in path.name.lower():
+                try:
+                    page_texts: dict[str, list[str]] = {}
+                    for line in path.read_text(encoding="utf-8").splitlines():
+                        if line.strip():
+                            item = json.loads(line)
+                            p_num = item.get(
+                                "page_index", item.get("book_page", item.get("page_id", 1))
+                            )
+                            try:
+                                p_id = f"p{int(p_num):04d}"
+                            except Exception:
+                                p_id = str(p_num)
+                            content = item.get("content", item.get("text", "")).strip()
+                            clean_text = re.sub(r"<[^>]+>", " ", content).strip()
+                            if clean_text:
+                                if p_id not in page_texts:
+                                    page_texts[p_id] = []
+                                page_texts[p_id].append(clean_text)
+
+                    cand_pages = [
+                        {"doc_id": "pierce-1890", "page_id": pid, "text": " ".join(blocks)}
+                        for pid, blocks in sorted(page_texts.items())
+                    ]
+                    if len(cand_pages) >= 50:
+                        print(f"Loaded {len(cand_pages)} FULL BOOK pages reconstructed from {path}")
+                        return cand_pages
+                except Exception:
+                    pass
+
+        # Check for pages.jsonl or full_book_pages.jsonl
         for path in sorted(INPUT_ROOT.rglob("*.jsonl")):
             if "page" in path.name.lower() or "full_book" in path.name.lower():
                 try:
-                    cand_pages: list[dict[str, str]] = []
+                    cand_pages = []
                     for line in path.read_text(encoding="utf-8").splitlines():
                         if line.strip():
                             item = json.loads(line)
@@ -1574,7 +1607,62 @@ def run_benchmark() -> None:
         PLOTS_DIR,
     )
 
-    # 8. Save Artifacts
+    # 8. Save All Candidate Knowledge Bases to disk for downstream experimentation
+    kb_dir = OUT_DIR / "knowledge_bases"
+    kb_dir.mkdir(parents=True, exist_ok=True)
+    if best_model_obj:
+        import faiss
+
+        print(f"\nPersisting candidate Knowledge Bases to {kb_dir}...")
+        for s_name, c_list in chunk_suites.items():
+            kb_sub = kb_dir / f"kb_{s_name}"
+            kb_sub.mkdir(parents=True, exist_ok=True)
+
+            texts = [c.text for c in c_list]
+            emb = best_model_obj.encode(
+                texts, normalize_embeddings=True, show_progress_bar=False
+            ).astype(np.float32)
+            idx = faiss.IndexFlatIP(emb.shape[1])
+            idx.add(emb)
+            faiss.write_index(idx, str(kb_sub / "index.faiss"))
+
+            with open(kb_sub / "chunks.jsonl", "w", encoding="utf-8") as f:
+                for c in c_list:
+                    f.write(
+                        json.dumps(
+                            {
+                                "chunk_id": c.chunk_id,
+                                "doc_id": c.doc_id,
+                                "page_id": c.page_id,
+                                "text": c.text,
+                                "token_count": c.token_count,
+                                "strategy": c.strategy,
+                                "parent_id": c.parent_id,
+                                "parent_text": c.parent_text,
+                                "section_title": c.section_title,
+                                "linked_figures": c.linked_figures,
+                            }
+                        )
+                        + "\n"
+                    )
+            (kb_sub / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "strategy": s_name,
+                        "total_chunks": len(c_list),
+                        "embedding_model": (
+                            ranked_embed_models[0]["model"] if ranked_embed_models else "best_model"
+                        ),
+                        "dimension": emb.shape[1],
+                        "accuracy": chunk_accuracy.get(s_name, {}),
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+        print(f"Saved {len(chunk_suites)} experimental Knowledge Bases.")
+
+    # 9. Save Artifacts
     full_report = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "source_pages": len(pages),
@@ -1582,6 +1670,7 @@ def run_benchmark() -> None:
         "chunking_comparison": chunk_summary,
         "embedding_models_comparison": ranked_embed_models,
         "faiss_index_comparison": faiss_summary,
+        "knowledge_bases_built": list(chunk_suites.keys()),
         "recommended_production_stack": {
             "chunk_size": 256,
             "chunk_overlap": 32,
@@ -1597,14 +1686,17 @@ def run_benchmark() -> None:
     report_path.write_text(json.dumps(full_report, indent=2), encoding="utf-8")
     print(f"\nReport written to: {report_path}")
 
-    # Pack zip archive with both json report and all png plots
+    # Pack zip archive with json report, png plots, and all experimental knowledge bases
     zip_path = WORK / "indexing-benchmark-outputs.zip"
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.write(report_path, arcname="indexing_comparison_results.json")
         for plot_file in PLOTS_DIR.glob("*.png"):
             zf.write(plot_file, arcname=f"plots/{plot_file.name}")
+        for kb_file in kb_dir.rglob("*"):
+            if kb_file.is_file():
+                zf.write(kb_file, arcname=f"knowledge_bases/{kb_file.relative_to(kb_dir)}")
     print(
-        f"Created final benchmark output archive with plots: {zip_path}"
+        f"Created final benchmark output archive with plots and KBs: {zip_path}"
         f" ({zip_path.stat().st_size / 1e3:.1f} KB)"
     )
 
