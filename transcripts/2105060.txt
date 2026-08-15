@@ -1,7 +1,7 @@
 ================================================================================
 SECTION 8: AI WORKFLOW LOG & REFLECTION
 ================================================================================
-Member Name:      Team G07 Member
+Member Name:      Jonayed Mohiuddin Shanto
 Student Number:   2105060
 Team:             G07
 AI Tools Used:    Google Antigravity (Google DeepMind Gemini 2.5 Pro / 3.7 Flash)
