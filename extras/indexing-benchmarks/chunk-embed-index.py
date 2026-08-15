@@ -1183,8 +1183,18 @@ if __name__ == "__main__":
 # Run this cell anytime to ask any custom question and inspect the top retrieved passages, scores, and page citations.
 
 # %%
-MY_QUERY = "What are the medicinal preparations and healing properties of Golden" " Seal?"
-CHOSEN_MODEL = "qwen3-embedding-0-6b"  # or "bge-small-en-v1-5", "nomic-embed-text-v1-5", "all-minilm-l6-v2", "qwen3-embedding-0-6b-gguf"
+# Available model names from attached assets:
+# - "qwen3-embedding-0-6b"       : Compact 0.6B PyTorch text embedder (1024-d)
+# - "qwen3-embedding-0-6b-gguf"  : Fast 0.6B Q4_K_M quantized embedder (1024-d)
+# - "qwen3-vl-embedding-2b"      : 2.0B Vision-Language multimodal embedder (1536-d)
+# - "qwen3-embedding-4b-gguf"    : High-capacity 4.0B Q4_K_M quantized embedder (2560-d)
+# - "bge-small-en-v1-5"          : Compact 384-d MTEB benchmark leader
+# - "nomic-embed-text-v1-5"      : 768-d 8k long-context embedder
+# - "all-minilm-l6-v2"           : Ultra-fast 384-d baseline
+# - "bge-m3"                     : 1024-d dense + sparse hybrid
+
+MY_QUERY = "What are the medicinal preparations and healing properties of Golden Seal?"
+CHOSEN_MODEL = "qwen3-embedding-0-6b"
 TOP_K = 5
 
 results = interactive_search(query=MY_QUERY, top_k=TOP_K, model_name=CHOSEN_MODEL)
