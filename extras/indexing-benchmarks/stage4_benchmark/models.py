@@ -46,32 +46,77 @@ class EmbeddingModelAdapter:
             self.query_prefix = ""
             self.doc_prefix = ""
 
-        # Model Loading with graceful fallback
+        # Model Loading with robust offline cascading fallback
         from sentence_transformers import SentenceTransformer
+        from transformers import AutoModel, AutoTokenizer
 
         self.model = None
         self.hf_model = None
         self.tokenizer = None
         self.is_qwen = "qwen" in self.model_id.lower()
+        is_local_dir = Path(model_name_or_path).is_dir()
 
+        # Step 1: Standard local SentenceTransformer loading
         try:
             self.model = SentenceTransformer(
                 model_name_or_path,
                 device=device,
-                trust_remote_code=True,
-                model_kwargs={"trust_remote_code": True},
-                tokenizer_kwargs={"trust_remote_code": True},
-                config_kwargs={"trust_remote_code": True},
+                local_files_only=is_local_dir,
             )
         except Exception:
-            try:
-                self.model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
-            except Exception:
-                from transformers import AutoModel, AutoTokenizer
+            pass
 
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
-                self.hf_model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).to(device)
+        # Step 2: Try SentenceTransformer with trust_remote_code and explicit kwargs
+        if self.model is None:
+            try:
+                self.model = SentenceTransformer(
+                    model_name_or_path,
+                    device=device,
+                    local_files_only=is_local_dir,
+                    trust_remote_code=True,
+                    model_kwargs={"local_files_only": is_local_dir, "trust_remote_code": True},
+                    tokenizer_kwargs={"local_files_only": is_local_dir, "trust_remote_code": True},
+                    config_kwargs={"local_files_only": is_local_dir, "trust_remote_code": True},
+                )
+            except Exception:
+                pass
+
+        # Step 3: SentenceTransformer fallback without local_files_only argument
+        if self.model is None:
+            try:
+                self.model = SentenceTransformer(model_name_or_path, device=device)
+            except Exception:
+                pass
+
+        # Step 4: HF AutoModel + AutoTokenizer fallback with mean/last-token pooling
+        if self.model is None:
+            try:
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    model_name_or_path,
+                    local_files_only=is_local_dir,
+                    trust_remote_code=True,
+                )
+                self.hf_model = AutoModel.from_pretrained(
+                    model_name_or_path,
+                    local_files_only=is_local_dir,
+                    trust_remote_code=True,
+                ).to(device)
                 self.hf_model.eval()
+            except Exception:
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    model_name_or_path,
+                    local_files_only=is_local_dir,
+                    trust_remote_code=False,
+                )
+                self.hf_model = AutoModel.from_pretrained(
+                    model_name_or_path,
+                    local_files_only=is_local_dir,
+                    trust_remote_code=False,
+                ).to(device)
+                self.hf_model.eval()
+
+        if self.model is None and self.hf_model is None:
+            raise RuntimeError(f"Failed to load offline embedding model from {model_name_or_path}")
 
     def encode_queries(self, queries: list[str]) -> np.ndarray:
         formatted = [f"{self.query_prefix}{q}" for q in queries]
