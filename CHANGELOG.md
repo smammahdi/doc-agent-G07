@@ -8,7 +8,20 @@ release yet.
 
 No A2 release tag has been created yet.
 
-### DeepSeek-OCR-2 benchmark execution and scoring repairs
+### Verified Stage-4 Knowledge Base Implementation & Durable Evidence
+
+- Implemented the Stage 4 winning configuration in core starter modules (`src/doc_agent/index/`):
+  - `chunk.py`: Explicit fixed 128-word chunking with 16-word step overlap (`fixed_128_16`).
+  - `embed.py`: Qwen3-Embedding-0.6B support (1024 dimensions) with official query instruction prefix, last-token pooling, and L2 normalisation.
+  - `store.py`: FAISS `IndexFlatIP` persistence and exact inner-product (cosine similarity) loading.
+  - `configs/config.yaml`: Updated `embed.model` to `Qwen/Qwen3-Embedding-0.6B`, `embed.dim: 1024`, `index.type: faiss:flat_ip`, `index.chunk_words: 128`, `index.overlap: 16`.
+- Built and populated `data/processed/index` with the verified 3,830 production chunks, 1024-dim FAISS FlatIP index, and metadata.
+- Added comprehensive unit tests in `tests/test_index.py` covering chunk boundaries, invalid settings, Qwen query/document prefixes, normalization, FlatIP build/load, and fail-closed metadata checks.
+- Executed `notebooks/kb_demo.ipynb` with live grounding against the production index:
+  - Part 1: OCR held-out metrics (24 pages: Macro Word-F1 = 0.9592, Micro CER = 0.1334, Micro WER = 0.1840).
+  - Part 2: Verified index statistics (3,830 chunks, 1024-d, FlatIP, 1,034 pages / 409,102 words).
+  - Part 3: Live retrieval demo with `q_test_02` (perspiration functions on `p0078`), honest hydrotherapy multi-page failure diagnosis (`q_multi_test_02` on `p0373`), and out-of-corpus abstention evaluation (`q_neg_06` rejected below $\tau = 0.55$).
+- Created external A2 Form evidence sheet (`development/a2-form-evidence.md`) and unedited Gemini conversation transcript (`development/transcript_drafts/gemini-transcript-draft.txt`).
 
 - Updated `extras/ocr-benchmarks/deepseek-ocr.py` with inference mode, bounded generation (`max_new_tokens=4096`, deterministic greedy decoding), full-page internal tiling vs pre-cropped non-figure region mode (`crop_mode=False`), and metric-only grounding markup normalization.
 

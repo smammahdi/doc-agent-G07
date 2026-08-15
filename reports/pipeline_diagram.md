@@ -8,11 +8,11 @@ to have completed the index or retrieval stages.
 flowchart LR
     A["Pierce 1890 PDF\n1,034 pages\nsource of truth"] --> B["Loader\nPyMuPDF @ 300 DPI\nPage"]
     B --> C["Preprocess\nidentity baseline"]
-    C --> D["Layout\nprojection default\nChandra blocks offline"]
-    D --> E["OCR\nTesseract default\nDocument AI & Chandra offline"]
-    E --> F["Chunk\n256 tokens / 32 overlap\ntext + page IDs"]
-    F --> G["Embed\nMiniLM 384"]
-    G --> H["Store\nFAISS FlatIP\n(2,088 chunks)"]
+    C --> D["Layout\nprojection default\nDocLayout-YOLO offline"]
+    D --> E["OCR\nChandra SOTA / Tesseract baseline\nMacro Word-F1: 0.9592"]
+    E --> F["Chunk\n128 words / 16 overlap\ntext + page IDs"]
+    F --> G["Embed\nQwen3-Embedding-0.6B\n1024-d L2 normalized"]
+    G --> H["Store\nFAISS FlatIP\n(3,830 chunks)"]
     A -.-> R["EDA\nall 1,034 pages\n150-DPI measurements"]
     X["Offline experiment outputs\nChandra: 8,544 blocks / 1,028 pages\nDocAI: 419,565 words / 1,016 pages"] -.-> D
     X -.-> E
@@ -31,18 +31,19 @@ flowchart LR
   on 1,028 pages; Document AI reference OCR contains 419,565 words on 1,016
   word-bearing pages.
 - **Implemented adapters:** PyMuPDF 300-DPI rendering, identity preprocessing,
-  projection layout, Chandra parser (`load_from_pages_markdown`), figure extraction (`build_image_index`),
-  sliding-window 256/32 chunking, SentenceTransformer `all-MiniLM-L6-v2` (384-d) dense embedding,
-  and FAISS `IndexFlatIP` vector store with metadata and image indexing.
+  projection layout, DocLayout-YOLO (75MB ONNX), Chandra parser (`load_from_canonical_jsonl`),
+  fixed 128-word / 16-word overlap chunking, `Qwen/Qwen3-Embedding-0.6B` (1024-d) dense embedding
+  with query instruction prefixing and L2 normalisation, and FAISS `IndexFlatIP` vector store.
 - **Index status:** The Stage 4 index is fully built under `data/processed/index/`
-  with 2,088 chunks, 384 embedding dimensions, and 350 figure references across 252 illustrated pages.
+  with 3,830 chunks, 1024 embedding dimensions, 100% text corpus coverage (1,016 text pages / 409,102 words),
+  and exact cosine similarity search (`faiss:flat_ip`).
 - **Scope rule:** no live web search is part of the retrieval pipeline; answers
   remain strictly grounded in the declared Pierce source.
 
 ## Contract path
 
-`Page -> Region -> OCR text -> Chunk -> embedding -> vector store` (Tesseract
-default; optional offline reference).
+`Page -> Region -> OCR text -> Chunk -> embedding -> vector store` (Chandra/Tesseract
+OCR; Qwen3-Embedding-0.6B 1024-d; FAISS FlatIP).
 Page IDs survive into each fixed `Chunk`, so a later agent can cite the scanned
 page. Coordinates are used at the layout/OCR seam but do not survive in the fixed
 `Chunk` contract.
