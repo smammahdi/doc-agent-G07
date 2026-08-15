@@ -222,7 +222,24 @@ def download_model(spec: dict[str, Any]) -> dict[str, Any]:
     allow_patterns = None
     ignore_patterns = ["*.msgpack", "*.h5", "*.onnx", "*.tflite", "*.ot", "*.flax*"]
     if is_gguf:
-        allow_patterns = ["*q4_k_m.gguf", "*Q4_K_M.gguf", "*q4_k.gguf", "*.json", "README.md"]
+        api = HfApi()
+        all_repo_files = api.list_repo_files(model_id, revision=revision)
+        gguf_files = [f for f in all_repo_files if f.lower().endswith(".gguf")]
+        if not gguf_files:
+            raise FileNotFoundError(f"No .gguf files found in {model_id}")
+
+        # Priority: find q4_k_m, else q4_k, else q4_0, else q5_k_m, else q8_0, else first gguf
+        target_gguf = None
+        for pattern in ["q4_k_m", "q4_k", "q4_0", "q5_k_m", "q8_0"]:
+            matches = [f for f in gguf_files if pattern in f.lower()]
+            if matches:
+                target_gguf = matches[0]
+                break
+        if not target_gguf:
+            target_gguf = gguf_files[0]
+
+        print(f"Target GGUF file selected: {target_gguf}", flush=True)
+        allow_patterns = [target_gguf, "*.json", "README.md"]
         ignore_patterns = None
 
     resolved = snapshot_download(
