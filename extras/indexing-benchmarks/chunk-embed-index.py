@@ -1288,47 +1288,164 @@ def load_curated_tasks() -> list[dict[str, Any]]:
     return []
 
 
+# Candidate Embedding Model Catalog defining all target architectures
+CANDIDATE_MODEL_CATALOG = [
+    {
+        "id": "all-minilm-l6-v2",
+        "aliases": [
+            "sentence-transformers/all-MiniLM-L6-v2",
+            "all-minilm-l6-v2",
+            "all-MiniLM-L6-v2",
+        ],
+        "expected_dim": 384,
+        "format": "PyTorch-Dense",
+        "package_source": "package-embedding-models",
+    },
+    {
+        "id": "bge-small-en-v1-5",
+        "aliases": ["BAAI/bge-small-en-v1.5", "bge-small-en-v1-5", "bge-small-en-v1.5"],
+        "expected_dim": 384,
+        "format": "PyTorch-Dense",
+        "package_source": "package-embedding-models",
+    },
+    {
+        "id": "nomic-embed-text-v1-5",
+        "aliases": [
+            "nomic-ai/nomic-embed-text-v1.5",
+            "nomic-embed-text-v1-5",
+            "nomic-embed-text-v1.5",
+        ],
+        "expected_dim": 768,
+        "format": "PyTorch-Dense",
+        "package_source": "package-embedding-models",
+    },
+    {
+        "id": "bge-m3",
+        "aliases": ["BAAI/bge-m3", "bge-m3", "bge_m3"],
+        "expected_dim": 1024,
+        "format": "PyTorch-Dense",
+        "package_source": "package-embedding-models",
+    },
+    {
+        "id": "qwen3-embedding-0-6b",
+        "aliases": ["Qwen/Qwen3-Embedding-0.6B", "qwen3-embedding-0-6b", "qwen3_embedding_0_6b"],
+        "expected_dim": 1024,
+        "format": "PyTorch-Dense",
+        "package_source": "package-qwen3-family",
+    },
+    {
+        "id": "qwen3-embedding-0-6b-gguf",
+        "aliases": [
+            "qwen3-embedding-0-6b-gguf",
+            "qwen3-embedding-0.6b-q4_k_m.gguf",
+            "qwen3-embedding-0.6b.gguf",
+        ],
+        "expected_dim": 1024,
+        "format": "GGUF-Q4_K_M",
+        "package_source": "package-qwen3-family",
+    },
+    {
+        "id": "qwen3-embedding-4b-gguf",
+        "aliases": [
+            "qwen3-embedding-4b-gguf",
+            "qwen3-embedding-4b-q4_k_m.gguf",
+            "qwen3-embedding-4b.gguf",
+        ],
+        "expected_dim": 2560,
+        "format": "GGUF-Q4_K_M",
+        "package_source": "package-qwen3-family",
+    },
+    {
+        "id": "qwen3-vl-embedding-2b",
+        "aliases": ["Qwen/Qwen3-VL-2B", "qwen3-vl-embedding-2b", "qwen3-vl-2b"],
+        "expected_dim": 1536,
+        "format": "Multimodal-VL",
+        "package_source": "package-multimodal-vl",
+    },
+]
+
+
 def discover_all_candidate_models(
     asset_roots: list[tuple[Path, dict[str, Any]]],
 ) -> list[str]:
-    """Discovers all dense, vision-language, and GGUF quantized embedding models (filters out cross-encoders)."""
+    """Audits and discovers all candidate embedding models across all attached Kaggle inputs."""
     embed_models: list[str] = []
     seen_names: set[str] = set()
 
-    for asset_dir, _ in asset_roots:
-        models_dir = asset_dir / "models"
-        if models_dir.is_dir():
-            for m_dir in sorted(models_dir.iterdir()):
-                if "reranker" in m_dir.name.lower():
-                    continue
-                if m_dir.is_dir() and m_dir.name not in seen_names:
-                    seen_names.add(m_dir.name)
-                    embed_models.append(str(m_dir))
-                elif m_dir.suffix.lower() == ".gguf" and m_dir.name not in seen_names:
-                    seen_names.add(m_dir.name)
-                    embed_models.append(str(m_dir))
+    print("\n" + "=" * 105)
+    print("EMBEDDING MODEL DISCOVERY & ASSET ATTACHMENT AUDIT")
+    print("=" * 105)
+    audit_header = (
+        f"{'Model ID':<26} {'Format':<15} {'Status':<12} {'Dataset Source / Location':<48}"
+    )
+    print(audit_header)
+    print("-" * 105)
 
-        for gguf_file in sorted(asset_dir.rglob("*.gguf")):
-            if gguf_file.name not in seen_names and "reranker" not in gguf_file.name.lower():
-                seen_names.add(gguf_file.name)
-                embed_models.append(str(gguf_file))
+    all_search_dirs = [asset_dir for asset_dir, _ in asset_roots]
+    if INPUT_ROOT.is_dir() and INPUT_ROOT not in all_search_dirs:
+        all_search_dirs.append(INPUT_ROOT)
 
-    if INPUT_ROOT.is_dir():
-        for m_dir in sorted(INPUT_ROOT.rglob("models/*")):
+    for entry in CANDIDATE_MODEL_CATALOG:
+        m_id = entry["id"]
+        aliases = entry["aliases"]
+        found_path: Path | None = None
+
+        for search_dir in all_search_dirs:
+            for alias in aliases:
+                # 1. Check direct path or models/alias
+                cand1 = search_dir / alias
+                cand2 = search_dir / "models" / alias
+                if cand1.exists():
+                    found_path = cand1
+                    break
+                if cand2.exists():
+                    found_path = cand2
+                    break
+
+                # 2. Check rglob for alias
+                matches = list(search_dir.rglob(f"*{alias}*"))
+                if matches:
+                    found_path = matches[0]
+                    break
+            if found_path:
+                break
+
+        if found_path and str(found_path) not in seen_names:
+            seen_names.add(str(found_path))
+            embed_models.append(str(found_path))
+            print(f"{m_id:<26} {entry['format']:<15} {'ATTACHED':<12} {str(found_path):<48}")
+        else:
+            print(
+                f"{m_id:<26} {entry['format']:<15} {'NOT FOUND':<12} Attach '{entry['package_source']}' dataset"
+            )
+
+    # Also discover any uncataloged models in asset_roots or input
+    for search_dir in all_search_dirs:
+        for m_dir in sorted(search_dir.rglob("models/*")):
             if "reranker" in m_dir.name.lower():
                 continue
-            if m_dir.is_dir() and m_dir.name not in seen_names:
-                seen_names.add(m_dir.name)
+            if (
+                m_dir.is_dir()
+                and str(m_dir) not in seen_names
+                and m_dir.name not in [e["id"] for e in CANDIDATE_MODEL_CATALOG]
+            ):
+                seen_names.add(str(m_dir))
                 embed_models.append(str(m_dir))
-            elif m_dir.suffix.lower() == ".gguf" and m_dir.name not in seen_names:
-                seen_names.add(m_dir.name)
-                embed_models.append(str(m_dir))
+                print(f"{m_dir.name:<26} {'PyTorch-Dense':<15} {'ATTACHED':<12} {str(m_dir):<48}")
 
-        for gguf_file in sorted(INPUT_ROOT.rglob("*.gguf")):
-            if gguf_file.name not in seen_names and "reranker" not in gguf_file.name.lower():
-                seen_names.add(gguf_file.name)
+        for gguf_file in sorted(search_dir.rglob("*.gguf")):
+            if "reranker" in gguf_file.name.lower():
+                continue
+            if str(gguf_file) not in seen_names and gguf_file.name not in [
+                e["id"] for e in CANDIDATE_MODEL_CATALOG
+            ]:
+                seen_names.add(str(gguf_file))
                 embed_models.append(str(gguf_file))
+                print(
+                    f"{gguf_file.name:<26} {'GGUF-Q4_K_M':<15} {'ATTACHED':<12} {str(gguf_file):<48}"
+                )
 
+    print("=" * 105 + "\n")
     return embed_models
 
 
@@ -1541,7 +1658,10 @@ def run_benchmark() -> None:
             if best_model_obj is None:
                 best_model_obj = model_obj
         except Exception as e:
-            print(f"Could not benchmark {model_path}: {e}")
+            print(f"[ERROR] Failed to benchmark {model_path}: {e}")
+            import traceback
+
+            traceback.print_exc()
 
     # Calculate MCDA Composite Scores for Embeddings
     ranked_embed_models = calculate_composite_scores(embed_summary)

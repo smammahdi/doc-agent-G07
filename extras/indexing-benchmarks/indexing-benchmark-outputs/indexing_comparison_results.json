@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-15T05:23:32Z",
+  "timestamp": "2026-08-15T06:26:54Z",
   "source_pages": 1028,
   "curated_tasks_evaluated": 25,
   "chunking_comparison": {
@@ -11,8 +11,8 @@
       "has_parent_links": false,
       "has_figure_links": false,
       "evaluated_tasks": 20,
-      "mrr": 0.9167,
-      "recall@1": 0.85,
+      "mrr": 0.8833,
+      "recall@1": 0.8,
       "recall@3": 1.0,
       "recall@5": 1.0,
       "recall@10": 1.0
@@ -25,10 +25,10 @@
       "has_parent_links": false,
       "has_figure_links": false,
       "evaluated_tasks": 20,
-      "mrr": 0.86,
-      "recall@1": 0.8,
+      "mrr": 0.9071,
+      "recall@1": 0.85,
       "recall@3": 0.95,
-      "recall@5": 1.0,
+      "recall@5": 0.95,
       "recall@10": 1.0
     },
     "fixed_512_64": {
@@ -39,11 +39,11 @@
       "has_parent_links": false,
       "has_figure_links": false,
       "evaluated_tasks": 20,
-      "mrr": 0.8917,
-      "recall@1": 0.8,
-      "recall@3": 1.0,
-      "recall@5": 1.0,
-      "recall@10": 1.0
+      "mrr": 0.7979,
+      "recall@1": 0.7,
+      "recall@3": 0.9,
+      "recall@5": 0.9,
+      "recall@10": 0.95
     },
     "parent_child_128_512": {
       "total_chunks": 3823,
@@ -53,8 +53,8 @@
       "has_parent_links": true,
       "has_figure_links": false,
       "evaluated_tasks": 20,
-      "mrr": 0.9167,
-      "recall@1": 0.85,
+      "mrr": 0.8833,
+      "recall@1": 0.8,
       "recall@3": 1.0,
       "recall@5": 1.0,
       "recall@10": 1.0
@@ -67,9 +67,9 @@
       "has_parent_links": false,
       "has_figure_links": false,
       "evaluated_tasks": 20,
-      "mrr": 0.8917,
-      "recall@1": 0.8,
-      "recall@3": 1.0,
+      "mrr": 0.8458,
+      "recall@1": 0.75,
+      "recall@3": 0.95,
       "recall@5": 1.0,
       "recall@10": 1.0
     },
@@ -81,8 +81,8 @@
       "has_parent_links": false,
       "has_figure_links": true,
       "evaluated_tasks": 20,
-      "mrr": 0.86,
-      "recall@1": 0.8,
+      "mrr": 0.91,
+      "recall@1": 0.85,
       "recall@3": 0.95,
       "recall@5": 1.0,
       "recall@10": 1.0
@@ -95,10 +95,10 @@
       "has_parent_links": false,
       "has_figure_links": false,
       "evaluated_tasks": 20,
-      "mrr": 0.885,
-      "recall@1": 0.8,
+      "mrr": 0.9556,
+      "recall@1": 0.95,
       "recall@3": 0.95,
-      "recall@5": 1.0,
+      "recall@5": 0.95,
       "recall@10": 1.0
     }
   },
@@ -109,11 +109,11 @@
       "type": "PyTorch-Dense",
       "dimension": 384,
       "total_chunks": 2024,
-      "load_time_seconds": 1.29,
-      "encode_time_seconds": 0.744,
-      "single_query_p50_ms": 2.13,
-      "chunks_per_second": 2719.3,
-      "peak_vram_mb": 6557.7,
+      "load_time_seconds": 1.264,
+      "encode_time_seconds": 0.751,
+      "single_query_p50_ms": 2.08,
+      "chunks_per_second": 2694.7,
+      "peak_vram_mb": 248.2,
       "memory_estimate_mb": 2.96,
       "evaluated_tasks": 20,
       "mrr": 0.9071,
@@ -121,7 +121,7 @@
       "recall@3": 0.95,
       "recall@5": 0.95,
       "recall@10": 1.0,
-      "composite_score": 0.9805
+      "composite_score": 0.9814
     },
     {
       "model": "bge-small-en-v1-5",
@@ -129,11 +129,11 @@
       "type": "PyTorch-Dense",
       "dimension": 384,
       "total_chunks": 2024,
-      "load_time_seconds": 1.935,
+      "load_time_seconds": 1.567,
       "encode_time_seconds": 1.395,
-      "single_query_p50_ms": 3.12,
-      "chunks_per_second": 1450.7,
-      "peak_vram_mb": 6557.7,
+      "single_query_p50_ms": 3.17,
+      "chunks_per_second": 1450.5,
+      "peak_vram_mb": 3133.1,
       "memory_estimate_mb": 2.96,
       "evaluated_tasks": 20,
       "mrr": 0.9167,
@@ -141,7 +141,7 @@
       "recall@3": 1.0,
       "recall@5": 1.0,
       "recall@10": 1.0,
-      "composite_score": 0.9339
+      "composite_score": 0.9345
     },
     {
       "model": "bge-m3",
@@ -149,11 +149,11 @@
       "type": "PyTorch-Dense",
       "dimension": 1024,
       "total_chunks": 2024,
-      "load_time_seconds": 13.348,
-      "encode_time_seconds": 11.423,
+      "load_time_seconds": 12.182,
+      "encode_time_seconds": 11.398,
       "single_query_p50_ms": 5.63,
-      "chunks_per_second": 177.2,
-      "peak_vram_mb": 6557.7,
+      "chunks_per_second": 177.6,
+      "peak_vram_mb": 3133.1,
       "memory_estimate_mb": 7.91,
       "evaluated_tasks": 20,
       "mrr": 0.9292,
@@ -161,7 +161,7 @@
       "recall@3": 0.95,
       "recall@5": 1.0,
       "recall@10": 1.0,
-      "composite_score": 0.6178
+      "composite_score": 0.6212
     },
     {
       "model": "ms-marco-minilm-l6-v2",
@@ -169,11 +169,11 @@
       "type": "PyTorch-Dense",
       "dimension": 384,
       "total_chunks": 2024,
-      "load_time_seconds": 1.012,
-      "encode_time_seconds": 0.902,
+      "load_time_seconds": 0.904,
+      "encode_time_seconds": 0.892,
       "single_query_p50_ms": 1.99,
-      "chunks_per_second": 2243.7,
-      "peak_vram_mb": 6557.7,
+      "chunks_per_second": 2269.2,
+      "peak_vram_mb": 3133.1,
       "memory_estimate_mb": 2.96,
       "evaluated_tasks": 20,
       "mrr": 0.0,
@@ -181,7 +181,7 @@
       "recall@3": 0.0,
       "recall@5": 0.0,
       "recall@10": 0.0,
-      "composite_score": 0.5379
+      "composite_score": 0.5392
     },
     {
       "model": "qwen3-embedding-0-6b",
@@ -189,11 +189,11 @@
       "type": "PyTorch-Dense",
       "dimension": 1024,
       "total_chunks": 2024,
-      "load_time_seconds": 3.568,
-      "encode_time_seconds": 18.15,
-      "single_query_p50_ms": 13.91,
-      "chunks_per_second": 111.5,
-      "peak_vram_mb": 6557.0,
+      "load_time_seconds": 4.406,
+      "encode_time_seconds": 18.123,
+      "single_query_p50_ms": 14.58,
+      "chunks_per_second": 111.7,
+      "peak_vram_mb": 9024.2,
       "memory_estimate_mb": 7.91,
       "evaluated_tasks": 20,
       "mrr": 0.86,
@@ -207,23 +207,23 @@
   "faiss_index_comparison": {
     "IndexFlatIP": {
       "type": "exact",
-      "build_time_seconds": 0.0005,
-      "avg_query_latency_ms": 0.036,
+      "build_time_seconds": 0.0002,
+      "avg_query_latency_ms": 0.018,
       "recall_at_10_vs_exact": 1.0,
       "description": "Exact inner-product search (100% recall, baseline)"
     },
     "IndexHNSWFlat": {
       "type": "graph_ann",
-      "build_time_seconds": 0.0067,
-      "avg_query_latency_ms": 0.084,
+      "build_time_seconds": 0.0051,
+      "avg_query_latency_ms": 0.086,
       "recall_at_10_vs_exact": 1.0,
       "description": "Graph-based ANN with efSearch=64, M=32"
     },
     "IndexIVFFlat": {
       "type": "inverted_file",
-      "build_time_seconds": 0.0108,
-      "avg_query_latency_ms": 0.019,
-      "recall_at_10_vs_exact": 0.97,
+      "build_time_seconds": 0.0056,
+      "avg_query_latency_ms": 0.009,
+      "recall_at_10_vs_exact": 0.94,
       "description": "Inverted list clustering (nlist=32, nprobe=8)"
     }
   },
