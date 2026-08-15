@@ -45,6 +45,50 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 USE_GPU = True
 BATCH_SIZE = 32
 
+import importlib.util
+import subprocess
+import sys
+
+def find_all_asset_roots() -> list[tuple[Path, dict[str, Any]]]:
+    discovered = []
+    if not INPUT_ROOT.is_dir():
+        return discovered
+    for receipt_path in INPUT_ROOT.rglob("asset-receipt.json"):
+        try:
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            asset_dir = receipt_path.parent
+            discovered.append((asset_dir, receipt))
+            print(f"Discovered offline asset: '{receipt.get("asset", asset_dir.name)}' at {asset_dir}")
+        except Exception:
+            pass
+    return discovered
+
+def install_offline_runtimes(asset_roots: list[tuple[Path, dict[str, Any]]]) -> None:
+    all_wheels = []
+    for asset_dir, _ in asset_roots:
+        wheel_dir = asset_dir / "wheels"
+        if wheel_dir.is_dir():
+            for w in sorted(wheel_dir.glob("*.whl")):
+                if w.is_file() and w not in all_wheels:
+                    all_wheels.append(w)
+    if not all_wheels and INPUT_ROOT.is_dir():
+        for w in sorted(INPUT_ROOT.rglob("*.whl")):
+            if w.is_file() and w not in all_wheels:
+                all_wheels.append(w)
+    if not all_wheels:
+        return
+    seen_wheel_names = set()
+    selected = []
+    for wheel in all_wheels:
+        if wheel.name in seen_wheel_names:
+            continue
+        seen_wheel_names.add(wheel.name)
+        selected.append(wheel)
+    if selected:
+        print(f"Installing {len(selected)} offline wheels...")
+        cmd = [sys.executable, "-m", "pip", "install", "--no-index", "--find-links", str(selected[0].parent), *[str(w) for w in selected]]
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+
 # %%
 def load_source_pages() -> list[dict[str, str]]:
     pages = []
@@ -210,6 +254,9 @@ def evaluate_model(model_path: str, chunks: list[dict[str, Any]], tasks: list[di
 
 # %%
 def run():
+    asset_roots = find_all_asset_roots()
+    if asset_roots:
+        install_offline_runtimes(asset_roots)
     import torch
     device = "cuda" if (USE_GPU and torch.cuda.is_available()) else "cpu"
     print(f"Device: {device.upper()}")
