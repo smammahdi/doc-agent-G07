@@ -395,6 +395,48 @@ def recursive_semantic_chunking(
 
 
 # %%
+class GGUFEmbeddingWrapper:
+    """Wrapper for running GGUF quantized embedding models via llama_cpp."""
+
+    def __init__(self, model_path: str, n_ctx: int = 2048, n_threads: int = 4):
+        from llama_cpp import Llama
+
+        p = Path(model_path)
+        if p.is_dir():
+            gguf_files = list(p.glob("*.gguf")) + list(p.glob("*.GGUF"))
+            if not gguf_files:
+                raise FileNotFoundError(f"No .gguf file found in {model_path}")
+            gguf_file = str(gguf_files[0])
+        else:
+            gguf_file = str(p)
+        self.llm = Llama(
+            model_path=gguf_file,
+            embedding=True,
+            n_ctx=n_ctx,
+            n_threads=n_threads,
+            verbose=False,
+        )
+        self.model_name = p.name
+
+    def encode(
+        self,
+        texts: list[str],
+        batch_size: int = 32,
+        normalize_embeddings: bool = True,
+        show_progress_bar: bool = False,
+    ) -> np.ndarray:
+        vectors = []
+        for text in texts:
+            emb = self.llm.create_embedding(text)
+            vec = np.array(emb["data"][0]["embedding"], dtype=np.float32)
+            if normalize_embeddings:
+                norm = np.linalg.norm(vec)
+                if norm > 0:
+                    vec = vec / norm
+            vectors.append(vec)
+        return np.array(vectors, dtype=np.float32)
+
+
 def benchmark_embedding_model(
     model_name_or_path: str,
     chunks: list[BenchmarkChunk],
@@ -403,13 +445,23 @@ def benchmark_embedding_model(
 ) -> tuple[Any, np.ndarray, dict[str, Any]]:
     from sentence_transformers import SentenceTransformer
 
-    print(f"\n--- Benchmarking Model: {model_name_or_path} ({device.upper()}) ---")
-    start_load = time.perf_counter()
-    try:
-        model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
-    except Exception:
-        model = SentenceTransformer(model_name_or_path, device=device)
-    load_time_s = time.perf_counter() - start_load
+    is_gguf = (
+        "gguf" in model_name_or_path.lower() or Path(model_name_or_path).suffix.lower() == ".gguf"
+    )
+
+    if is_gguf:
+        print(f"\n--- Benchmarking GGUF Model: {model_name_or_path} ({device.upper()}) ---")
+        start_load = time.perf_counter()
+        model = GGUFEmbeddingWrapper(model_name_or_path)
+        load_time_s = time.perf_counter() - start_load
+    else:
+        print(f"\n--- Benchmarking PyTorch Model: {model_name_or_path} ({device.upper()}) ---")
+        start_load = time.perf_counter()
+        try:
+            model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
+        except Exception:
+            model = SentenceTransformer(model_name_or_path, device=device)
+        load_time_s = time.perf_counter() - start_load
 
     texts = [c.text for c in chunks]
 
@@ -433,6 +485,7 @@ def benchmark_embedding_model(
     metrics = {
         "model": Path(model_name_or_path).name,
         "device": device,
+        "type": "GGUF-Q4_K_M" if is_gguf else "PyTorch-Dense",
         "dimension": dim,
         "total_chunks": len(texts),
         "load_time_seconds": round(load_time_s, 3),
@@ -888,16 +941,23 @@ def run_benchmark() -> None:
 
     # 3. Benchmark Embedding Models & Accuracy on Baseline Chunks
     eval_chunks = chunk_suites["fixed_256_32"]
-    candidate_models = ["sentence-transformers/all-MiniLM-L6-v2"]
+    candidate_models = []
+    if INPUT_ROOT.is_dir():
+        for m_dir in INPUT_ROOT.rglob("models/*"):
+            if m_dir.is_dir() and "reranker" not in m_dir.name.lower():
+                candidate_models.append(str(m_dir))
 
-    if asset_root:
+    if not candidate_models and asset_root:
         models_dir = asset_root / "models"
         if models_dir.is_dir():
             candidate_models = [
                 str(p)
                 for p in models_dir.iterdir()
-                if p.is_dir() and "reranker" not in p.name.lower() and "gguf" not in p.name.lower()
+                if p.is_dir() and "reranker" not in p.name.lower()
             ]
+
+    if not candidate_models:
+        candidate_models = ["sentence-transformers/all-MiniLM-L6-v2"]
 
     embed_summary = []
     embeddings_store = {}
