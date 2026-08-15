@@ -24,7 +24,8 @@ def load_canonical_corpus(search_root: Path | None = None) -> list[CanonicalPage
         Path("extras/indexing-benchmarks/data"),
         Path("extras/indexing-benchmarks"),
         Path("/kaggle/input"),
-        Path("extras/output/chandra"),
+        Path("extras/ocr-benchmarks/extractions/chandra (full book)"),
+        Path("extras/ocr-benchmarks"),
     ])
 
     # 1. Search for pre-generated canonical-pages.jsonl or canonical_pages.jsonl

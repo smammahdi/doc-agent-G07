@@ -27,12 +27,11 @@ wandb/
 output/
 outputs/
 out/
-chandra_out/
-# The curated, small research-release tree under extras/output is explicit.
-!extras/output/
-!extras/output/**
-!extras/output/*/
-!extras/output/*/**
+# The curated research-release tree under extras/ocr-benchmarks/extractions is explicit.
+!extras/ocr-benchmarks/extractions/
+!extras/ocr-benchmarks/extractions/**
+!extras/ocr-benchmarks/extractions/*/
+!extras/ocr-benchmarks/extractions/*/**
 *.ckpt
 *.onnx
 *.pt
@@ -55,11 +54,8 @@ build-*/
 
 .claude
 chandra
-# Keep the curated model release visible despite the legacy broad rule above.
-!extras/output/chandra/
-!extras/output/chandra/**
-!extras/output/trocr/chandra/
-!extras/output/trocr/chandra/**
-
+# Ignore offline asset builders / wheel caches
+extras/research-notes/offline-asset-builders/
+extras/**/offline-asset-builders/
 
 extras/transcripts
