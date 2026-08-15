@@ -5,12 +5,49 @@ from pathlib import Path
 import numpy as np
 
 
+def sanitize_offline_model_dir(model_path: str | Path) -> str:
+    """Sanitize local model directory by stripping upstream HF repo prefixes from auto_map."""
+    path_obj = Path(model_path)
+    if not path_obj.is_dir():
+        return str(model_path)
+    cfg_file = path_obj / "config.json"
+    if not cfg_file.is_file():
+        return str(model_path)
+    try:
+        import json
+        cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+    except Exception:
+        return str(model_path)
+
+    auto_map = cfg.get("auto_map", {})
+    if not any("--" in str(v) for v in auto_map.values()):
+        return str(model_path)
+
+    sanitized_dir = Path("/tmp/offline_sanitized_models") / path_obj.name
+    sanitized_dir.mkdir(parents=True, exist_ok=True)
+
+    for item in path_obj.iterdir():
+        dest = sanitized_dir / item.name
+        if not dest.exists():
+            try:
+                dest.symlink_to(item, target_is_directory=item.is_dir())
+            except Exception:
+                pass
+
+    new_auto_map = {k: str(v).split("--")[-1] for k, v in auto_map.items()}
+    cfg["auto_map"] = new_auto_map
+    (sanitized_dir / "config.json").unlink(missing_ok=True)
+    (sanitized_dir / "config.json").write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    return str(sanitized_dir)
+
+
 class EmbeddingModelAdapter:
     """Standardized model adapter enforcing exact prefixes, pooling, and L2 normalization."""
 
     def __init__(self, model_name_or_path: str, canonical_id: str | None = None, device: str = "cpu"):
         self.device = device
-        self.resolved_path = str(model_name_or_path)
+        self.raw_path = str(model_name_or_path)
+        self.resolved_path = sanitize_offline_model_dir(model_name_or_path)
         self.raw_name = Path(model_name_or_path).name.lower()
 
         # Resolve Canonical Model ID
@@ -58,7 +95,7 @@ class EmbeddingModelAdapter:
         # Cascading loader: Try SentenceTransformer -> then HF AutoModel
         try:
             self.model = SentenceTransformer(
-                model_name_or_path,
+                self.resolved_path,
                 device=device,
                 trust_remote_code=True,
                 model_kwargs={"trust_remote_code": True},
@@ -67,25 +104,25 @@ class EmbeddingModelAdapter:
             )
         except Exception:
             try:
-                self.model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
+                self.model = SentenceTransformer(self.resolved_path, device=device, trust_remote_code=True)
             except Exception:
                 try:
-                    self.model = SentenceTransformer(model_name_or_path, device=device)
+                    self.model = SentenceTransformer(self.resolved_path, device=device)
                 except Exception:
                     pass
 
         if self.model is None:
             try:
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
-                self.hf_model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).to(device)
+                self.tokenizer = AutoTokenizer.from_pretrained(self.resolved_path, trust_remote_code=True)
+                self.hf_model = AutoModel.from_pretrained(self.resolved_path, trust_remote_code=True).to(device)
                 self.hf_model.eval()
             except Exception:
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-                self.hf_model = AutoModel.from_pretrained(model_name_or_path).to(device)
+                self.tokenizer = AutoTokenizer.from_pretrained(self.resolved_path)
+                self.hf_model = AutoModel.from_pretrained(self.resolved_path).to(device)
                 self.hf_model.eval()
 
         if self.model is None and self.hf_model is None:
-            raise RuntimeError(f"Failed to load embedding model from {model_name_or_path}")
+            raise RuntimeError(f"Failed to load embedding model from {self.resolved_path}")
 
     def encode_queries(self, queries: list[str]) -> np.ndarray:
         formatted = [f"{self.query_prefix}{q}" for q in queries]
