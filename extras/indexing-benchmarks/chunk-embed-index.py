@@ -11,23 +11,25 @@
 # # Stage 4 Offline Indexing Benchmark & Interactive Query Playground
 #
 # Benchmarks all core dimensions of the Stage 4 Knowledge Base pipeline:
-# 1. **Chunking Strategies**: Fixed-size token window (128/16, 256/32, 512/64) vs.
-#    Recursive Markdown/Semantic character splitting.
-# 2. **Embedding Models**: Lightweight MiniLM-384 vs. BGE-small-384 vs. Nomic-768 vs.
-#    Qwen3-0.6B (1024-d) vs. BGE-M3 (1024-d).
+# 1. **Chunking Strategies**: Fixed-size token window (128/16, 256/32, 512/64),
+#    Hierarchical Parent-Child (128 child -> 512 parent), Structural Section/Header-Aware,
+#    Multimodal Figure-Graph Linkage, and Semantic Recursive splitting.
+# 2. **Embedding Models**: MiniLM-384, BGE-small-384, Nomic-768, Qwen3-0.6B (1024-d),
+#    Qwen3-0.6B-GGUF (Q4_K_M), Qwen3-4B-GGUF (Q4_K_M), and BGE-M3 (1024-d).
 # 3. **Retrieval Quality Evaluation**: Evaluates Recall@1, Recall@3, Recall@5, Recall@10, and MRR
 #    against the 25 verified gold tasks in `grading_kit/tasks.jsonl`.
 # 4. **Vector Index Architectures**: `IndexFlatIP` (exact) vs. `IndexHNSWFlat` (graph ANN)
-#    vs. `IndexIVFFlat` (inverted cluster) vs. `IndexIVFPQ` (product quantized).
+#    vs. `IndexIVFFlat` (inverted cluster).
 # 5. **Interactive Retrieval Playground**: Query custom questions and inspect retrieved passages with scores and page citations.
 #
-# Runs 100% offline when attached to `embedding-indexing-offline-assets` or online via Hugging Face.
+# Runs 100% offline when attached to offline assets (notebook outputs or datasets) or online via Hugging Face.
 
 # %%
 from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -39,38 +41,72 @@ from typing import Any
 
 import numpy as np
 
+# Force offline mode for Hugging Face to prevent DNS retry hangs when Internet is OFF
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_DATASETS_OFFLINE"] = "1"
+
 # %%
 INPUT_ROOT = Path("/kaggle/input")
 WORK = Path("/kaggle/working")
 OUT_DIR = WORK / "indexing-benchmark-outputs"
-ASSET_NAME = "embedding-indexing-offline-assets"
 
 # Runtime hardware selection:
-# Set USE_GPU = False to benchmark in realistic CPU-only mode.
+# Set USE_GPU = False to benchmark in realistic CPU-only mode (prevents false sense of compute).
 # Set USE_GPU = True to use CUDA acceleration if available.
 USE_GPU = True
 BATCH_SIZE = 32
 
 
 # %%
-def install_offline_runtime(asset_root: Path) -> None:
-    wheel_dir = asset_root / "wheels"
-    if not wheel_dir.is_dir():
-        print(f"No wheels directory under {asset_root}, skipping offline pip install.")
-        return
-    wheels = sorted(
-        path for path in wheel_dir.iterdir() if path.is_file() and path.name.endswith(".whl")
-    )
-    if not wheels:
+def find_all_asset_roots() -> list[tuple[Path, dict[str, Any]]]:
+    """Recursively discovers ALL attached offline asset packages (datasets or notebook outputs)."""
+    discovered: list[tuple[Path, dict[str, Any]]] = []
+    if not INPUT_ROOT.is_dir():
+        return discovered
+
+    for receipt_path in INPUT_ROOT.rglob("asset-receipt.json"):
+        try:
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            asset_dir = receipt_path.parent
+            discovered.append((asset_dir, receipt))
+            print(
+                f"Discovered offline asset: '{receipt.get('asset', asset_dir.name)}' at {asset_dir}",
+                flush=True,
+            )
+        except Exception as e:
+            print(f"Warning: could not parse {receipt_path}: {e}")
+
+    return discovered
+
+
+def install_offline_runtimes(asset_roots: list[tuple[Path, dict[str, Any]]]) -> None:
+    """Installs wheels from all discovered asset packages."""
+    all_wheels: list[Path] = []
+    for asset_dir, _ in asset_roots:
+        wheel_dir = asset_dir / "wheels"
+        if wheel_dir.is_dir():
+            for w in sorted(wheel_dir.glob("*.whl")):
+                if w.is_file() and w not in all_wheels:
+                    all_wheels.append(w)
+
+    # Also search any wheels directory across /kaggle/input
+    if not all_wheels and INPUT_ROOT.is_dir():
+        for w in sorted(INPUT_ROOT.rglob("*.whl")):
+            if w.is_file() and w not in all_wheels:
+                all_wheels.append(w)
+
+    if not all_wheels:
+        print("No offline wheels found, using preinstalled environment packages.")
         return
 
-    # Skip preinstalled binary packages to prevent C-extension ABI conflicts
+    # Skip preinstalled binary packages to prevent ABI conflicts
     has_pil = importlib.util.find_spec("PIL") is not None
     has_numpy = importlib.util.find_spec("numpy") is not None
     has_cv2 = importlib.util.find_spec("cv2") is not None
 
-    selected = []
-    for wheel in wheels:
+    selected: list[Path] = []
+    for wheel in all_wheels:
         norm = wheel.name.lower().replace("_", "-")
         if has_pil and norm.startswith("pillow-"):
             continue
@@ -78,7 +114,8 @@ def install_offline_runtime(asset_root: Path) -> None:
             continue
         if has_cv2 and (norm.startswith("opencv-") or norm.startswith("opencv_python-")):
             continue
-        selected.append(wheel)
+        if wheel not in selected:
+            selected.append(wheel)
 
     if selected:
         print(f"Installing {len(selected)} offline wheels...", flush=True)
@@ -97,42 +134,6 @@ def install_offline_runtime(asset_root: Path) -> None:
             check=True,
         )
     importlib.invalidate_caches()
-
-
-def find_asset_root() -> tuple[Path | None, dict[str, Any] | None]:
-    if not INPUT_ROOT.is_dir():
-        return None, None
-    for candidate in INPUT_ROOT.iterdir():
-        if not candidate.is_dir():
-            continue
-        receipt_path = candidate / "asset-receipt.json"
-        if receipt_path.is_file():
-            try:
-                receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-                if receipt.get("asset") in [
-                    ASSET_NAME,
-                    "text-embeddings-offline-assets",
-                    "core-embeddings-offline-assets",
-                    "qwen3-embedding-reranker-assets",
-                ]:
-                    return candidate, receipt
-            except Exception:
-                pass
-        # Check subdirectories
-        for sub in candidate.iterdir():
-            if sub.is_dir() and (sub / "asset-receipt.json").is_file():
-                try:
-                    receipt = json.loads((sub / "asset-receipt.json").read_text(encoding="utf-8"))
-                    if receipt.get("asset") in [
-                        ASSET_NAME,
-                        "text-embeddings-offline-assets",
-                        "core-embeddings-offline-assets",
-                        "qwen3-embedding-reranker-assets",
-                    ]:
-                        return sub, receipt
-                except Exception:
-                    pass
-    return None, None
 
 
 # %% [markdown]
@@ -213,7 +214,6 @@ def hierarchical_parent_child_chunking(
             parent_text = " ".join(parent_words)
             parent_id = f"{doc_id}_{page_id}_p{p_idx:03d}"
 
-            # Create child chunks within parent window
             for c_start in range(0, len(parent_words), child_step):
                 child_words = parent_words[c_start : c_start + child_size]
                 child_text = " ".join(child_words)
@@ -242,8 +242,6 @@ def section_header_aware_chunking(
 ) -> list[BenchmarkChunk]:
     """Structural chunking: Splits text cleanly along Markdown headers and anatomical titles."""
     chunks: list[BenchmarkChunk] = []
-
-    # Regex detecting chapters, uppercase headings, and markdown headers
     header_pattern = re.compile(
         r"(?=^#{1,4}\s+|^CHAPTER\s+[IVXLCDM\d]+|^[A-Z\s]{4,}\.)", re.MULTILINE
     )
@@ -277,7 +275,6 @@ def section_header_aware_chunking(
                     )
                 )
             else:
-                # Sub-split long section by sentences
                 sub_chunks = fixed_window_token_chunking(
                     [{"page_id": page_id, "doc_id": doc_id, "text": sec}],
                     chunk_size=max_section_tokens,
@@ -305,7 +302,6 @@ def multimodal_figure_graph_chunking(
         matches = fig_pattern.findall(c.text)
         if matches:
             c.linked_figures = [f"Fig_{m}" for m in set(matches)]
-            # Enrich chunk representation with explicit figure metadata tag
             fig_tag = f"[FIGURE_LINKS: {', '.join(c.linked_figures)}] "
             c.text = fig_tag + c.text
 
@@ -443,8 +439,6 @@ def benchmark_embedding_model(
     device: str = "cpu",
     batch_size: int = 32,
 ) -> tuple[Any, np.ndarray, dict[str, Any]]:
-    from sentence_transformers import SentenceTransformer
-
     is_gguf = (
         "gguf" in model_name_or_path.lower() or Path(model_name_or_path).suffix.lower() == ".gguf"
     )
@@ -456,18 +450,36 @@ def benchmark_embedding_model(
         load_time_s = time.perf_counter() - start_load
     else:
         print(f"\n--- Benchmarking PyTorch Model: {model_name_or_path} ({device.upper()}) ---")
+        from sentence_transformers import SentenceTransformer
+
         start_load = time.perf_counter()
         try:
-            model = SentenceTransformer(model_name_or_path, device=device, trust_remote_code=True)
+            model = SentenceTransformer(
+                model_name_or_path,
+                device=device,
+                trust_remote_code=True,
+                local_files_only=True,
+            )
         except Exception:
-            model = SentenceTransformer(model_name_or_path, device=device)
+            try:
+                model = SentenceTransformer(
+                    model_name_or_path,
+                    device=device,
+                    local_files_only=True,
+                )
+            except Exception:
+                model = SentenceTransformer(model_name_or_path, device=device)
         load_time_s = time.perf_counter() - start_load
 
     texts = [c.text for c in chunks]
 
     # Warmup
     if len(texts) > 0:
-        _ = model.encode(texts[: min(4, len(texts))], batch_size=4, normalize_embeddings=True)
+        _ = model.encode(
+            texts[: min(4, len(texts))],
+            batch_size=4,
+            normalize_embeddings=True,
+        )
 
     start_enc = time.perf_counter()
     embeddings = model.encode(
@@ -647,7 +659,7 @@ def benchmark_faiss_indexes(
                 "build_time_seconds": round(build_time_ivf, 4),
                 "avg_query_latency_ms": round(query_time_ivf * 1000, 3),
                 "recall_at_10_vs_exact": round(float(np.mean(recalls_ivf)), 3),
-                "description": f"Inverted list clustering (nlist={nlist}, nprobe=8)",
+                "description": (f"Inverted list clustering (nlist={nlist}, nprobe=8)"),
             }
         except Exception as e:
             results["IndexIVFFlat"] = {"error": str(e)}
@@ -714,20 +726,41 @@ def load_source_pages() -> list[dict[str, str]]:
                         }
                     )
             if pages:
-                print(f"Loaded {len(pages)} pages from local grading_kit/labels.jsonl")
+                print(f"Loaded {len(pages)} pages from local" " grading_kit/labels.jsonl")
                 return pages
         except Exception:
             pass
 
     print("Using 100 synthetic historical medical test pages for benchmarking.")
     sample_topics = [
-        "Catarrh and affections of the air-passages require soothing expectorants and proper hygienic care.",
-        "Golden Seal (Hydrastis Canadensis) is a most valuable native remedy, possessing bitter tonic and alterative virtues.",
-        "Typhoid or enteric fever is marked by sustained high temperature, great prostration, and abdominal tenderness.",
-        "The heart consists of four distinct chambers: right and left auricles, and right and left ventricles.",
-        "To prepare the Golden Medical Discovery: combine active extractives with pure vegetable glycerine.",
-        "The bones contain more earthy matter than any other part of the human body, being firm and lime-colored.",
-        "The stomach is a musculo-membranous sac communicating with the esophagus by the cardiac orifice.",
+        (
+            "Catarrh and affections of the air-passages require soothing"
+            " expectorants and proper hygienic care."
+        ),
+        (
+            "Golden Seal (Hydrastis Canadensis) is a most valuable native"
+            " remedy, possessing bitter tonic and alterative virtues."
+        ),
+        (
+            "Typhoid or enteric fever is marked by sustained high temperature,"
+            " great prostration, and abdominal tenderness."
+        ),
+        (
+            "The heart consists of four distinct chambers: right and left"
+            " auricles, and right and left ventricles."
+        ),
+        (
+            "To prepare the Golden Medical Discovery: combine active"
+            " extractives with pure vegetable glycerine."
+        ),
+        (
+            "The bones contain more earthy matter than any other part of the"
+            " human body, being firm and lime-colored."
+        ),
+        (
+            "The stomach is a musculo-membranous sac communicating with the"
+            " esophagus by the cardiac orifice."
+        ),
     ]
     for i in range(1, 101):
         text = f"Chapter {(i % 12) + 1}. Medical Advice for Family Use. " + " ".join(
@@ -763,12 +796,38 @@ def load_gold_tasks() -> list[dict[str, Any]]:
                 if line and not line.startswith("#"):
                     tasks.append(json.loads(line))
             if tasks:
-                print(f"Loaded {len(tasks)} gold tasks from local grading_kit/tasks.jsonl")
+                print(f"Loaded {len(tasks)} gold tasks from local" " grading_kit/tasks.jsonl")
                 return tasks
         except Exception:
             pass
 
     return []
+
+
+def discover_all_candidate_models(
+    asset_roots: list[tuple[Path, dict[str, Any]]],
+) -> list[str]:
+    """Discovers all valid embedding model paths (PyTorch + GGUF) across all inputs."""
+    models: list[str] = []
+    seen_names: set[str] = set()
+
+    for asset_dir, _ in asset_roots:
+        models_dir = asset_dir / "models"
+        if models_dir.is_dir():
+            for m_dir in sorted(models_dir.iterdir()):
+                if m_dir.is_dir() and "reranker" not in m_dir.name.lower():
+                    if m_dir.name not in seen_names:
+                        models.append(str(m_dir))
+                        seen_names.add(m_dir.name)
+
+    if not models and INPUT_ROOT.is_dir():
+        for m_dir in sorted(INPUT_ROOT.rglob("models/*")):
+            if m_dir.is_dir() and "reranker" not in m_dir.name.lower():
+                if m_dir.name not in seen_names:
+                    models.append(str(m_dir))
+                    seen_names.add(m_dir.name)
+
+    return models
 
 
 # %%
@@ -788,26 +847,55 @@ def build_interactive_index(
 ) -> None:
     """Builds and caches a FAISS index for instant interactive querying."""
     import faiss
-    from sentence_transformers import SentenceTransformer
 
     pages = load_source_pages()
-    if chunk_strategy == "semantic_recursive":
+    if chunk_strategy == "parent_child_128_512":
+        chunks = hierarchical_parent_child_chunking(pages, 512, 128, 16)
+    elif chunk_strategy == "section_header_aware":
+        chunks = section_header_aware_chunking(pages, 350)
+    elif chunk_strategy == "multimodal_figure_graph":
+        chunks = multimodal_figure_graph_chunking(pages, 256, 32)
+    elif chunk_strategy == "semantic_recursive":
         chunks = recursive_semantic_chunking(pages, 256, 40)
     else:
         chunks = fixed_window_token_chunking(pages, 256, 32)
 
-    asset_root, _ = find_asset_root()
+    # Resolve local model directory if offline asset is attached
+    asset_roots = find_all_asset_roots()
     model_path = model_name
-    if asset_root:
-        candidate_dir = asset_root / "models" / model_name
+
+    for asset_dir, _ in asset_roots:
+        candidate_dir = asset_dir / "models" / model_name
         if candidate_dir.is_dir():
             model_path = str(candidate_dir)
+            break
 
-    print(f"\n[Playground] Loading embedding model: {model_path} on {device.upper()}...")
-    try:
-        model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
-    except Exception:
-        model = SentenceTransformer(model_path, device=device)
+    if model_path == model_name and INPUT_ROOT.is_dir():
+        for p in INPUT_ROOT.rglob(f"models/{model_name}"):
+            if p.is_dir():
+                model_path = str(p)
+                break
+
+    print(f"\n[Playground] Loading embedding model: {model_path} on" f" {device.upper()}...")
+    is_gguf = "gguf" in model_path.lower() or Path(model_path).suffix.lower() == ".gguf"
+
+    if is_gguf:
+        model = GGUFEmbeddingWrapper(model_path)
+    else:
+        from sentence_transformers import SentenceTransformer
+
+        try:
+            model = SentenceTransformer(
+                model_path,
+                device=device,
+                trust_remote_code=True,
+                local_files_only=True,
+            )
+        except Exception:
+            try:
+                model = SentenceTransformer(model_path, device=device, local_files_only=True)
+            except Exception:
+                model = SentenceTransformer(model_path, device=device)
 
     print(f"[Playground] Encoding {len(chunks)} chunks...")
     texts = [c.text for c in chunks]
@@ -833,6 +921,11 @@ def interactive_search(
     model_name: str = "qwen3-embedding-0-6b",
 ) -> list[dict[str, Any]]:
     """Runs instant semantic retrieval and displays highlighted result cards."""
+    # Ensure offline runtimes are installed first
+    asset_roots = find_all_asset_roots()
+    if asset_roots:
+        install_offline_runtimes(asset_roots)
+
     if _INTERACTIVE_CACHE["index"] is None or _INTERACTIVE_CACHE["model_name"] != model_name:
         import torch
 
@@ -867,7 +960,8 @@ def interactive_search(
         results.append(res_item)
 
         print(
-            f"\n[Rank #{rank}]  Score: {score:.4f}  |  Page: {chunk.page_id}  |  ID: {chunk.chunk_id}"
+            f"\n[Rank #{rank}]  Score: {score:.4f}  |  Page: {chunk.page_id} "
+            f" |  ID: {chunk.chunk_id}"
         )
         print(f'"{snippet}"')
         print("-" * 80)
@@ -880,22 +974,24 @@ def run_benchmark() -> None:
     import torch
 
     device = "cuda" if (USE_GPU and torch.cuda.is_available()) else "cpu"
-    print(f"Execution environment: PyTorch device = {device.upper()} (USE_GPU={USE_GPU})")
+    print(f"Execution environment: PyTorch device = {device.upper()}" f" (USE_GPU={USE_GPU})")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    asset_root, receipt = find_asset_root()
+    asset_roots = find_all_asset_roots()
 
-    if asset_root:
-        print(f"Discovered offline asset: {asset_root}", flush=True)
-        install_offline_runtime(asset_root)
+    if asset_roots:
+        install_offline_runtimes(asset_roots)
     else:
-        print("Running in online mode or using local environment packages.", flush=True)
+        print(
+            "Running in online mode or using local environment packages.",
+            flush=True,
+        )
 
     # 1. Load source pages and gold tasks
     pages = load_source_pages()
     tasks = load_gold_tasks()
     print(
-        f"Loaded {len(pages)} source pages and {len(tasks)} gold evaluation tasks.",
+        f"Loaded {len(pages)} source pages and {len(tasks)} gold evaluation" " tasks.",
         flush=True,
     )
 
@@ -924,7 +1020,10 @@ def run_benchmark() -> None:
     print("\n" + "=" * 90)
     print("CHUNKING STRATEGIES COMPARISON (Structural, Hierarchical & Graph Links)")
     print("=" * 90)
-    header_chunk = f"{'Strategy Name':<26} {'Total Chunks':<14} {'Avg Tokens':<12} {'Min/Max Tokens':<16} {'Graph/Parent Links'}"
+    header_chunk = (
+        f"{'Strategy Name':<26} {'Total Chunks':<14} {'Avg Tokens':<12}"
+        f" {'Min/Max Tokens':<16} {'Graph/Parent Links'}"
+    )
     print(header_chunk)
     print("-" * 90)
     for s_name, s_met in chunk_summary.items():
@@ -935,29 +1034,21 @@ def run_benchmark() -> None:
             else ("Figure Graph" if s_met["has_figure_links"] else "None")
         )
         print(
-            f"{s_name:<26} {s_met['total_chunks']:<14} {s_met['avg_tokens']:<12} {min_max:<16} {link_str}"
+            f"{s_name:<26} {s_met['total_chunks']:<14} {s_met['avg_tokens']:<12}"
+            f" {min_max:<16} {link_str}"
         )
     print("=" * 90)
 
     # 3. Benchmark Embedding Models & Accuracy on Baseline Chunks
     eval_chunks = chunk_suites["fixed_256_32"]
-    candidate_models = []
-    if INPUT_ROOT.is_dir():
-        for m_dir in INPUT_ROOT.rglob("models/*"):
-            if m_dir.is_dir() and "reranker" not in m_dir.name.lower():
-                candidate_models.append(str(m_dir))
-
-    if not candidate_models and asset_root:
-        models_dir = asset_root / "models"
-        if models_dir.is_dir():
-            candidate_models = [
-                str(p)
-                for p in models_dir.iterdir()
-                if p.is_dir() and "reranker" not in p.name.lower()
-            ]
+    candidate_models = discover_all_candidate_models(asset_roots)
 
     if not candidate_models:
         candidate_models = ["sentence-transformers/all-MiniLM-L6-v2"]
+
+    print(f"\nFound {len(candidate_models)} candidate embedding models to" " benchmark:")
+    for m in candidate_models:
+        print(f" - {m}")
 
     embed_summary = []
     embeddings_store = {}
@@ -965,7 +1056,7 @@ def run_benchmark() -> None:
     for model_path in candidate_models:
         try:
             model_obj, emb, met = benchmark_embedding_model(
-                model_path, eval_chunks, device=device, batch_size=32
+                model_path, eval_chunks, device=device, batch_size=BATCH_SIZE
             )
             # Evaluate retrieval quality against tasks.jsonl
             if tasks:
@@ -977,19 +1068,28 @@ def run_benchmark() -> None:
         except Exception as e:
             print(f"Could not benchmark {model_path}: {e}")
 
-    print("\n" + "=" * 110)
-    print("FINAL EMBEDDING MODEL LEADERBOARD (Ranked by MRR & Recall@5)")
-    print("=" * 110)
+    print("\n" + "=" * 115)
+    print("FINAL EMBEDDING MODEL LEADERBOARD (Ranked by MRR, Recall@5, &" " Throughput)")
+    print("=" * 115)
     sorted_models = sorted(
         embed_summary,
-        key=lambda x: (x.get("mrr", 0), x.get("recall@5", 0), x.get("chunks_per_second", 0)),
+        key=lambda x: (
+            x.get("mrr", 0),
+            x.get("recall@5", 0),
+            x.get("chunks_per_second", 0),
+        ),
         reverse=True,
     )
-    header = f"{'Rank':<5} {'Model Name':<28} {'Dims':<6} {'Throughput':<15} {'Encode Time':<12} {'Recall@1':<10} {'Recall@5':<10} {'MRR':<8}"
+    header = (
+        f"{'Rank':<5} {'Model Name':<28} {'Type':<14} {'Dims':<6}"
+        f" {'Throughput':<14} {'Encode Time':<12} {'Recall@1':<10}"
+        f" {'Recall@5':<10} {'MRR':<8}"
+    )
     print(header)
-    print("-" * 110)
+    print("-" * 115)
     for rank_idx, m in enumerate(sorted_models, start=1):
         m_name = m.get("model", "unknown")[:26]
+        m_type = m.get("type", "Dense")[:12]
         m_dim = str(m.get("dimension", "-"))
         m_tput = f"{m.get('chunks_per_second', 0):.1f} ch/s"
         m_time = f"{m.get('encode_time_seconds', 0):.2f}s"
@@ -997,23 +1097,40 @@ def run_benchmark() -> None:
         r5 = f"{m.get('recall@5', 0.0):.3f}" if "recall@5" in m else "N/A"
         mrr_val = f"{m.get('mrr', 0.0):.4f}" if "mrr" in m else "N/A"
         print(
-            f"#{rank_idx:<4} {m_name:<28} {m_dim:<6} {m_tput:<15} {m_time:<12} {r1:<10} {r5:<10} {mrr_val:<8}"
+            f"#{rank_idx:<4} {m_name:<28} {m_type:<14} {m_dim:<6} {m_tput:<14}"
+            f" {m_time:<12} {r1:<10} {r5:<10} {mrr_val:<8}"
         )
-    print("=" * 110)
+    print("=" * 115)
 
     # 4. Benchmark Vector Indexes
     if embeddings_store:
         first_model = list(embeddings_store.keys())[0]
         base_embeddings = embeddings_store[first_model]
-        from sentence_transformers import SentenceTransformer
-
         matching_path = next(
-            (m for m in candidate_models if Path(m).name == first_model), first_model
+            (m for m in candidate_models if Path(m).name == first_model),
+            first_model,
         )
-        try:
-            st_model = SentenceTransformer(matching_path, device=device, trust_remote_code=True)
-        except Exception:
-            st_model = SentenceTransformer(matching_path, device=device)
+
+        is_gguf = "gguf" in matching_path.lower() or Path(matching_path).suffix.lower() == ".gguf"
+        if is_gguf:
+            st_model = GGUFEmbeddingWrapper(matching_path)
+        else:
+            from sentence_transformers import SentenceTransformer
+
+            try:
+                st_model = SentenceTransformer(
+                    matching_path,
+                    device=device,
+                    trust_remote_code=True,
+                    local_files_only=True,
+                )
+            except Exception:
+                try:
+                    st_model = SentenceTransformer(
+                        matching_path, device=device, local_files_only=True
+                    )
+                except Exception:
+                    st_model = SentenceTransformer(matching_path, device=device)
 
         eval_queries = (
             [t["question"] for t in tasks if t.get("gold_pages")]
@@ -1066,10 +1183,8 @@ if __name__ == "__main__":
 # Run this cell anytime to ask any custom question and inspect the top retrieved passages, scores, and page citations.
 
 # %%
-MY_QUERY = "What are the medicinal preparations and healing properties of Golden Seal?"
-CHOSEN_MODEL = (
-    "qwen3-embedding-0-6b"  # or "bge-small-en-v1-5", "nomic-embed-text-v1-5", "all-minilm-l6-v2"
-)
+MY_QUERY = "What are the medicinal preparations and healing properties of Golden" " Seal?"
+CHOSEN_MODEL = "qwen3-embedding-0-6b"  # or "bge-small-en-v1-5", "nomic-embed-text-v1-5", "all-minilm-l6-v2", "qwen3-embedding-0-6b-gguf"
 TOP_K = 5
 
 results = interactive_search(query=MY_QUERY, top_k=TOP_K, model_name=CHOSEN_MODEL)
