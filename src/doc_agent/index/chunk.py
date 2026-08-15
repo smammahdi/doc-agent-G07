@@ -169,6 +169,38 @@ def load_from_mineru_jsonl(
     return page_chunks, img_idx
 
 
+def load_from_canonical_jsonl(
+    canonical_jsonl_path: Path,
+    doc_id: str,
+    image_index: dict[str, list[dict[str, str]]] | None = None,
+) -> tuple[list[Chunk], dict[str, list[dict[str, str]]]]:
+    """Parse canonical-pages.jsonl into one Chunk per book page."""
+    img_idx = dict(image_index) if image_index is not None else {}
+    page_chunks: list[Chunk] = []
+
+    with canonical_jsonl_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip() or line.startswith("#"):
+                continue
+            row = json.loads(line)
+            page_id = row.get("page_id", "")
+            raw_text = row.get("text", "")
+            clean = _clean_markdown(raw_text)
+            if not clean or not page_id:
+                continue
+
+            page_chunks.append(
+                Chunk(
+                    id=f"{doc_id}-{page_id}" if doc_id else page_id,
+                    doc_id=doc_id,
+                    text=clean,
+                    page_ids=[page_id],
+                )
+            )
+
+    return page_chunks, img_idx
+
+
 # ---------------------------------------------------------------------------
 # Token-level sliding-window chunking
 # ---------------------------------------------------------------------------

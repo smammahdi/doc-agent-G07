@@ -29,6 +29,7 @@ import yaml
 
 from doc_agent.index.chunk import (
     build_image_index,
+    load_from_canonical_jsonl,
     load_from_mineru_jsonl,
     load_from_pages_markdown,
     split,
@@ -43,6 +44,10 @@ CFG_PATH = REPO / "configs" / "config.yaml"
 MINERU_PAGES = REPO / "extras" / "output" / "mineru-ocr-full-book" / "full-page" / "pages.jsonl"
 PAGES_MD = REPO / "chandra" / "pages.md"
 CHANDRA_DIR = REPO / "chandra"
+CANONICAL_CANDIDATES = [
+    REPO / "data" / "canonical-pages.jsonl",
+    REPO / "extras" / "indexing-benchmarks" / "data" / "canonical-pages.jsonl",
+]
 
 
 def main() -> None:
@@ -53,9 +58,16 @@ def main() -> None:
     doc_id = cfg.get("ingest", {}).get("doc_id", "pierce-1890")
     index_path = Path(cfg["index"]["path"])
 
-    # Prefer MinerU (98.52% F1) if available, with Chandra as fallback
+    # Prefer Canonical Corpus -> MinerU -> Chandra fallback
+    canonical_file = next((p for p in CANONICAL_CANDIDATES if p.is_file()), None)
     use_mineru = MINERU_PAGES.is_file()
-    source_desc = f"MinerU ({MINERU_PAGES})" if use_mineru else f"Chandra ({PAGES_MD})"
+
+    if canonical_file:
+        source_desc = f"Canonical Corpus ({canonical_file})"
+    elif use_mineru:
+        source_desc = f"MinerU ({MINERU_PAGES})"
+    else:
+        source_desc = f"Chandra ({PAGES_MD})"
 
     print("=" * 70)
     print("  Doc-Agent G07 — Stage 4 Index Build")
@@ -68,7 +80,12 @@ def main() -> None:
     print("\n[1/4] Loading pages and building multimodal image index ...", flush=True)
     image_index = build_image_index(PAGES_MD) if PAGES_MD.is_file() else {}
 
-    if use_mineru:
+    if canonical_file:
+        page_chunks, image_index = load_from_canonical_jsonl(
+            canonical_file, doc_id, image_index=image_index
+        )
+        print(f"      → Loaded {len(page_chunks)} pages from Canonical Corpus", flush=True)
+    elif use_mineru:
         page_chunks, _ = load_from_mineru_jsonl(MINERU_PAGES, doc_id, image_index=image_index)
         print(f"      → Loaded {len(page_chunks)} pages from MinerU SOTA OCR", flush=True)
     else:
