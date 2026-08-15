@@ -44,12 +44,11 @@ extras/
 │   ├── bundles/                        # Packaged Kaggle input ZIPs (indexing-benchmark-data.zip)
 │   └── results/                        # Validated output reports
 │
-└── research-notes/                     # Internal developer guides, handoffs, & offline builders
+└── research-notes/                     # Internal developer guides and handoffs
     ├── implementation-plan.md
     ├── gold_dataset_generation_handoff.md
     ├── stage4_indexing_and_retrieval_guide.md
-    ├── stage4_options_tradeoffs_and_alternatives.md
-    └── offline-asset-builders/         # Git-ignored wheel packagers & model downloaders
+    └── stage4_options_tradeoffs_and_alternatives.md
 ```
 
 ---

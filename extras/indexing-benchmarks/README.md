@@ -68,9 +68,9 @@ All indexes use **L2-normalized embeddings with `METRIC_INNER_PRODUCT`** to comp
 
 1. **Local Run**:
    ```bash
-   python3 -c "from code.runner import run_stage4_benchmark; from pathlib import Path; run_stage4_benchmark(Path('results'))"
+   python3 -c "from stage4_benchmark.runner import run_stage4_unified_benchmark; from pathlib import Path; run_stage4_unified_benchmark(Path('results'))"
    ```
 2. **Kaggle Offline Run**:
-   - Attach `bundles/indexing-benchmark-data.zip` and the offline model wheels.
-   - Run `notebooks/01-run-benchmark.ipynb`.
-   - Inspect outputs in `notebooks/02-review-results.ipynb`.
+   - Attach `bundles/indexing-benchmark-data.zip` and the offline model weights/wheels.
+   - Run `notebooks/stage4-benchmark.ipynb` (Single-pass Run All).
+   - Download the generated `stage4-benchmark-results.zip` containing all artifacts and the production FAISS index.

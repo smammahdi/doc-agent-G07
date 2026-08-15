@@ -7,24 +7,22 @@ import sys
 import zipfile
 from pathlib import Path
 from unittest.mock import MagicMock
-
 import numpy as np
 import pytest
 
-# Ensure indexing-benchmarks code package is in sys.path
+# Ensure indexing-benchmarks is in sys.path
 _bench_root = Path(__file__).parent.parent / "extras" / "indexing-benchmarks"
 if str(_bench_root) not in sys.path:
     sys.path.insert(0, str(_bench_root))
-sys.modules.pop("code", None)
 
-from code.evaluation import (
+from stage4_benchmark.evaluation import (
     calibrate_abstention_threshold,
 )
-from code.models import (
+from stage4_benchmark.models import (
     discover_candidate_models,
     is_valid_local_model_dir,
 )
-from code.queries import load_retrieval_queries
+from stage4_benchmark.queries import load_retrieval_queries
 
 
 def test_retrieval_query_suite_splits_and_isolation():
