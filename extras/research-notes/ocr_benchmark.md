@@ -68,10 +68,17 @@ Chandra is selected as the practical, corpus-wide transcription source for the M
 
 ---
 
-## 4. Status of Excluded Baseline: Google Cloud Document AI
+## 4. Commercial Silver Reference: Google Cloud Document AI
 
-Google Cloud Document AI (`document-ai`) word extractions ([`extras/ocr-benchmarks/outputs/full-book/document-ai/words.jsonl`](../ocr-benchmarks/outputs/full-book/document-ai/words.jsonl)) are retained as a commercial reference asset but excluded from the official 22-page ranking table:
-- **Reason for Exclusion**: The available Document AI export contains unsorted word-level bounding boxes and confidence scores without verified reading-order linearization or paragraph reconstruction. Linearizing word tokens without an explicit reading-order model introduces column interleaving artifacts that distort CER/WER comparisons.
+Google Cloud Document AI (`document-ai`) extractions are preserved as a commercial cloud reference baseline across both scopes:
+- **Full Book Asset**: [`extras/ocr-benchmarks/outputs/full-book/document-ai/words.jsonl`](../ocr-benchmarks/outputs/full-book/document-ai/words.jsonl) containing 419,565 word-level bounding boxes across 1,016 observed non-empty pages.
+- **Held-Out Assembly**: Assembled source-order reading sequence in [`extras/ocr-benchmarks/outputs/heldout/document-ai/pages.jsonl`](../ocr-benchmarks/outputs/heldout/document-ai/pages.jsonl).
+- **Held-Out Performance (22 Scored Pages)**:
+  - **Macro CER**: `0.1508` ($15.08\%$)
+  - **Macro WER**: `0.2045` ($20.45\%$)
+  - **Macro Word-F1**: `0.9618` ($96.18\%$)
+  - **Micro CER**: `0.1318`, **Micro WER**: `0.1849`
+- **Assessment**: Document AI provides a strong commercial baseline with high word accuracy, but outputs unsegmented word-level bounding boxes rather than native structural layout blocks (headers, captions, paragraphs). It is retained as a silver reference for lexical verification.
 
 ---
 
