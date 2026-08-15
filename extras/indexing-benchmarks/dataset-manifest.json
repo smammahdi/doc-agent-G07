@@ -1,0 +1,35 @@
+{
+  "dataset_name": "indexing-benchmark-bundle",
+  "version": "2.0-reproduced",
+  "canonical_pages": 1034,
+  "non_empty_text_pages": 1016,
+  "missing_pages": [
+    "p0002",
+    "p0003",
+    "p0004",
+    "p0006",
+    "p1031",
+    "p1033"
+  ],
+  "retrieval_queries": {
+    "total": 110,
+    "dev_grounded": 80,
+    "dev_negatives": 5,
+    "test_grounded": 20,
+    "test_negatives": 5
+  },
+  "chunking_strategies": [
+    "fixed_128_16",
+    "fixed_256_32",
+    "fixed_512_64",
+    "paragraph_header_aware",
+    "parent_child_128_512"
+  ],
+  "embedding_models": [
+    "all-MiniLM-L6-v2",
+    "bge-small-en-v1.5",
+    "bge-m3",
+    "nomic-embed-text-v1.5",
+    "Qwen3-Embedding-0.6B"
+  ]
+}
