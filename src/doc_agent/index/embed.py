@@ -7,7 +7,7 @@ from typing import Any
 from ..contracts import Chunk
 
 
-def _settings(cfg: dict[str, Any]) -> tuple[str, str, int, int]:
+def _settings(cfg: dict[str, Any]) -> tuple[str, str | None, int, int]:
     if not isinstance(cfg, dict):
         raise TypeError("cfg must be a mapping")
     embed_cfg = cfg.get("embed", {})
@@ -17,8 +17,8 @@ def _settings(cfg: dict[str, Any]) -> tuple[str, str, int, int]:
     if not isinstance(model, str) or not model:
         raise ValueError("embed.model must be a non-empty model name")
     revision = embed_cfg.get("revision")
-    if not isinstance(revision, str) or not revision:
-        raise ValueError("embed.revision must be a pinned non-empty revision")
+    if revision is not None and (not isinstance(revision, str) or not revision):
+        raise ValueError("embed.revision must be a non-empty revision string when provided")
     dim = embed_cfg.get("dim")
     if isinstance(dim, bool) or not isinstance(dim, int) or dim <= 0:
         raise ValueError("embed.dim must be a positive integer")
@@ -51,7 +51,7 @@ def get_doc_prefix(model_name: str) -> str:
 def _encode_texts(
     texts: list[str],
     model_name: str,
-    revision: str,
+    revision: str | None,
     expected_dim: int,
     batch_size: int = 32,
     device: str | None = None,
@@ -67,12 +67,10 @@ def _encode_texts(
     try:
         from sentence_transformers import SentenceTransformer
 
-        model = SentenceTransformer(
-            model_name,
-            device=device,
-            revision=revision,
-            trust_remote_code=True,
-        )
+        st_kwargs: dict[str, Any] = {"device": device, "trust_remote_code": True}
+        if revision:
+            st_kwargs["revision"] = revision
+        model = SentenceTransformer(model_name, **st_kwargs)
         vectors = model.encode(
             texts,
             batch_size=batch_size,
