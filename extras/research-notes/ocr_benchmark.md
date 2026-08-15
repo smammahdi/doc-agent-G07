@@ -17,7 +17,7 @@ The table below reproduces the exact numbers from [`extras/ocr-benchmarks/report
 |:---:|---|---|:---:|:---:|:---:|:---:|:---:|
 | 1 | **Qwen3.5** | `Qwen3.5-9B (8q_k_xl)` | 22 | **0.1215** | **0.1432** | 0.9540 | **0.1109** | **0.1322** |
 | 2 | **Chandra (Selected)** | `Chandra-OCR` (layout blocks) | 22 | 0.1232 | 0.1507 | 0.9872 | 0.1147 | 0.1446 |
-| 3 | **MinerU full-page** | `opendatalab/MinerU2.5-Pro-2604-1.2B` | 22 | 0.1289 | 0.1550 | **0.9887** | 0.1196 | 0.1467 |
+| 3 | **MinerU full-page** | `opendatalab/MinerU2.5-Pro-2605-1.2B` | 22 | 0.1289 | 0.1550 | **0.9887** | 0.1196 | 0.1467 |
 | 4 | **GLM-OCR full-page** | `zai-org/GLM-OCR` | 22 | 0.1348 | 0.1501 | 0.9347 | 0.1232 | 0.1396 |
 | 5 | **MinerU layout** | `MinerU` + `PP-DocLayoutV3` | 22 | 0.1362 | 0.1610 | 0.9705 | 0.1189 | 0.1420 |
 | 6 | **GLM-OCR layout** | `GLM-OCR` + `PP-DocLayoutV3` | 22 | 0.1373 | 0.1613 | 0.9705 | 0.1199 | 0.1420 |
@@ -88,7 +88,7 @@ Google Cloud Document AI (`document-ai`) extractions are preserved as a commerci
 
 ## 5. Summary Reference for Milestone Form (A2)
 
-- **Options Compared**: 10 distinct OCR engines (Qwen3.5-9B, Chandra, MinerU, GLM-OCR, PaddleOCR PP-OCRv6, Tesseract 5.x, EasyOCR, Florence-2-base, DeepSeek-OCR-2, TrOCR-large, and Google Cloud Document AI) across 19 configurations.
+- **Options Compared**: 11 distinct OCR engines (Qwen3.5-9B, Chandra, MinerU, GLM-OCR, PaddleOCR PP-OCRv6, Tesseract 5.x, EasyOCR, Florence-2-base, DeepSeek-OCR-2, TrOCR-large, and Google Cloud Document AI) across 19 configurations.
 - **Selected Choice**: **Chandra OCR** with structured block parsing.
 - **22-Page Evaluation Benchmark**:
   - Best Macro CER: Qwen3.5 (0.1215)

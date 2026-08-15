@@ -11,7 +11,7 @@
 
 ## 1. Empirical Figure Detection Benchmark
 
-Metrics are calculated using greedy 1-to-1 bounding box matching at $\text{IoU} \ge 0.5$ on normalized page coordinates against the provisional Chandra reference:
+Metrics are calculated using the canonical Chandra-reference evaluator [`extras/layout-benchmarks/engines/layout_research/run_layout_comparison.py`](../engines/layout_research/run_layout_comparison.py) using greedy 1-to-1 bounding box matching at $\text{IoU} \ge 0.5$ on normalized page coordinates:
 
 | Detector | Box Precision | Box Recall | Box F1 | Mean Matched IoU | Page Presence F1 | Source Output Directory |
 |---|:---:|:---:|:---:|:---:|:---:|---|
@@ -25,20 +25,21 @@ Metrics are calculated using greedy 1-to-1 bounding box matching at $\text{IoU} 
 
 ## 2. Automated Evaluation Methodology & Matching Arithmetic
 
-All metrics were computed automatically by the benchmark harness ([`extras/layout-benchmarks/engines/layout_research/figextract/compare.py`](../engines/layout_research/figextract/compare.py)) without manual annotation:
+The canonical evaluation is implemented in [`extras/layout-benchmarks/engines/layout_research/run_layout_comparison.py`](../engines/layout_research/run_layout_comparison.py). *(Note: `figextract/compare.py` is the older cross-detector agreement utility, whereas `run_layout_comparison.py` is the canonical evaluator against the Chandra reference).*
 
 ### A. Coordinate Normalization & 2D Intersection over Union (IoU)
-For each page, bounding box coordinates are normalized to the unit square $[0, 1] \times [0, 1]$ using the page dimensions:
+For each page, bounding box coordinates are normalized to the unit square $[0, 1] \times [0, 1]$ using page dimensions:
 
 $$\text{IoU}(\text{Box}_A, \text{Box}_B) = \frac{\text{Area}(\text{Box}_A \cap \text{Box}_B)}{\text{Area}(\text{Box}_A \cup \text{Box}_B)}$$
 
-### B. Greedy Bipartite Matching Algorithm ($\text{IoU} \ge 0.5$)
-1. For every page, candidate predicted boxes and reference boxes are sorted by area descending.
-2. Pairwise IoU values are calculated. Pairs with $\text{IoU} \ge 0.5$ are matched greedily 1-to-1:
+### B. Pairwise IoU Sorting & Greedy Bipartite Matching ($\text{IoU} \ge 0.5$)
+1. On each page, the evaluator constructs all possible (prediction, reference) candidate pairs and computes their 2D IoU.
+2. Candidate pairs are **sorted by IoU in descending order**.
+3. The evaluator greedily matches candidate pairs with $\text{IoU} \ge 0.5$, ensuring each predicted box and each reference box is matched at most once:
    - **True Positive ($\text{TP}$)**: A predicted box matched to an unmatched reference box with $\text{IoU} \ge 0.5$.
-   - **False Positive ($\text{FP}$)**: A predicted box that fails to match any reference box with $\text{IoU} \ge 0.5$.
-   - **False Negative ($\text{FN}$)**: A reference box with no matching prediction box.
-3. **Metric Definitions**:
+   - **False Positive ($\text{FP}$)**: A predicted box that remains unmatched ($\text{IoU} < 0.5$).
+   - **False Negative ($\text{FN}$)**: A reference box with no matching predicted box.
+4. **Metric Definitions**:
    $$\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}, \quad \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}, \quad \text{Box F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
    $$\text{Mean Matched IoU} = \frac{1}{\text{TP}} \sum_{i=1}^{\text{TP}} \text{IoU}_i$$
 
