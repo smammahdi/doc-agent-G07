@@ -23,7 +23,42 @@ Metrics are calculated using greedy 1-to-1 bounding box matching at $\text{IoU} 
 
 ---
 
-## 2. Objective-Dependent Model Assessment
+## 2. Automated Evaluation Methodology & Matching Arithmetic
+
+All metrics were computed automatically by the benchmark harness ([`extras/layout-benchmarks/engines/layout_research/figextract/compare.py`](../engines/layout_research/figextract/compare.py)) without manual annotation:
+
+### A. Coordinate Normalization & 2D Intersection over Union (IoU)
+For each page, bounding box coordinates are normalized to the unit square $[0, 1] \times [0, 1]$ using the page dimensions:
+
+$$\text{IoU}(\text{Box}_A, \text{Box}_B) = \frac{\text{Area}(\text{Box}_A \cap \text{Box}_B)}{\text{Area}(\text{Box}_A \cup \text{Box}_B)}$$
+
+### B. Greedy Bipartite Matching Algorithm ($\text{IoU} \ge 0.5$)
+1. For every page, candidate predicted boxes and reference boxes are sorted by area descending.
+2. Pairwise IoU values are calculated. Pairs with $\text{IoU} \ge 0.5$ are matched greedily 1-to-1:
+   - **True Positive ($\text{TP}$)**: A predicted box matched to an unmatched reference box with $\text{IoU} \ge 0.5$.
+   - **False Positive ($\text{FP}$)**: A predicted box that fails to match any reference box with $\text{IoU} \ge 0.5$.
+   - **False Negative ($\text{FN}$)**: A reference box with no matching prediction box.
+3. **Metric Definitions**:
+   $$\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}, \quad \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}, \quad \text{Box F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
+   $$\text{Mean Matched IoU} = \frac{1}{\text{TP}} \sum_{i=1}^{\text{TP}} \text{IoU}_i$$
+
+### C. Detector-by-Detector Breakdown
+
+| Detector | Predicted Boxes | Matched TP | False Positives (FP) | False Negatives (FN) | Matched Pages (TP / FP / FN) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **PP-DocLayoutV3** | 306 | 288 | 18 | 65 | 240 / 1 / 14 |
+| **Orphan ink** | 330 | 286 | 44 | 67 | 246 / 3 / 8 |
+| **PP-DocLayout-plus-L** | 304 | 274 | 30 | 79 | 245 / 1 / 9 |
+| **DocLayout-YOLO** | 285 | 263 | 22 | 90 | 236 / 3 / 18 |
+| **PicoDet-S** | 262 | 178 | 84 | 175 | 208 / 22 / 46 |
+
+*Example Calculation (PP-DocLayoutV3)*:
+$$\text{Precision} = \frac{288}{288 + 18} = \frac{288}{306} = 0.9412, \quad \text{Recall} = \frac{288}{288 + 65} = \frac{288}{353} = 0.8159$$
+$$\text{Box F1} = \frac{2 \times 0.9412 \times 0.8159}{0.9412 + 0.8159} = 0.8741, \quad \text{Page F1} = \frac{2 \times 240}{2 \times 240 + 1 + 14} = 0.9697$$
+
+---
+
+## 3. Objective-Dependent Model Assessment
 
 No single detector universally dominates across all evaluation criteria; selection depends on the target operational objective:
 
@@ -42,7 +77,7 @@ No single detector universally dominates across all evaluation criteria; selecti
 
 ---
 
-## 3. Qualitative Visual Observations (Held-Out PDF Inspections)
+## 4. Qualitative Visual Observations (Held-Out PDF Inspections)
 
 The visual overlay PDFs in [`extras/layout-benchmarks/outputs/heldout-visualizations/`](../outputs/heldout-visualizations/) provide qualitative confirmation of model behavior across the 24 held-out pages:
 - *Observation 1 (Caption Handling)*: PP-DocLayoutV3 cleanly separates figure graphics from multi-line woodcut captions (`Fig. 1`, `Fig. 2`), whereas raw bounding boxes occasionally merge captions into the illustration box.

@@ -11,28 +11,29 @@
 
 ## 1. Multi-Engine Empirical Benchmark (22 Held-Out Pages)
 
-The table below reproduces the exact numbers from [`extras/ocr-benchmarks/reports/output_reports/ocr-benchmark-comparison-22-pages.json`](../ocr-benchmarks/reports/output_reports/ocr-benchmark-comparison-22-pages.json) across all 18 evaluated OCR configurations:
+The table below reproduces the exact numbers from [`extras/ocr-benchmarks/reports/output_reports/ocr-benchmark-comparison-22-pages.json`](../ocr-benchmarks/reports/output_reports/ocr-benchmark-comparison-22-pages.json) across all 19 evaluated OCR configurations (including the Google Cloud Document AI commercial silver baseline):
 
 | Rank | OCR Engine / Configuration | Checkpoint / Source | Scored Pages | Macro CER ↓ | Macro WER ↓ | Macro Word-F1 ↑ | Micro CER ↓ | Micro WER ↓ |
 |:---:|---|---|:---:|:---:|:---:|:---:|:---:|
 | 1 | **Qwen3.5** | `Qwen3.5-9B (8q_k_xl)` | 22 | **0.1215** | **0.1432** | 0.9540 | **0.1109** | **0.1322** |
-| 2 | **Chandra** | `Chandra-OCR` (layout blocks) | 22 | 0.1232 | 0.1507 | 0.9872 | 0.1147 | 0.1446 |
+| 2 | **Chandra (Selected)** | `Chandra-OCR` (layout blocks) | 22 | 0.1232 | 0.1507 | 0.9872 | 0.1147 | 0.1446 |
 | 3 | **MinerU full-page** | `opendatalab/MinerU2.5-Pro-2604-1.2B` | 22 | 0.1289 | 0.1550 | **0.9887** | 0.1196 | 0.1467 |
 | 4 | **GLM-OCR full-page** | `zai-org/GLM-OCR` | 22 | 0.1348 | 0.1501 | 0.9347 | 0.1232 | 0.1396 |
 | 5 | **MinerU layout** | `MinerU` + `PP-DocLayoutV3` | 22 | 0.1362 | 0.1610 | 0.9705 | 0.1189 | 0.1420 |
 | 6 | **GLM-OCR layout** | `GLM-OCR` + `PP-DocLayoutV3` | 22 | 0.1373 | 0.1613 | 0.9705 | 0.1199 | 0.1420 |
 | 7 | **PaddleOCR layout** | `PP-OCRv6_medium` + `PP-DocLayoutV3` | 22 | 0.1392 | 0.1891 | 0.9465 | 0.1219 | 0.1692 |
 | 8 | **Tesseract layout** | `Tesseract 5.x` + `PP-DocLayoutV3` | 22 | 0.1410 | 0.1980 | 0.9349 | 0.1236 | 0.1780 |
-| 9 | **EasyOCR layout** | `EasyOCR` + `PP-DocLayoutV3` | 22 | 0.1583 | 0.2759 | 0.8549 | 0.1407 | 0.2541 |
-| 10 | **PaddleOCR full-page** | `PP-OCRv6_medium` (full page) | 22 | 0.1607 | 0.2174 | 0.9622 | 0.1449 | 0.1996 |
-| 11 | **Tesseract full-page** | `Tesseract 5.x` (full page) | 22 | 0.1801 | 0.2759 | 0.9106 | 0.1594 | 0.2441 |
-| 12 | **TrOCR layout** | `microsoft/trocr-large-printed` + Layout | 22 | 0.1846 | 0.2745 | 0.8639 | 0.1708 | 0.2585 |
-| 13 | **Florence-2 layout** | `microsoft/Florence-2-base` + Layout | 22 | 0.1893 | 0.3672 | 0.7865 | 0.1764 | 0.3526 |
-| 14 | **Florence-2 full-page** | `microsoft/Florence-2-base` (full page) | 22 | 0.2270 | 0.4066 | 0.7674 | 0.2178 | 0.3993 |
-| 15 | **DeepSeek-OCR full-page**| `deepseek-ai/DeepSeek-OCR-2` | 22 | 0.2548 | 0.3133 | 0.8567 | 0.2364 | 0.2959 |
-| 16 | **TrOCR full-page** | `microsoft/trocr-large-printed` (full page)| 22 | 0.3550 | 0.4698 | 0.6241 | 0.3340 | 0.4529 |
-| 17 | **EasyOCR full-page** | `EasyOCR` (full page) | 22 | 0.4117 | 0.5634 | 0.8651 | 0.4036 | 0.5486 |
-| 18 | **DeepSeek-OCR layout** | `DeepSeek-OCR-2` + Layout | 22 | 0.7495 | 0.9584 | 0.7050 | 0.7259 | 0.9143 |
+| 9 | **Document AI (commercial)**| Google Cloud Document AI OCR | 22 | 0.1508 | 0.2045 | 0.9618 | 0.1318 | 0.1849 |
+| 10 | **EasyOCR layout** | `EasyOCR` + `PP-DocLayoutV3` | 22 | 0.1583 | 0.2759 | 0.8549 | 0.1407 | 0.2541 |
+| 11 | **PaddleOCR full-page** | `PP-OCRv6_medium` (full page) | 22 | 0.1607 | 0.2174 | 0.9622 | 0.1449 | 0.1996 |
+| 12 | **Tesseract full-page** | `Tesseract 5.x` (full page) | 22 | 0.1801 | 0.2759 | 0.9106 | 0.1594 | 0.2441 |
+| 13 | **TrOCR layout** | `microsoft/trocr-large-printed` + Layout | 22 | 0.1846 | 0.2745 | 0.8639 | 0.1708 | 0.2585 |
+| 14 | **Florence-2 layout** | `microsoft/Florence-2-base` + Layout | 22 | 0.1893 | 0.3672 | 0.7865 | 0.1764 | 0.3526 |
+| 15 | **Florence-2 full-page** | `microsoft/Florence-2-base` (full page) | 22 | 0.2270 | 0.4066 | 0.7674 | 0.2178 | 0.3993 |
+| 16 | **DeepSeek-OCR full-page**| `deepseek-ai/DeepSeek-OCR-2` | 22 | 0.2548 | 0.3133 | 0.8567 | 0.2364 | 0.2959 |
+| 17 | **TrOCR full-page** | `microsoft/trocr-large-printed` (full page)| 22 | 0.3550 | 0.4698 | 0.6241 | 0.3340 | 0.4529 |
+| 18 | **EasyOCR full-page** | `EasyOCR` (full page) | 22 | 0.4117 | 0.5634 | 0.8651 | 0.4036 | 0.5486 |
+| 19 | **DeepSeek-OCR layout** | `DeepSeek-OCR-2` + Layout | 22 | 0.7495 | 0.9584 | 0.7050 | 0.7259 | 0.9143 |
 
 ---
 
@@ -40,7 +41,10 @@ The table below reproduces the exact numbers from [`extras/ocr-benchmarks/report
 
 1. **Best Macro CER/WER**: **`Qwen3.5-9B (8q_k_xl)`** achieved the lowest Macro Character Error Rate (**0.1215**) and lowest Macro Word Error Rate (**0.1432**).
 2. **Highest Macro Word-F1**: **`MinerU full-page`** achieved the highest token-level Macro Word-F1 score (**0.9887**), followed closely by **Chandra** (**0.9872**).
-3. **Selective Impact of Layout Guidance**:
+3. **Commercial Cloud Baseline (Document AI)**:
+   - Google Cloud Document AI achieved **0.1508 Macro CER**, **0.2045 Macro WER**, and **0.9618 Macro Word-F1**.
+   - It performs solidly as a word-level extractor (419,565 word boxes across 1,016 book pages), but outputs unsegmented word-level boxes rather than native structural layout blocks (headers, captions, paragraphs).
+4. **Selective Impact of Layout Guidance**:
    - Applying `PP-DocLayoutV3` bounding crops significantly helped line-based and traditional OCR models by isolating text columns and suppressing non-text borders:
      - **Tesseract**: Full-page CER $0.1801 \to 0.1410$ (-21.7% relative error).
      - **PaddleOCR**: Full-page CER $0.1607 \to 0.1392$ (-13.4% relative error).
@@ -84,10 +88,11 @@ Google Cloud Document AI (`document-ai`) extractions are preserved as a commerci
 
 ## 5. Summary Reference for Milestone Form (A2)
 
-- **Options Compared**: 10 distinct OCR engines (Qwen3.5-9B, Chandra, MinerU, GLM-OCR, PaddleOCR PP-OCRv6, Tesseract 5.x, EasyOCR, Florence-2-base, DeepSeek-OCR-2, TrOCR-large) across 18 full-page and layout-guided configurations.
+- **Options Compared**: 10 distinct OCR engines (Qwen3.5-9B, Chandra, MinerU, GLM-OCR, PaddleOCR PP-OCRv6, Tesseract 5.x, EasyOCR, Florence-2-base, DeepSeek-OCR-2, TrOCR-large, and Google Cloud Document AI) across 19 configurations.
 - **Selected Choice**: **Chandra OCR** with structured block parsing.
 - **22-Page Evaluation Benchmark**:
   - Best Macro CER: Qwen3.5 (0.1215)
   - Best Macro Word-F1: MinerU full-page (0.9887)
   - Selected (Chandra): Macro CER = 0.1232 (12.32%), Macro WER = 0.1507 (15.07%), Macro Word-F1 = 0.9872 (98.72%).
+  - Commercial Baseline (Document AI): Macro CER = 0.1508 (15.08%), Macro WER = 0.2045 (20.45%), Macro Word-F1 = 0.9618 (96.18%).
 - **Full Corpus Coverage**: 1,034 PDF pages, 1,016 non-empty indexed pages, 18 empty/unobserved pages (including 6 Chandra unobserved: `p0002`, `p0003`, `p0004`, `p0006`, `p1031`, `p1033`), 364,824 words across 8,544 structured layout blocks.
