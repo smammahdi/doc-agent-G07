@@ -1010,9 +1010,53 @@ def benchmark_faiss_indexes(
 
 # %%
 def load_source_pages() -> list[dict[str, str]]:
-    """Loads corpus pages from attached Kaggle datasets or local labels/fallback."""
+    """Loads full 1,034-page corpus from attached Kaggle datasets, local files, or fallback."""
     pages: list[dict[str, str]] = []
 
+    # 1. Prioritize full-book pages.jsonl across all attached inputs
+    if INPUT_ROOT.is_dir():
+        for path in sorted(INPUT_ROOT.rglob("*.jsonl")):
+            if "page" in path.name.lower() or "full_book" in path.name.lower():
+                try:
+                    cand_pages: list[dict[str, str]] = []
+                    for line in path.read_text(encoding="utf-8").splitlines():
+                        if line.strip():
+                            item = json.loads(line)
+                            cand_pages.append(
+                                {
+                                    "doc_id": item.get("doc_id", "pierce-1890"),
+                                    "page_id": item.get("page_id", f"p{len(cand_pages)+1:04d}"),
+                                    "text": item.get("text", "").strip(),
+                                }
+                            )
+                    if len(cand_pages) >= 50:
+                        print(f"Loaded {len(cand_pages)} FULL BOOK pages from {path}")
+                        return cand_pages
+                except Exception:
+                    pass
+
+    # 2. Check local full_book_pages.jsonl in workspace
+    local_full = Path("extras/indexing-benchmarks/full_book_pages.jsonl")
+    if local_full.is_file():
+        try:
+            cand_pages = []
+            for line in local_full.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    item = json.loads(line)
+                    cand_pages.append(
+                        {
+                            "doc_id": item.get("doc_id", "pierce-1890"),
+                            "page_id": item.get("page_id", f"p{len(cand_pages)+1:04d}"),
+                            "text": item.get("text", "").strip(),
+                        }
+                    )
+            if cand_pages:
+                print(f"Loaded {len(cand_pages)} FULL BOOK pages from {local_full}")
+                return cand_pages
+        except Exception:
+            pass
+
+    # 3. Check attached labels.jsonl or markdown files
     if INPUT_ROOT.is_dir():
         for path in INPUT_ROOT.rglob("labels.jsonl"):
             try:
@@ -1027,7 +1071,7 @@ def load_source_pages() -> list[dict[str, str]]:
                             }
                         )
                 if pages:
-                    print(f"Loaded {len(pages)} pages from {path}")
+                    print(f"Loaded {len(pages)} held-out evaluation pages from {path}")
                     return pages
             except Exception:
                 pass
@@ -1067,7 +1111,7 @@ def load_source_pages() -> list[dict[str, str]]:
                         }
                     )
             if pages:
-                print(f"Loaded {len(pages)} pages from local" " grading_kit/labels.jsonl")
+                print(f"Loaded {len(pages)} pages from local grading_kit/labels.jsonl")
                 return pages
         except Exception:
             pass
