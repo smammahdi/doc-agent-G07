@@ -1,52 +1,48 @@
-# A2 team workspace
+# Document Agent R&D Workspace (`extras/`)
 
-`extras/` holds team experiments and reproducibility tools that support the
-fixed starter implementation. Production code remains under `src/doc_agent/`;
-these files are not imported by the runtime pipeline.
+This directory contains the experimental benchmarks, evaluation harnesses, offline asset packagers, and research notes for the **Historical Medical Document Agent** project (*People's Common Sense Medical Adviser*, Pierce, 1890).
 
-## Contents
+---
 
-| Path | Purpose |
-|---|---|
-| `implementation-plan.md` | Partner-owned A2 held-out OCR and index plan |
-| `kaggle_heldout_score.ipynb` | Partner-owned held-out scoring notebook |
-| `kaggle_ocr_comparison.ipynb` | Partner-owned OCR comparison notebook |
-| `layout_research/` | Mahdi's figure extraction, detector comparison, and Chandra-reference evaluation code |
-| `ocr_research/` | Mahdi's OCR bake-off and offline Document AI reference-generation code |
-| `ocr-benchmarks/` | Mahdi's editable Kaggle runners for DeepSeek-OCR-2, GLM-OCR, MinerU, PaddleOCR, and TrOCR |
-| `chandra_research/` | Mahdi's direct Kaggle Chandra notebook and output-normalization utilities |
-| `output/` | Curated layout and Document AI reference artifacts |
+## 1. Directory Overview & Navigation
 
-Each research directory has its own README with commands and evidence limits.
-The original partner files above are preserved unchanged.
+```
+extras/
+├── README.md                   # Master index and navigation guide
+├── ocr-benchmarks/             # Stages 1–3: OCR Engines, Layout Segmentation, & Held-Out Evaluations
+│   ├── notebooks/              # Interactive Kaggle evaluation notebooks
+│   ├── engines/                # Isolated benchmark harnesses for OCR/layout engines (Chandra, Tesseract, etc.)
+│   └── reports/                # Quantitative CER/WER comparison reports and benchmark artifacts
+├── indexing-benchmarks/        # Stage 4: Chunking Strategies, Embedding Models, & FAISS Vector Search
+│   ├── code/                   # Reusable Python benchmark package
+│   ├── data/                   # Canonical 1,034-page corpus & 60-query grounded retrieval benchmark
+│   ├── notebooks/              # Dev selection (`stage4-dev-selection.ipynb`) & Final evidence notebooks
+│   ├── bundles/                # Packaged Kaggle input ZIPs (`indexing-benchmark-data.zip`)
+│   └── results/                # Validated output JSON reports and per-query retrieval logs
+├── offline-asset-builders/     # Automated wheel packagers & model weight downloaders for offline Kaggle runs
+│   └── embedding-indexing/     # Build scripts for FAISS, SentenceTransformers, and embedding weights
+├── output/                     # Frozen raw layout and OCR block extractions from document processors
+│   └── chandra/                # Full-book 1,034-page Chandra OCR blocks (`chunks.jsonl`)
+└── research-notes/             # Internal developer guides, handoff summaries, and design specifications
+    ├── implementation-plan.md
+    ├── gold_dataset_generation_handoff.md
+    ├── stage4_indexing_and_retrieval_guide.md
+    └── stage4_options_tradeoffs_and_alternatives.md
+```
 
-## Curated outputs and external artifact dataset
+---
 
-The small, curated release under [`output/`](output/README.md) is committed to
-Git so collaborators can inspect the actual model records without downloading a
-separate bundle. It includes Chandra blocks, Document AI word boxes, and page-
-complete layout reruns. The release does not
-include source scans, rendered images, crops, or model weights.
+## 2. Key Experimental Stages
 
-The larger/generated artifact package is also available outside Git in the Kaggle
-[dataset `cruelangelssprint/pierce-1890-figure-and-ocr-outputs`](https://www.kaggle.com/datasets/cruelangelssprint/pierce-1890-figure-and-ocr-outputs),
-currently at version 3. The package contains the Chandra block output used as
-the provisional reference, the crop-oriented detector outputs, and the
-page-complete 150-DPI rerun records. The dataset is an artifact release, not a
-runtime dependency.
+### Stage 1–3: Vision, Layout, & OCR Benchmarks ([`ocr-benchmarks/`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/ocr-benchmarks/))
+- Evaluates full-page vs layout-guided OCR on the 24-page human-transcribed held-out test set (`p0024–p0047`).
+- Engines compared: **Chandra OCR**, **PaddleOCR**, **Tesseract**, **EasyOCR**, **Florence-2**, and **MinerU**.
+- Winning pipeline: **Chandra OCR** with structured layout block parsing.
 
-## Repository boundary
+### Stage 4: Chunking, Embedding Models, & FAISS Vector Indexing ([`indexing-benchmarks/`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/indexing-benchmarks/))
+- Evaluates a **5x5 Factorial Grid** (5 Embedding Models x 5 Chunking Strategies) across the entire 1,034-page canonical corpus.
+- Grounded on 60 verified whole-book retrieval queries with exact character answer spans.
+- Vector search comparison: **`IndexFlatIP`** vs **`IndexHNSWFlat`** vs **`IndexIVFFlat`** using inner product on normalized embeddings.
 
-Keep source code, small notebooks, and documentation here. Do not commit:
-
-- the 1,034-page source PDF;
-- rendered pages, crops, uncurated/generated outputs, or vector indexes;
-- model checkpoints, Kaggle bundles, wheels, or virtual environments;
-- `.env` files, cloud credentials, Kaggle keys, or GitHub tokens.
-
-Those artifacts should be regenerated with the documented tools or shared as
-an external dataset. The committed `extras/output/` subset is the deliberate
-small exception. Chandra and Document AI outputs remain provisional references
-until a person verifies the selected held-out pages; committing them does not
-turn them into ground truth. The Kaggle package does not change that evidence
-boundary.
+### Offline Deployment ([`offline-asset-builders/`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/offline-asset-builders/))
+- Bundles Python `.whl` dependencies and HuggingFace model checkpoints for 100% offline, reproducible Kaggle execution.
