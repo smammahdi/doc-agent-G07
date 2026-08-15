@@ -741,8 +741,29 @@ def run_benchmark() -> None:
         except Exception as e:
             print(f"Could not benchmark {model_path}: {e}")
 
-    print("\n=== Embedding Models Comparison (Speed + Retrieval Accuracy) ===")
-    print(json.dumps(embed_summary, indent=2))
+    print("\n" + "=" * 110)
+    print("FINAL EMBEDDING MODEL LEADERBOARD (Ranked by MRR & Recall@5)")
+    print("=" * 110)
+    sorted_models = sorted(
+        embed_summary,
+        key=lambda x: (x.get("mrr", 0), x.get("recall@5", 0), x.get("chunks_per_second", 0)),
+        reverse=True,
+    )
+    header = f"{'Rank':<5} {'Model Name':<28} {'Dims':<6} {'Throughput':<15} {'Encode Time':<12} {'Recall@1':<10} {'Recall@5':<10} {'MRR':<8}"
+    print(header)
+    print("-" * 110)
+    for rank_idx, m in enumerate(sorted_models, start=1):
+        m_name = m.get("model", "unknown")[:26]
+        m_dim = str(m.get("dimension", "-"))
+        m_tput = f"{m.get('chunks_per_second', 0):.1f} ch/s"
+        m_time = f"{m.get('encode_time_seconds', 0):.2f}s"
+        r1 = f"{m.get('recall@1', 0.0):.3f}" if "recall@1" in m else "N/A"
+        r5 = f"{m.get('recall@5', 0.0):.3f}" if "recall@5" in m else "N/A"
+        mrr_val = f"{m.get('mrr', 0.0):.4f}" if "mrr" in m else "N/A"
+        print(
+            f"#{rank_idx:<4} {m_name:<28} {m_dim:<6} {m_tput:<15} {m_time:<12} {r1:<10} {r5:<10} {mrr_val:<8}"
+        )
+    print("=" * 110)
 
     # 4. Benchmark Vector Indexes
     if embeddings_store:
