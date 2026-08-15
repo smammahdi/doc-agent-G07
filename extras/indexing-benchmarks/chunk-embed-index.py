@@ -918,6 +918,18 @@ def generate_benchmark_plots(
         plt.close()
         print(f"Generated visual artifact: {plot4_path}")
 
+    # Display all generated plots inline in notebook cell output
+    try:
+        from IPython.display import Image as IPImage
+        from IPython.display import display as ip_display
+
+        print("\n=== Displaying Benchmark Visualizations Inline ===")
+        for p in [plot1_path, plot2_path, plot3_path, plot4_path]:
+            if p.is_file():
+                ip_display(IPImage(filename=str(p)))
+    except Exception:
+        pass
+
 
 # %% [markdown]
 # ### 5. FAISS Vector Index Architecture Benchmarking
