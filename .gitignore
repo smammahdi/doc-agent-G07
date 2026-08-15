@@ -57,5 +57,6 @@ chandra
 # Ignore offline asset builders / wheel caches
 extras/research-notes/offline-asset-builders/
 extras/**/offline-asset-builders/
+extras/indexing-benchmarks/*.zip
 
 extras/transcripts
