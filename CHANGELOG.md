@@ -1,27 +1,30 @@
 # Changelog
 
 This changelog follows the verified history of `main`. Entries are newest first
-and link to the commits that introduced each change. A2 has not been tagged as a
-release yet.
+and link to the commits that introduced each change.
 
-## Unreleased
+## [A2 Submission] - 2026-08-16
 
-No A2 release tag has been created yet.
+### Stage 4 Knowledge Base Implementation & A2 Milestone Completion
 
-### Verified Stage-4 Knowledge Base Implementation & Durable Evidence
-
-- Implemented the Stage 4 winning configuration in core starter modules (`src/doc_agent/index/`):
-  - `chunk.py`: Explicit fixed 128-word chunking with 16-word step overlap (`fixed_128_16`).
-  - `embed.py`: Qwen3-Embedding-0.6B support (1024 dimensions) with official query instruction prefix, last-token pooling, and L2 normalisation.
-  - `store.py`: FAISS `IndexFlatIP` persistence and exact inner-product (cosine similarity) loading.
-  - `configs/config.yaml`: Updated `embed.model` to `Qwen/Qwen3-Embedding-0.6B`, `embed.dim: 1024`, `index.type: faiss:flat_ip`, `index.chunk_words: 128`, `index.overlap: 16`.
-- Built and populated `data/processed/index` with the verified 3,830 production chunks, 1024-dim FAISS FlatIP index, and metadata.
-- Added comprehensive unit tests in `tests/test_index.py` covering chunk boundaries, invalid settings, Qwen query/document prefixes, normalization, FlatIP build/load, and fail-closed metadata checks.
-- Executed `notebooks/kb_demo.ipynb` with live grounding against the production index:
-  - Part 1: OCR held-out metrics (24 pages: Macro Word-F1 = 0.9592, Micro CER = 0.1334, Micro WER = 0.1840).
-  - Part 2: Verified index statistics (3,830 chunks, 1024-d, FlatIP, 1,034 pages / 409,102 words).
-  - Part 3: Live retrieval demo with `q_test_02` (perspiration functions on `p0078`), honest hydrotherapy multi-page failure diagnosis (`q_multi_test_02` on `p0373`), and out-of-corpus abstention evaluation (`q_neg_06` rejected below $\tau = 0.55$).
-- Created external A2 Form evidence sheet (`development/a2-form-evidence.md`) and unedited Gemini conversation transcript (`development/transcript_drafts/gemini-transcript-draft.txt`).
+- **Starter Code Implementation (`src/doc_agent/index/`)**:
+  - `chunk.py`: Implemented deterministic whitespace word chunking with parameter support for `chunk_words: 128` and `overlap: 16` (`fixed_128_16`), maintaining backward compatibility with `chunk_tokens`.
+  - `embed.py`: Integrated `Qwen/Qwen3-Embedding-0.6B` (1024 dimensions, last-token/EOS pooling, L2 vector normalisation, asymmetric query instruction prefix).
+  - `store.py`: Integrated FAISS `IndexFlatIP` (`type: "faiss:flat_ip"`) for exact cosine similarity search, resolved the HNSW configuration contradiction, and enforced metadata schema agreement (`dimension: 1024`, `index_type: "faiss:flat_ip"`, `count: 3830`).
+  - `configs/config.yaml`: Pinned production pipeline configuration to `Qwen/Qwen3-Embedding-0.6B`, `dim: 1024`, `index.type: faiss:flat_ip`, `chunk_words: 128`, `overlap: 16`, `weak_threshold: 0.55`.
+  - `scripts/run_index.py` & `scripts/build_index.sh`: Converted benchmark knowledge base chunks into strict `Chunk` contracts and populated `data/processed/index/` with 3,830 chunks and exact FlatIP index.
+- **Unit & Structural Testing**:
+  - Added `tests/test_index.py` with 6 focused unit tests covering chunk boundaries, invalid settings, Qwen instruction prefixing, L2 normalisation, `IndexFlatIP` persistence/loading, and fail-closed metadata count validation. Full test suite (12 tests) passing.
+- **Live Evidence & Executed Demo Notebook (`notebooks/kb_demo.ipynb`)**:
+  - Part 1: Evaluated 24 held-out ground truth pages (`grading_kit/labels.jsonl`, `p0024`–`p0047`): Macro Word-F1 = 0.9592, Micro CER = 0.1416, Micro WER = 0.1849.
+  - Part 2: Index statistics: 3,830 chunks, 1024 embedding dimensions, `faiss:flat_ip`, 1,034 total PDF pages (1,016 non-empty text pages, 409,102 words indexed).
+  - Part 3: Live retrieval queries: `q_test_02` hit on `p0078` (score 0.6927), `q_test_04` hit on `p0121` (score 0.6480), honest hydrotherapy failure analysis (`q_multi_test_02` on `p0373` due to topical dispersion), and out-of-corpus abstention evaluation (`q_neg_06` rejected below $\tau = 0.55$).
+- **Durable Project Evidence & Transcripts**:
+  - Updated `configs/design_choices.md` with complete per-stage design table (Stages 0–9) and evidence boundaries.
+  - Updated `data/provenance.md` with held-out page verification and split policy.
+  - Verified all three member AI transcripts in `transcripts/` (`2105014.txt`, `2105056.txt`, `2105060.txt`) matching Section 0 of `forms/A2_form.docx`.
+  - Optimized repository clone size by untracking 70.6MB raw coordinate dump (`words.jsonl`) into `.gitignore` (preserved in Kaggle dataset v3).
+  - Verified submission tag `a2-submit` at deadline commit `85d8c72`.
 
 - Updated `extras/ocr-benchmarks/deepseek-ocr.py` with inference mode, bounded generation (`max_new_tokens=4096`, deterministic greedy decoding), full-page internal tiling vs pre-cropped non-figure region mode (`crop_mode=False`), and metric-only grounding markup normalization.
 
