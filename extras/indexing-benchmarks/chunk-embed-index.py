@@ -105,8 +105,13 @@ def install_offline_runtimes(asset_roots: list[tuple[Path, dict[str, Any]]]) -> 
     has_numpy = importlib.util.find_spec("numpy") is not None
     has_cv2 = importlib.util.find_spec("cv2") is not None
 
+    seen_wheel_names: set[str] = set()
     selected: list[Path] = []
     for wheel in all_wheels:
+        if wheel.name in seen_wheel_names:
+            continue
+        seen_wheel_names.add(wheel.name)
+
         norm = wheel.name.lower().replace("_", "-")
         if has_pil and norm.startswith("pillow-"):
             continue
@@ -114,11 +119,10 @@ def install_offline_runtimes(asset_roots: list[tuple[Path, dict[str, Any]]]) -> 
             continue
         if has_cv2 and (norm.startswith("opencv-") or norm.startswith("opencv_python-")):
             continue
-        if wheel not in selected:
-            selected.append(wheel)
+        selected.append(wheel)
 
     if selected:
-        print(f"Installing {len(selected)} offline wheels...", flush=True)
+        print(f"Installing {len(selected)} unique offline wheels...", flush=True)
         subprocess.run(
             [
                 sys.executable,
