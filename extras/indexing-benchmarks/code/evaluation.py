@@ -199,3 +199,122 @@ def evaluate_retrieval_suite(
         "multi_page_first_mrr@10": round(float(np.mean(multi_page_first_mrrs)), 4) if multi_page_first_mrrs else 0.0,
     }
     return metrics, per_query_logs
+
+
+def calibrate_abstention_threshold(
+    model: EmbeddingModelAdapter,
+    index: Any,
+    dev_grounded_queries: list[RetrievalQuery],
+    dev_negative_queries: list[RetrievalQuery],
+) -> tuple[float, dict[str, Any]]:
+    """Calibrates optimal similarity threshold on dev set for negative query abstention."""
+    if not dev_negative_queries:
+        return 0.5, {"threshold": 0.5, "abstention_precision": 1.0, "abstention_recall": 1.0, "abstention_f1": 1.0, "abstention_accuracy": 1.0}
+
+    grounded_texts = [q.question for q in dev_grounded_queries]
+    neg_texts = [q.question for q in dev_negative_queries]
+
+    g_embs = model.encode_queries(grounded_texts)
+    n_embs = model.encode_queries(neg_texts)
+
+    g_scores, _ = index.search(g_embs, 1)
+    n_scores, _ = index.search(n_embs, 1)
+
+    g_max_scores = [float(s[0]) for s in g_scores]
+    n_max_scores = [float(s[0]) for s in n_scores]
+
+    best_thresh = 0.5
+    best_f1 = -1.0
+    best_stats = {}
+
+    all_scores = sorted(list(set(g_max_scores + n_max_scores)))
+    candidates = np.linspace(min(all_scores) - 0.05, max(all_scores) + 0.05, 100)
+
+    for tau in candidates:
+        tr = sum(1 for s in g_max_scores if s >= tau)
+        fa = sum(1 for s in g_max_scores if s < tau)
+        ta = sum(1 for s in n_max_scores if s < tau)
+        fr = sum(1 for s in n_max_scores if s >= tau)
+
+        prec = ta / max(1, ta + fa)
+        rec = ta / max(1, ta + fr)
+        f1 = (2 * prec * rec) / max(1e-6, prec + rec)
+        acc = (ta + tr) / (len(g_max_scores) + len(n_max_scores))
+
+        score_obj = f1 + (tr / len(g_max_scores))
+        if score_obj > best_f1:
+            best_f1 = score_obj
+            best_thresh = float(tau)
+            best_stats = {
+                "threshold": round(float(tau), 4),
+                "abstention_precision": round(prec, 4),
+                "abstention_recall": round(rec, 4),
+                "abstention_f1": round(f1, 4),
+                "abstention_accuracy": round(acc, 4),
+                "dev_grounded_preserved": tr,
+                "dev_negatives_abstained": ta,
+            }
+
+    return best_thresh, best_stats
+
+
+def evaluate_abstention_on_queries(
+    model: EmbeddingModelAdapter,
+    index: Any,
+    grounded_queries: list[RetrievalQuery],
+    negative_queries: list[RetrievalQuery],
+    threshold: float,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Evaluates abstention metrics on test queries using a locked threshold."""
+    if not negative_queries:
+        return {}, []
+
+    g_texts = [q.question for q in grounded_queries]
+    n_texts = [q.question for q in negative_queries]
+
+    g_embs = model.encode_queries(g_texts)
+    n_embs = model.encode_queries(n_texts)
+
+    g_scores, _ = index.search(g_embs, 1)
+    n_scores, _ = index.search(n_embs, 1)
+
+    g_max_scores = [float(s[0]) for s in g_scores]
+    n_max_scores = [float(s[0]) for s in n_scores]
+
+    tr = sum(1 for s in g_max_scores if s >= threshold)
+    fa = sum(1 for s in g_max_scores if s < threshold)
+    ta = sum(1 for s in n_max_scores if s < threshold)
+    fr = sum(1 for s in n_max_scores if s >= threshold)
+
+    prec = ta / max(1, ta + fa)
+    rec = ta / max(1, ta + fr)
+    f1 = (2 * prec * rec) / max(1e-6, prec + rec)
+    acc = (ta + tr) / (len(g_max_scores) + len(n_max_scores))
+
+    neg_logs = []
+    for i, q in enumerate(negative_queries):
+        score = n_max_scores[i]
+        abstained = score < threshold
+        neg_logs.append({
+            "query_id": q.query_id,
+            "split": q.split,
+            "type": "out_of_corpus",
+            "question": q.question,
+            "max_similarity_score": round(score, 4),
+            "threshold": round(threshold, 4),
+            "abstained": abstained,
+            "correct_decision": abstained,
+        })
+
+    stats = {
+        "locked_threshold": round(threshold, 4),
+        "abstention_precision": round(prec, 4),
+        "abstention_recall": round(rec, 4),
+        "abstention_f1": round(f1, 4),
+        "abstention_accuracy": round(acc, 4),
+        "true_abstentions": ta,
+        "false_retrievals": fr,
+        "true_retrievals": tr,
+        "false_abstentions": fa,
+    }
+    return stats, neg_logs

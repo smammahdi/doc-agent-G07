@@ -10,8 +10,14 @@ from .chunking import (
     build_chunk_suites,
 )
 from .models import EmbeddingModelAdapter, discover_candidate_models
-from .evaluation import evaluate_retrieval_suite, calculate_bootstrap_ci
+from .evaluation import (
+    evaluate_retrieval_suite,
+    calculate_bootstrap_ci,
+    calibrate_abstention_threshold,
+    evaluate_abstention_on_queries,
+)
 from .faiss_benchmark import benchmark_faiss_architectures
+from .runner import run_stage4_dev_grid, run_stage4_final_evidence
 
 __all__ = [
     "CanonicalPage",
@@ -27,5 +33,9 @@ __all__ = [
     "discover_candidate_models",
     "evaluate_retrieval_suite",
     "calculate_bootstrap_ci",
+    "calibrate_abstention_threshold",
+    "evaluate_abstention_on_queries",
     "benchmark_faiss_architectures",
+    "run_stage4_dev_grid",
+    "run_stage4_final_evidence",
 ]
