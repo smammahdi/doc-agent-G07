@@ -15,11 +15,11 @@ Metrics are calculated using greedy 1-to-1 bounding box matching at $\text{IoU} 
 
 | Detector | Box Precision | Box Recall | Box F1 | Mean Matched IoU | Page Presence F1 | Source Output Directory |
 |---|:---:|:---:|:---:|:---:|:---:|---|
-| **PP-DocLayoutV3** | **.9412** | **.8159** | **.8741** | **.9270** | .9697 | [`../layout-benchmarks/outputs/ppdoclayout-v3/`](../layout-benchmarks/outputs/ppdoclayout-v3/) |
-| **Orphan ink** | .8667 | .8102 | .8375 | .9101 | .9781 | [`../layout-benchmarks/outputs/orphan-ink/`](../layout-benchmarks/outputs/orphan-ink/) |
-| **PP-DocLayout-plus-L** | .9013 | .7762 | .8341 | .9149 | **.9800** | [`../layout-benchmarks/outputs/ppdoclayout-plus-l/`](../layout-benchmarks/outputs/ppdoclayout-plus-l/) |
-| **DocLayout-YOLO** | .9228 | .7450 | .8245 | .9059 | .9574 | [`../layout-benchmarks/outputs/doclayout-yolo/`](../layout-benchmarks/outputs/doclayout-yolo/) |
-| **PicoDet-S** | .6794 | .5042 | .5789 | .8648 | .8595 | [`../layout-benchmarks/outputs/picodet-s/`](../layout-benchmarks/outputs/picodet-s/) |
+| **PP-DocLayoutV3** | **.9412** | **.8159** | **.8741** | **.9270** | .9697 | [`../outputs/ppdoclayout-v3/`](../outputs/ppdoclayout-v3/) |
+| **Orphan ink** | .8667 | .8102 | .8375 | .9101 | .9781 | [`../outputs/orphan-ink/`](../outputs/orphan-ink/) |
+| **PP-DocLayout-plus-L** | .9013 | .7762 | .8341 | .9149 | **.9800** | [`../outputs/ppdoclayout-plus-l/`](../outputs/ppdoclayout-plus-l/) |
+| **DocLayout-YOLO** | .9228 | .7450 | .8245 | .9059 | .9574 | [`../outputs/doclayout-yolo/`](../outputs/doclayout-yolo/) |
+| **PicoDet-S** | .6794 | .5042 | .5789 | .8648 | .8595 | [`../outputs/picodet-s/`](../outputs/picodet-s/) |
 
 ---
 
@@ -44,7 +44,7 @@ No single detector universally dominates across all evaluation criteria; selecti
 
 ## 3. Qualitative Visual Observations (Held-Out PDF Inspections)
 
-The visual overlay PDFs in [`extras/layout-benchmarks/outputs/heldout-visualizations/`](../layout-benchmarks/outputs/heldout-visualizations/) provide qualitative confirmation of model behavior across the 24 held-out pages:
+The visual overlay PDFs in [`extras/layout-benchmarks/outputs/heldout-visualizations/`](../outputs/heldout-visualizations/) provide qualitative confirmation of model behavior across the 24 held-out pages:
 - *Observation 1 (Caption Handling)*: PP-DocLayoutV3 cleanly separates figure graphics from multi-line woodcut captions (`Fig. 1`, `Fig. 2`), whereas raw bounding boxes occasionally merge captions into the illustration box.
 - *Observation 2 (Border Suppression)*: Connected-component analysis and PP-DocLayout models successfully avoid classifying ornamental section dividers as standalone figures.
 - *Observation 3 (Composite Woodcuts)*: Pages with multiple miniature instrument sketches (e.g., `p0463`, `p0464`) represent the primary failure mode across all detectors, frequently resulting in fragmented multi-box predictions.

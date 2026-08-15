@@ -42,7 +42,7 @@ Every line in `grading_kit/tasks.jsonl` must be a valid, standalone JSON object 
 - `judged`: `true` only if evaluated via LLM-as-judge (typically `false` for verifiable facts).
 - `gold`: Legacy machine-compatible key containing the verified reference answer. The word “gold” must not leak into the user-facing question or answer.
 - `gold_pages`: List of page IDs where the evidence lives (e.g., `["p0027"]` or `["p0024", "p0074"]`).
-- `needs_research`: 
+- `needs_research`:
   - `false` (**Control Item**): Single-hop question; the answer is fully contained in a single top chunk.
   - `true` (**Trigger Item**): Multi-hop / comparative question; requires retrieving multiple disparate pages/chapters to synthesize the answer.
 
@@ -57,7 +57,7 @@ To test a variety of pipeline capabilities, author questions across these **5 ma
 ### A. Single-Hop Factoid & Anatomical Queries (~5 items)
 - **Goal**: Measure baseline top-1 and top-3 retrieval precision (`Recall@1`).
 - **Characteristics**: Direct, unambiguous anatomical or physiological facts.
-- **Example**: 
+- **Example**:
   ```json
   {"id": "t01", "question": "How many distinct bones make up the human skeleton, and what are its four main divisions?", "image_paths": [], "verifiable": true, "judged": false, "gold": "Excluding the teeth, the skeleton contains 200 distinct bones. They are grouped into the Head, Trunk, Upper Extremities, and Lower Extremities.", "gold_pages": ["p0030"], "needs_research": false}
   ```

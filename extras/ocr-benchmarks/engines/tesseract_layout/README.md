@@ -1,6 +1,6 @@
 # Tesseract Layout-Aware OCR Benchmark
 
-Layout-aware Tesseract OCR benchmark for the Pierce 1890 corpus.  
+Layout-aware Tesseract OCR benchmark for the Pierce 1890 corpus.
 **Run on Kaggle GPU/CPU** — not on your local machine.
 
 ## What this does

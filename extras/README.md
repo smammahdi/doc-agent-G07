@@ -56,12 +56,12 @@ extras/
 
 ## 2. Key Experimental Stages
 
-### Stages 1–3: Vision, Layout, & OCR Benchmarks ([`ocr-benchmarks/`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/ocr-benchmarks/))
+### Stages 1–3: Vision, Layout, & OCR Benchmarks ([`ocr-benchmarks/`](ocr-benchmarks/))
 - Evaluates full-page vs layout-guided OCR on the 22-page human-transcribed held-out test set (`p0024–p0047` excluding illustration-only pages `p0041`, `p0043`).
 - Engines compared: **Chandra OCR**, **Qwen3.5**, **MinerU**, **GLM-OCR**, **PaddleOCR**, **Tesseract**, **EasyOCR**, **Florence-2**, **DeepSeek-OCR**, and **TrOCR**.
 - Winning pipeline: **Chandra OCR** with structured layout block parsing (0.1232 Macro CER, 0.9872 Macro Word-F1).
 
-### Stage 4: Chunking, Embedding Models, & FAISS Vector Indexing ([`indexing-benchmarks/`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/indexing-benchmarks/))
+### Stage 4: Chunking, Embedding Models, & FAISS Vector Indexing ([`indexing-benchmarks/`](indexing-benchmarks/))
 - Evaluates a **5x5 Factorial Grid** (5 Embedding Models x 5 Chunking Strategies) across the entire 1,034-page canonical corpus.
 - Grounded on 110 verified queries (80 Dev across 10 regions + 20 Final Test + 10 Out-of-Corpus).
 - Vector search comparison: **`IndexFlatIP`** vs **`IndexHNSWFlat`** vs **`IndexIVFFlat`** using inner product on normalized embeddings.

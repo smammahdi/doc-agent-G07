@@ -77,16 +77,17 @@ No A2 release tag has been created yet.
 
 ### Curated model outputs
 
-- Added `extras/output/` as the shared, model-organized release directory.
-  It contains the real Chandra `chunks.jsonl`, Document AI `words.jsonl`,
-  page-complete orphan-ink/DocLayout-YOLO/PP-DocLayoutV3 reruns, PP-DocLayout-
-  plus-L and PicoDet-S benchmark records, and the saved TrOCR outputs.
-- The output README records schemas and evidence boundaries. These are
+- Added `extras/ocr-benchmarks/outputs/` and `extras/layout-benchmarks/outputs/` as
+  the shared, model-organized release directories. They contain the real Chandra
+  `chunks.jsonl`, Document AI `words.jsonl`, page-complete orphan-ink/DocLayout-YOLO/
+  PP-DocLayoutV3 reruns, PP-DocLayout-plus-L and PicoDet-S benchmark records, and
+  the saved TrOCR outputs.
+- The output documentation records schemas and evidence boundaries. These are
   inspectable research outputs, not human ground truth; raw scans, weights,
   crops, credentials, and environments remain outside Git.
-- Added `extras/output/layout-pdfs/` with eight 24-page visual evidence PDFs
-  for held-out pages `p0024`–`p0047`: Chandra, projection, orphan-ink,
-  DocLayout-YOLO, PP-DocLayoutV3, PP-DocLayout-plus-L, PicoDet-S, and
+- Added `extras/layout-benchmarks/outputs/heldout-visualizations/` with eight 24-page
+  visual evidence PDFs for held-out pages `p0024`–`p0047`: Chandra, projection,
+  orphan-ink, DocLayout-YOLO, PP-DocLayoutV3, PP-DocLayout-plus-L, PicoDet-S, and
   Document AI word boxes. PaddleOCR is intentionally not listed here because
   it is an OCR engine producing text-line boxes, not an independent semantic
   layout detector. Chandra and Document AI remain provisional references.

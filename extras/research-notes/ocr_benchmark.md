@@ -1,105 +1,86 @@
 # Milestone A2: OCR Engine Benchmark & Comparative Analysis
 
-**Document Scope**: Historical Medical Document Agent (*People's Common Sense Medical Adviser*, R. V. Pierce, M.D., 1890, 1,034 pages).  
-**Evaluation Set**: 22 human-transcribed held-out text pages (`p0024–p0047`, excluding full-page illustrations `p0041` and `p0043`) against gold reference labels [`grading_kit/labels.jsonl`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/grading_kit/labels.jsonl).  
+**Document Scope**: Historical Medical Document Agent (*People's Common Sense Medical Adviser*, R. V. Pierce, M.D., 1890).
+**Evaluation Set**: 22 human-transcribed held-out text pages (`p0024–p0047`, excluding illustration-only pages `p0041` and `p0043`) evaluated against reference labels in [`grading_kit/labels.jsonl`](../../grading_kit/labels.jsonl).
+**Evaluation Harness**: [`extras/ocr-benchmarks/engines/modular_suite/compare-results.py`](../ocr-benchmarks/engines/modular_suite/compare-results.py) operating directly on saved prediction files.
 **Normalization Protocol**: HTML-unescape, HTML tag stripping, Unicode NFKC normalization, case-folding, non-alphanumeric character replacement with whitespace, and whitespace collapsing.
 
----
-
-## 1. Executive Summary & Production Decision
-
-For Milestone A2, we conducted an empirical evaluation comparing **10 OCR engines across 18 distinct configurations** (full-page raw recognition vs. layout-guided block recognition).
-
-- **Selected Production Engine**: **Chandra OCR** with structured layout block parsing.
-- **Justification**:
-  1. **Near-Optimal Recognition Accuracy**: Achieved a **Macro CER of 0.1232** (12.32%) and the **highest Macro Word-F1 score of 0.9872** (98.72%) across the held-out set.
-  2. **Complete Full-Book Coverage**: Successfully extracted all **1,034 pages (8,544 structured blocks, 364,824 words)** without truncation.
-  3. **Preserved Structural Grounding**: Emits bounded paragraph, header, and figure blocks rather than ungrounded flat text streams, enabling explainable citation retrieval in Stage 4.
-  4. **Determinism and Efficiency**: Fast, repeatable batch inference on GPU without the hallucination risks and high VRAM overhead of large vision-language models.
+> **Methodological Caveat**: All reported CER, WER, and Word-F1 scores measure string agreement against the reference transcripts in [`grading_kit/labels.jsonl`](../../grading_kit/labels.jsonl). These numbers reflect true historical OCR accuracy only to the extent that the reference labels have been independently verified against the physical scan images.
 
 ---
 
-## 2. Multi-Engine Empirical Benchmark (22 Held-Out Pages)
+## 1. Multi-Engine Empirical Benchmark (22 Held-Out Pages)
 
-All metrics were computed strictly from saved prediction files using the unified evaluation harness [`compare-results.py`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/extras/ocr-benchmarks/engines/modular_suite/compare-results.py).
+The table below reproduces the exact numbers from [`extras/ocr-benchmarks/reports/output_reports/ocr-benchmark-comparison-22-pages.json`](../ocr-benchmarks/reports/output_reports/ocr-benchmark-comparison-22-pages.json) across all 18 evaluated OCR configurations:
 
-| Rank | OCR Engine / Configuration | Model Checkpoint / Mode | Macro CER ↓ | Macro WER ↓ | Macro Word-F1 ↑ | Micro CER ↓ | Micro WER ↓ |
+| Rank | OCR Engine / Configuration | Checkpoint / Source | Scored Pages | Macro CER ↓ | Macro WER ↓ | Macro Word-F1 ↑ | Micro CER ↓ | Micro WER ↓ |
 |:---:|---|---|:---:|:---:|:---:|:---:|:---:|
-| 1 | **Qwen3.5** | `Qwen3.5-9B (8q_k_xl)` quantized | **0.1215** | **0.1432** | 0.9540 | **0.1109** | **0.1322** |
-| 2 | **Chandra (Selected)** | `Chandra-OCR` layout blocks | **0.1232** | **0.1507** | **0.9872** | **0.1147** | **0.1446** |
-| 3 | **MinerU** | Full-Page Parser | 0.1289 | 0.1550 | 0.9887 | 0.1196 | 0.1467 |
-| 4 | **GLM-OCR** | `GLM-4V` Full-Page | 0.1348 | 0.1501 | 0.9347 | 0.1232 | 0.1396 |
-| 5 | **MinerU** | `PP-DocLayoutV3` Layout Crops | 0.1362 | 0.1610 | 0.9705 | 0.1189 | 0.1420 |
-| 6 | **GLM-OCR** | `PP-DocLayoutV3` Layout Crops | 0.1373 | 0.1613 | 0.9705 | 0.1199 | 0.1420 |
-| 7 | **PaddleOCR** | `PP-OCRv4` + `PP-DocLayoutV3` | 0.1392 | 0.1891 | 0.9465 | 0.1219 | 0.1692 |
-| 8 | **Tesseract** | `Tesseract 5.x` + `PP-DocLayoutV3` | 0.1410 | 0.1980 | 0.9349 | 0.1236 | 0.1780 |
-| 9 | **EasyOCR** | `CRAFT + CRNN` + `PP-DocLayoutV3` | 0.1583 | 0.2759 | 0.8549 | 0.1407 | 0.2541 |
-| 10 | **PaddleOCR** | `PP-OCRv4` Full-Page | 0.1607 | 0.2174 | 0.9622 | 0.1449 | 0.1996 |
-| 11 | **Tesseract** | `Tesseract 5.x` Raw Full-Page | 0.1801 | 0.2759 | 0.9106 | 0.1594 | 0.2441 |
-| 12 | **TrOCR** | `TrOCR-large-printed` + Layout | 0.1846 | 0.2745 | 0.8639 | 0.1708 | 0.2585 |
-| 13 | **Florence-2** | `Florence-2-large` Layout Crops | 0.1893 | 0.3672 | 0.7865 | 0.1764 | 0.3526 |
-| 14 | **Florence-2** | `Florence-2-large` Full-Page | 0.2270 | 0.4066 | 0.7674 | 0.2178 | 0.3993 |
-| 15 | **DeepSeek-OCR** | Full-Page Vision | 0.2548 | 0.3133 | 0.8567 | 0.2364 | 0.2959 |
-| 16 | **TrOCR** | `TrOCR-large-printed` Full-Page | 0.3550 | 0.4698 | 0.6241 | 0.3340 | 0.4529 |
-| 17 | **EasyOCR** | `CRAFT + CRNN` Full-Page | 0.4117 | 0.5634 | 0.8651 | 0.4036 | 0.5486 |
-| 18 | **DeepSeek-OCR** | `PP-DocLayoutV3` Layout Crops | 0.7495 | 0.9584 | 0.7050 | 0.7259 | 0.9143 |
-
-*Notes on Metric Definitions*:
-- **Macro CER**: $\frac{1}{N} \sum_{i=1}^N \frac{\text{Levenshtein}(H_i, R_i)}{|R_i|}$ (mean of per-page error rates).
-- **Macro WER**: $\frac{1}{N} \sum_{i=1}^N \frac{\text{Levenshtein}(\text{words}(H_i), \text{words}(R_i))}{|\text{words}(R_i)|}$.
-- **Macro Word-F1**: $\frac{1}{N} \sum_{i=1}^N \frac{2 \cdot P_i \cdot R_i}{P_i + R_i}$ (multiset harmonic mean).
+| 1 | **Qwen3.5** | `Qwen3.5-9B (8q_k_xl)` | 22 | **0.1215** | **0.1432** | 0.9540 | **0.1109** | **0.1322** |
+| 2 | **Chandra** | `Chandra-OCR` (layout blocks) | 22 | 0.1232 | 0.1507 | 0.9872 | 0.1147 | 0.1446 |
+| 3 | **MinerU full-page** | `opendatalab/MinerU2.5-Pro-2604-1.2B` | 22 | 0.1289 | 0.1550 | **0.9887** | 0.1196 | 0.1467 |
+| 4 | **GLM-OCR full-page** | `zai-org/GLM-OCR` | 22 | 0.1348 | 0.1501 | 0.9347 | 0.1232 | 0.1396 |
+| 5 | **MinerU layout** | `MinerU` + `PP-DocLayoutV3` | 22 | 0.1362 | 0.1610 | 0.9705 | 0.1189 | 0.1420 |
+| 6 | **GLM-OCR layout** | `GLM-OCR` + `PP-DocLayoutV3` | 22 | 0.1373 | 0.1613 | 0.9705 | 0.1199 | 0.1420 |
+| 7 | **PaddleOCR layout** | `PP-OCRv6_medium` + `PP-DocLayoutV3` | 22 | 0.1392 | 0.1891 | 0.9465 | 0.1219 | 0.1692 |
+| 8 | **Tesseract layout** | `Tesseract 5.x` + `PP-DocLayoutV3` | 22 | 0.1410 | 0.1980 | 0.9349 | 0.1236 | 0.1780 |
+| 9 | **EasyOCR layout** | `EasyOCR` + `PP-DocLayoutV3` | 22 | 0.1583 | 0.2759 | 0.8549 | 0.1407 | 0.2541 |
+| 10 | **PaddleOCR full-page** | `PP-OCRv6_medium` (full page) | 22 | 0.1607 | 0.2174 | 0.9622 | 0.1449 | 0.1996 |
+| 11 | **Tesseract full-page** | `Tesseract 5.x` (full page) | 22 | 0.1801 | 0.2759 | 0.9106 | 0.1594 | 0.2441 |
+| 12 | **TrOCR layout** | `microsoft/trocr-large-printed` + Layout | 22 | 0.1846 | 0.2745 | 0.8639 | 0.1708 | 0.2585 |
+| 13 | **Florence-2 layout** | `microsoft/Florence-2-base` + Layout | 22 | 0.1893 | 0.3672 | 0.7865 | 0.1764 | 0.3526 |
+| 14 | **Florence-2 full-page** | `microsoft/Florence-2-base` (full page) | 22 | 0.2270 | 0.4066 | 0.7674 | 0.2178 | 0.3993 |
+| 15 | **DeepSeek-OCR full-page**| `deepseek-ai/DeepSeek-OCR-2` | 22 | 0.2548 | 0.3133 | 0.8567 | 0.2364 | 0.2959 |
+| 16 | **TrOCR full-page** | `microsoft/trocr-large-printed` (full page)| 22 | 0.3550 | 0.4698 | 0.6241 | 0.3340 | 0.4529 |
+| 17 | **EasyOCR full-page** | `EasyOCR` (full page) | 22 | 0.4117 | 0.5634 | 0.8651 | 0.4036 | 0.5486 |
+| 18 | **DeepSeek-OCR layout** | `DeepSeek-OCR-2` + Layout | 22 | 0.7495 | 0.9584 | 0.7050 | 0.7259 | 0.9143 |
 
 ---
 
-## 3. Empirical Analysis & Tradeoff Discussion
+## 2. Key Findings & Empirical Observations
 
-### A. Full-Page Recognition vs. Layout-Guided Segmentation
-Our experiments demonstrate that applying layout segmentation before OCR consistently and significantly reduces transcription errors across all traditional and transformer OCR engines:
-- **Tesseract**: Full-page CER $0.1801 \to 0.1410$ (**-21.7% relative error reduction**).
-- **PaddleOCR**: Full-page CER $0.1607 \to 0.1392$ (**-13.4% relative error reduction**).
-- **EasyOCR**: Full-page CER $0.4117 \to 0.1583$ (**-61.6% relative error reduction**).
-- **TrOCR**: Full-page CER $0.3550 \to 0.1846$ (**-48.0% relative error reduction**).
-
-**Why Layout Guidance Succeeds**: 19th-century medical volumes feature running headers, marginal section markers, multi-column tables, and embedded woodcut anatomical diagrams. Feeding raw full pages causes recognition engines to concatenate adjacent columns horizontally, misread figure annotations as body text, and hallucinate across line breaks. Layout segmentation crops clean semantic boxes, enforcing correct reading order.
-
-### B. Detailed Comparison of Top Contenders
-
-#### 1. Chandra OCR (Winner)
-- **Strengths**: Designed specifically for layout-aware document intelligence. It achieves **0.1232 CER** and **0.9872 Word-F1**, excelling at 19th-century medical nomenclature (*podophyllin*, *pneumogastric*, *sclerotic*, *vesical catarrh*).
-- **Structural Integrity**: Outputs structured JSON records with bounding coordinates and block classifications (`paragraph`, `header`, `figure`, `table`).
-- **Completeness**: Extracted the full 1,034-page book with 1,016 non-empty text pages and 18 intentional blanks/illustrations.
-
-#### 2. Qwen3.5-9B (8q_k_xl)
-- **Strengths**: Highest raw character accuracy (**0.1215 CER**, **0.1432 WER**). Demonstrates strong language-modeling priors that correct damaged or faded historical characters.
-- **Weaknesses**:
-  - High computational complexity: Requires 16GB+ VRAM and runs substantially slower than Chandra.
-  - Generates an ungrounded, continuous text stream with overlapping chunk boundaries that require heuristic prefix deduplication.
-  - Occasionally skips small woodcut figure captions or merges header metadata into the introductory paragraph.
-
-#### 3. MinerU & GLM-OCR
-- **MinerU**: Strong competitor (**0.1289 CER**, **0.9887 Word-F1**), but occasional layout column-order inversion on pages with asymmetrical woodcuts (`p0032`, `p0045`).
-- **GLM-OCR**: Solid full-page performance (**0.1348 CER**), but lower Word-F1 (**0.9347**) due to aggressive token truncation on long, dense 1890 typography.
+1. **Best Macro CER/WER**: **`Qwen3.5-9B (8q_k_xl)`** achieved the lowest Macro Character Error Rate (**0.1215**) and lowest Macro Word Error Rate (**0.1432**).
+2. **Highest Macro Word-F1**: **`MinerU full-page`** achieved the highest token-level Macro Word-F1 score (**0.9887**), followed closely by **Chandra** (**0.9872**).
+3. **Selective Impact of Layout Guidance**:
+   - Applying `PP-DocLayoutV3` bounding crops significantly helped line-based and traditional OCR models by isolating text columns and suppressing non-text borders:
+     - **Tesseract**: Full-page CER $0.1801 \to 0.1410$ (-21.7% relative error).
+     - **PaddleOCR**: Full-page CER $0.1607 \to 0.1392$ (-13.4% relative error).
+     - **EasyOCR**: Full-page CER $0.4117 \to 0.1583$ (-61.6% relative error).
+     - **TrOCR**: Full-page CER $0.3550 \to 0.1846$ (-48.0% relative error).
+     - **Florence-2**: Full-page CER $0.2270 \to 0.1893$ (-16.6% relative error).
+   - In contrast, layout cropping did **not** benefit native end-to-end vision-language document models, which perform their own internal full-page spatial reasoning:
+     - **MinerU**: Full-page CER **0.1289** was superior to layout crop CER **0.1362**.
+     - **GLM-OCR**: Full-page CER **0.1348** was superior to layout crop CER **0.1373**.
+     - **DeepSeek-OCR**: Cropping caused severe degradation ($0.2548 \to 0.7495$) due to tile scaling and context truncation.
 
 ---
 
-## 4. Failure Mode Analysis
+## 3. Production Selection Rationale
 
-An honest analysis of failure cases on the 1890 medical corpus reveals three primary error categories:
-1. **Antique Font & Ligature Confusion**: Faded letterpress ink frequently causes confusion between 'f' and 's' (long s), 'e' and 'c', and 'rn' and 'm' (e.g., *maceration* transcribed as *rnaceration* in Tesseract).
-2. **Ink Bleed-Through (Show-Through)**: Thin 19th-century paper results in ghost characters from the reverse page appearing in scan margins, triggering false positive character insertions in EasyOCR and TrOCR.
-3. **Complex Woodcut Plates (`p0041`, `p0043`)**: Pages dominated by anatomical engravings with minimal text lack standard line baselines, requiring dedicated figure bounding box suppression.
+**Selected Engine**: **Chandra OCR** (structured layout block parsing).
+
+Chandra is selected as the practical, corpus-wide transcription source for the Milestone A2 Knowledge Base, balancing quantitative accuracy with structured block preservation:
+- **Numerical Competitiveness**: With a Macro CER of **0.1232** (within 0.0017 of Qwen3.5) and a Macro Word-F1 of **0.9872** (second only to MinerU), Chandra matches top-tier accuracy.
+- **Structured Block Output**: Unlike flat-text exporters, Chandra outputs **8,544 typed blocks** (`Text`, `Section-Header`, `Page-Header`, `Table`, `Figure`) with explicit bounding boxes (`bbox` and `page_box`). This structured hierarchy enables paragraph-aware chunking and bounding-box level citation verification in Stage 4.
+- **Corpus Coverage & Missing Pages Accounting**:
+  - Chandra processed **1,028 observed pages** out of the 1,034 PDF pages.
+  - **Six unobserved pages** were omitted by the Chandra run: `p0002`, `p0003`, `p0004`, `p0006`, `p1031`, and `p1033`.
+  - In the canonical knowledge base ([`extras/indexing-benchmarks/data/canonical-pages.jsonl`](../indexing-benchmarks/data/canonical-pages.jsonl)), these six pages are recorded with `ocr_source: "ocr_missing_unobserved"` and empty text rather than synthetic fallbacks.
 
 ---
 
-## 5. Direct Reference for A2 Form Completion (`A2_form.docx`)
+## 4. Status of Excluded Baseline: Google Cloud Document AI
 
-Below are the exact verified values for the A2 Milestone submission:
+Google Cloud Document AI (`document-ai`) word extractions ([`extras/ocr-benchmarks/outputs/full-book/document-ai/words.jsonl`](../ocr-benchmarks/outputs/full-book/document-ai/words.jsonl)) are retained as a commercial reference asset but excluded from the official 22-page ranking table:
+- **Reason for Exclusion**: The available Document AI export contains unsorted word-level bounding boxes and confidence scores without verified reading-order linearization or paragraph reconstruction. Linearizing word tokens without an explicit reading-order model introduces column interleaving artifacts that distort CER/WER comparisons.
 
-- **OCR Options Compared**: 10 engines (Chandra, Qwen3.5-9B 8q_k_xl, MinerU, GLM-4V, PaddleOCR, Tesseract 5.x, EasyOCR, Florence-2, DeepSeek-OCR, TrOCR) evaluated across 18 full-page and layout configurations.
-- **Winning Choice**: **Chandra OCR** with structured block parsing.
-- **Evaluated Test Set**: 22 human-transcribed held-out text pages (`p0024–p0047`, excluding `p0041` and `p0043`).
-- **Quantitative Results**:
-  - **Macro CER**: $0.1232$ ($12.32\%$)
-  - **Macro WER**: $0.1507$ ($15.07\%$)
-  - **Macro Word-F1**: $0.9872$ ($98.72\%$)
-- **Corpus Extractions**: 1,034 total PDF pages, 1,016 non-empty indexed pages, 364,824 words, 8,544 structured layout blocks.
+---
+
+## 5. Summary Reference for Milestone Form (A2)
+
+- **Options Compared**: 10 distinct OCR engines (Qwen3.5-9B, Chandra, MinerU, GLM-OCR, PaddleOCR PP-OCRv6, Tesseract 5.x, EasyOCR, Florence-2-base, DeepSeek-OCR-2, TrOCR-large) across 18 full-page and layout-guided configurations.
+- **Selected Choice**: **Chandra OCR** with structured block parsing.
+- **22-Page Evaluation Benchmark**:
+  - Best Macro CER: Qwen3.5 (0.1215)
+  - Best Macro Word-F1: MinerU full-page (0.9887)
+  - Selected (Chandra): Macro CER = 0.1232 (12.32%), Macro WER = 0.1507 (15.07%), Macro Word-F1 = 0.9872 (98.72%).
+- **Full Corpus Coverage**: 1,034 PDF pages, 1,016 non-empty indexed pages, 18 empty/unobserved pages (including 6 Chandra unobserved: `p0002`, `p0003`, `p0004`, `p0006`, `p1031`, `p1033`), 364,824 words across 8,544 structured layout blocks.

@@ -1,8 +1,8 @@
 # Pierce 1890 Medical Adviser — OCR Benchmark Report
 
-**Prepared for**: Team G07 / Medical Adviser RAG Project  
-**Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)  
-**Evaluation Set**: **22 Text-Bearing Ground Truth Pages (Excluding Full-Page Figure Outliers `p0041` & `p0043`)**  
+**Prepared for**: Team G07 / Medical Adviser RAG Project
+**Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)
+**Evaluation Set**: **22 Text-Bearing Ground Truth Pages (Excluding Full-Page Figure Outliers `p0041` & `p0043`)**
 
 ---
 

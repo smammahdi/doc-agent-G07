@@ -1,9 +1,9 @@
 # Benchmark Report: Direct Full-Page OCR vs. Layout-Aware OCR
 
-**Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)  
-**Evaluation Dataset**: 24 Hand-Verified Held-Out Pages (`p0024` – `p0047`)  
-**OCR Engine**: Tesseract 5 (`--psm 3` for Full-Page vs `--psm 6` for Crop Regions)  
-**Layout Engine**: PP-DocLayoutV3 (`ppdoclayout-v3/detections.jsonl`)  
+**Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)
+**Evaluation Dataset**: 24 Hand-Verified Held-Out Pages (`p0024` – `p0047`)
+**OCR Engine**: Tesseract 5 (`--psm 3` for Full-Page vs `--psm 6` for Crop Regions)
+**Layout Engine**: PP-DocLayoutV3 (`ppdoclayout-v3/detections.jsonl`)
 
 ---
 

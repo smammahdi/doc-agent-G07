@@ -78,7 +78,7 @@ $$\langle \hat{\mathbf{q}}, \hat{\mathbf{d}} \rangle = \frac{\mathbf{q} \cdot \m
 1. **Hybrid Sparse + Dense Search (BM25 + FAISS via Reciprocal Rank Fusion)**:
    * *Why it's needed*: Dense vectors excel at conceptual similarity but can miss exact keyword lookups (e.g. searching exact figure numbers *"Fig. 24"* or Latin botanical names). BM25 handles lexical precision while FAISS handles semantic meaning.
 2. **Two-Stage Retrieval with Cross-Encoder Reranker (`cross-encoder/ms-marco-MiniLM-L6-v2`)**:
-   * *How it works*: 
+   * *How it works*:
      * **Stage 1 (High Recall)**: FAISS retrieves top 20 candidate chunks.
      * **Stage 2 (High Precision)**: Cross-encoder evaluates the full cross-attention between `(query, chunk)` tokens to re-rank the top 3 chunks for the LLM.
    * *Status*: This is the scheduled core feature for **Stage 5 (Retrieval & Reranking) in A3**.
