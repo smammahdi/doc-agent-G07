@@ -19,7 +19,7 @@
 #    Qwen3-Embedding-0.6B-GGUF (Q4_K_M), Qwen3-Embedding-4B-GGUF (Q4_K_M),
 #    Qwen3-VL-Embedding-2B (1536-d), and BAAI/bge-m3 (1024-d).
 # 3. **Retrieval Accuracy Evaluation**: Evaluates Recall@1, Recall@3, Recall@5, Recall@10, and MRR
-#    against the 25 verified gold tasks in `grading_kit/tasks.jsonl`.
+#    against the 25 verified curated Q&A tasks in `grading_kit/tasks.jsonl`.
 # 4. **Vector Index Architectures**: IndexFlatIP (exact) vs. IndexHNSWFlat (graph ANN)
 #    vs. IndexIVFFlat (inverted cluster).
 # 5. **Interactive Retrieval Playground**: Query custom questions and inspect retrieved passages with scores and page citations.
@@ -525,13 +525,13 @@ def evaluate_retrieval_accuracy(
     tasks: list[dict[str, Any]],
     k_values: list[int] = (1, 3, 5, 10),
 ) -> dict[str, Any]:
-    """Computes Recall@k and MRR against gold evaluation tasks."""
+    """Computes Recall@k and MRR against curated evaluation Q&A tasks."""
     import faiss
 
     if not tasks or not chunks:
         return {}
 
-    eval_tasks = [t for t in tasks if t.get("gold_pages")]
+    eval_tasks = [t for t in tasks if (t.get("target_pages") or t.get("gold_pages"))]
     if not eval_tasks:
         return {}
 
@@ -555,7 +555,7 @@ def evaluate_retrieval_accuracy(
     mrr_sum = 0.0
 
     for i, t in enumerate(eval_tasks):
-        gold_pages = set(t["gold_pages"])
+        target_pages = set(t.get("target_pages") or t.get("gold_pages", []))
         retrieved_indices = indices[i]
         retrieved_pages = [
             chunks[idx].page_id for idx in retrieved_indices if 0 <= idx < len(chunks)
@@ -563,12 +563,12 @@ def evaluate_retrieval_accuracy(
 
         for k in k_values:
             top_k_pages = set(retrieved_pages[:k])
-            if gold_pages.intersection(top_k_pages):
+            if target_pages.intersection(top_k_pages):
                 recalls[f"recall@{k}"] += 1.0
 
         rr = 0.0
         for rank, p_id in enumerate(retrieved_pages, start=1):
-            if p_id in gold_pages:
+            if p_id in target_pages:
                 rr = 1.0 / rank
                 break
         mrr_sum += rr
@@ -782,8 +782,8 @@ def load_source_pages() -> list[dict[str, str]]:
     return pages
 
 
-def load_gold_tasks() -> list[dict[str, Any]]:
-    """Loads gold evaluation tasks from attached Kaggle datasets or local grading_kit/tasks.jsonl."""
+def load_curated_tasks() -> list[dict[str, Any]]:
+    """Loads curated Q&A evaluation tasks from attached Kaggle datasets or local grading_kit/tasks.jsonl."""
     tasks: list[dict[str, Any]] = []
 
     if INPUT_ROOT.is_dir():
@@ -794,7 +794,7 @@ def load_gold_tasks() -> list[dict[str, Any]]:
                     if line and not line.startswith("#"):
                         tasks.append(json.loads(line))
                 if tasks:
-                    print(f"Loaded {len(tasks)} gold tasks from {path}")
+                    print(f"Loaded {len(tasks)} curated Q&A tasks from {path}")
                     return tasks
             except Exception:
                 pass
@@ -807,7 +807,9 @@ def load_gold_tasks() -> list[dict[str, Any]]:
                 if line and not line.startswith("#"):
                     tasks.append(json.loads(line))
             if tasks:
-                print(f"Loaded {len(tasks)} gold tasks from local" " grading_kit/tasks.jsonl")
+                print(
+                    f"Loaded {len(tasks)} curated Q&A tasks from local" " grading_kit/tasks.jsonl"
+                )
                 return tasks
         except Exception:
             pass
@@ -1002,11 +1004,11 @@ def run_benchmark() -> None:
             flush=True,
         )
 
-    # 1. Load source pages and gold tasks
+    # 1. Load source pages and curated Q&A tasks
     pages = load_source_pages()
-    tasks = load_gold_tasks()
+    tasks = load_curated_tasks()
     print(
-        f"Loaded {len(pages)} source pages and {len(tasks)} gold evaluation" " tasks.",
+        f"Loaded {len(pages)} source pages and {len(tasks)} curated evaluation Q&A" " tasks.",
         flush=True,
     )
 
@@ -1147,7 +1149,7 @@ def run_benchmark() -> None:
                     st_model = SentenceTransformer(matching_path, device=device)
 
         eval_queries = (
-            [t["question"] for t in tasks if t.get("gold_pages")]
+            [t["question"] for t in tasks if (t.get("target_pages") or t.get("gold_pages"))]
             if tasks
             else ["What are the symptoms and remedies for catarrh?"]
         )
@@ -1170,7 +1172,7 @@ def run_benchmark() -> None:
     full_report = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "source_pages": len(pages),
-        "gold_tasks_evaluated": len(tasks),
+        "curated_tasks_evaluated": len(tasks),
         "chunking_comparison": chunk_summary,
         "embedding_models_comparison": embed_summary,
         "faiss_index_comparison": faiss_summary,
