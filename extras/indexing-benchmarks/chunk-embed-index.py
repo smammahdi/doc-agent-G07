@@ -10,14 +10,16 @@
 # %% [markdown]
 # # Stage 4 Offline Indexing Benchmark & Interactive Query Playground
 #
-# Benchmarks all three core dimensions of the Stage 4 Knowledge Base pipeline:
+# Benchmarks all core dimensions of the Stage 4 Knowledge Base pipeline:
 # 1. **Chunking Strategies**: Fixed-size token window (128/16, 256/32, 512/64) vs.
 #    Recursive Markdown/Semantic character splitting.
 # 2. **Embedding Models**: Lightweight MiniLM-384 vs. BGE-small-384 vs. Nomic-768 vs.
 #    Qwen3-0.6B (1024-d) vs. BGE-M3 (1024-d).
-# 3. **Vector Index Architectures**: `IndexFlatIP` (exact) vs. `IndexHNSWFlat` (graph ANN)
+# 3. **Retrieval Quality Evaluation**: Evaluates Recall@1, Recall@3, Recall@5, Recall@10, and MRR
+#    against the 25 verified gold tasks in `grading_kit/tasks.jsonl`.
+# 4. **Vector Index Architectures**: `IndexFlatIP` (exact) vs. `IndexHNSWFlat` (graph ANN)
 #    vs. `IndexIVFFlat` (inverted cluster) vs. `IndexIVFPQ` (product quantized).
-# 4. **Interactive Retrieval Playground**: Type your own custom questions and see ranked results with scores and page citations!
+# 5. **Interactive Retrieval Playground**: Query custom questions and inspect retrieved passages with scores and page citations.
 #
 # Runs 100% offline when attached to `embedding-indexing-offline-assets` or online via Hugging Face.
 
@@ -42,30 +44,6 @@ INPUT_ROOT = Path("/kaggle/input")
 WORK = Path("/kaggle/working")
 OUT_DIR = WORK / "indexing-benchmark-outputs"
 ASSET_NAME = "embedding-indexing-offline-assets"
-
-# Historical medical domain test queries for Pierce 1890
-BENCHMARK_QUERIES = [
-    {
-        "query": "What are the symptoms and treatment of catarrh in the respiratory organs?",
-        "target_keywords": ["catarrh", "mucous", "membrane", "respiratory", "inhalation"],
-    },
-    {
-        "query": "How is Golden Seal or Hydrastis Canadensis prepared and what are its medical properties?",
-        "target_keywords": ["golden seal", "hydrastis", "tonic", "tincture", "powder"],
-    },
-    {
-        "query": "What ingredients and preparation are recommended for cough syrup or pulmonary balsam?",
-        "target_keywords": ["cough", "syrup", "balsam", "pulmonary", "expectorant", "dose"],
-    },
-    {
-        "query": "Describe the anatomy of the heart and the circulation of blood through arteries and veins.",
-        "target_keywords": ["heart", "circulation", "artery", "vein", "ventricle", "blood"],
-    },
-    {
-        "query": "What are the causes, stages, and remedies for typhoid fever?",
-        "target_keywords": ["typhoid", "fever", "temperature", "pulse", "delirium", "diet"],
-    },
-]
 
 
 # %%
@@ -283,7 +261,7 @@ def recursive_semantic_chunking(
 
 
 # %% [markdown]
-# ### 2. Embedding Model Benchmarking
+# ### 2. Embedding Model Benchmarking & Accuracy Evaluation
 
 
 # %%
@@ -292,7 +270,7 @@ def benchmark_embedding_model(
     chunks: list[BenchmarkChunk],
     device: str = "cpu",
     batch_size: int = 32,
-) -> tuple[np.ndarray, dict[str, Any]]:
+) -> tuple[Any, np.ndarray, dict[str, Any]]:
     from sentence_transformers import SentenceTransformer
 
     print(f"\n--- Benchmarking Model: {model_name_or_path} ({device.upper()}) ---")
@@ -332,7 +310,72 @@ def benchmark_embedding_model(
         "chunks_per_second": round(throughput, 1),
         "memory_estimate_mb": round((embeddings_np.nbytes) / (1024 * 1024), 2),
     }
-    return embeddings_np, metrics
+    return model, embeddings_np, metrics
+
+
+def evaluate_retrieval_accuracy(
+    model: Any,
+    chunks: list[BenchmarkChunk],
+    tasks: list[dict[str, Any]],
+    k_values: list[int] = (1, 3, 5, 10),
+) -> dict[str, Any]:
+    """Computes Recall@k and MRR against gold evaluation tasks."""
+    import faiss
+
+    if not tasks or not chunks:
+        return {}
+
+    eval_tasks = [t for t in tasks if t.get("gold_pages")]
+    if not eval_tasks:
+        return {}
+
+    texts = [c.text for c in chunks]
+    embeddings = model.encode(texts, normalize_embeddings=True, show_progress_bar=False).astype(
+        np.float32
+    )
+
+    index = faiss.IndexFlatIP(embeddings.shape[1])
+    index.add(embeddings)
+
+    queries = [t["question"] for t in eval_tasks]
+    q_vecs = model.encode(queries, normalize_embeddings=True, show_progress_bar=False).astype(
+        np.float32
+    )
+
+    max_k = max(k_values)
+    scores, indices = index.search(q_vecs, max_k)
+
+    recalls = {f"recall@{k}": 0.0 for k in k_values}
+    mrr_sum = 0.0
+
+    for i, t in enumerate(eval_tasks):
+        gold_pages = set(t["gold_pages"])
+        retrieved_indices = indices[i]
+        retrieved_pages = [
+            chunks[idx].page_id for idx in retrieved_indices if 0 <= idx < len(chunks)
+        ]
+
+        for k in k_values:
+            top_k_pages = set(retrieved_pages[:k])
+            if gold_pages.intersection(top_k_pages):
+                recalls[f"recall@{k}"] += 1.0
+
+        rr = 0.0
+        for rank, p_id in enumerate(retrieved_pages, start=1):
+            if p_id in gold_pages:
+                rr = 1.0 / rank
+                break
+        mrr_sum += rr
+
+    n = len(eval_tasks)
+    accuracy_results = {
+        "evaluated_tasks": n,
+        "mrr": round(mrr_sum / n, 4) if n > 0 else 0.0,
+    }
+    for k in k_values:
+        accuracy_results[f"recall@{k}"] = round(recalls[f"recall@{k}"] / n, 4) if n > 0 else 0.0
+
+    return accuracy_results
 
 
 # %% [markdown]
@@ -380,7 +423,6 @@ def benchmark_faiss_indexes(
     scores_hnsw, ids_hnsw = index_hnsw.search(query_vectors, k)
     query_time_hnsw = (time.perf_counter() - start_q) / len(query_vectors)
 
-    # Compute recall vs exact baseline
     recalls = []
     for i in range(len(query_vectors)):
         gt_set = set(ids_flat[i])
@@ -403,9 +445,7 @@ def load_source_pages() -> list[dict[str, str]]:
     """Loads corpus pages from attached Kaggle datasets or local labels/fallback."""
     pages: list[dict[str, str]] = []
 
-    # 1. Search for OCR output markdown / text files in Kaggle input
     if INPUT_ROOT.is_dir():
-        # Check for labels.jsonl
         for path in INPUT_ROOT.rglob("labels.jsonl"):
             try:
                 for line in path.read_text(encoding="utf-8").splitlines():
@@ -424,7 +464,6 @@ def load_source_pages() -> list[dict[str, str]]:
             except Exception:
                 pass
 
-        # Check for chandra pages markdown
         for path in INPUT_ROOT.rglob("*.md"):
             if "chandra" in path.name.lower() or "page" in path.name.lower():
                 try:
@@ -446,7 +485,6 @@ def load_source_pages() -> list[dict[str, str]]:
                 except Exception:
                     pass
 
-    # 2. Local fallback: labels.jsonl in workspace
     local_labels = Path("grading_kit/labels.jsonl")
     if local_labels.is_file():
         try:
@@ -454,7 +492,11 @@ def load_source_pages() -> list[dict[str, str]]:
                 if line.strip():
                     item = json.loads(line)
                     pages.append(
-                        {"doc_id": "pierce-1890", "page_id": item["page_id"], "text": item["text"]}
+                        {
+                            "doc_id": "pierce-1890",
+                            "page_id": item["page_id"],
+                            "text": item["text"],
+                        }
                     )
             if pages:
                 print(f"Loaded {len(pages)} pages from local grading_kit/labels.jsonl")
@@ -462,7 +504,6 @@ def load_source_pages() -> list[dict[str, str]]:
         except Exception:
             pass
 
-    # 3. Fallback: Generate 100 historical medical chapters
     print("Using 100 synthetic historical medical test pages for benchmarking.")
     sample_topics = [
         "Catarrh and affections of the air-passages require soothing expectorants and proper hygienic care.",
@@ -482,8 +523,40 @@ def load_source_pages() -> list[dict[str, str]]:
     return pages
 
 
+def load_gold_tasks() -> list[dict[str, Any]]:
+    """Loads gold evaluation tasks from attached Kaggle datasets or local grading_kit/tasks.jsonl."""
+    tasks: list[dict[str, Any]] = []
+
+    if INPUT_ROOT.is_dir():
+        for path in INPUT_ROOT.rglob("tasks.jsonl"):
+            try:
+                for line in path.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        tasks.append(json.loads(line))
+                if tasks:
+                    print(f"Loaded {len(tasks)} gold tasks from {path}")
+                    return tasks
+            except Exception:
+                pass
+
+    local_tasks = Path("grading_kit/tasks.jsonl")
+    if local_tasks.is_file():
+        try:
+            for line in local_tasks.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    tasks.append(json.loads(line))
+            if tasks:
+                print(f"Loaded {len(tasks)} gold tasks from local grading_kit/tasks.jsonl")
+                return tasks
+        except Exception:
+            pass
+
+    return []
+
+
 # %%
-# Global store for interactive playground
 _INTERACTIVE_CACHE = {
     "chunks": [],
     "model_name": None,
@@ -508,7 +581,6 @@ def build_interactive_index(
     else:
         chunks = fixed_window_token_chunking(pages, 256, 32)
 
-    # Resolve local model directory if offline asset is attached
     asset_root, _ = find_asset_root()
     model_path = model_name
     if asset_root:
@@ -561,8 +633,8 @@ def interactive_search(
 
     results = []
     print("=" * 80)
-    print(f'🔎 QUERY: "{query}"')
-    print(f"🤖 MODEL: {model_name} | TOP-{top_k} PASSAGES")
+    print(f'QUERY: "{query}"')
+    print(f"MODEL: {model_name} | TOP-{top_k} PASSAGES")
     print("=" * 80)
 
     for rank, (score, idx) in enumerate(zip(scores[0], indices[0]), start=1):
@@ -580,7 +652,7 @@ def interactive_search(
         results.append(res_item)
 
         print(
-            f"\n[Rank #{rank}]  ★ Score: {score:.4f}  |  📄 Page: {chunk.page_id}  |  ID: {chunk.chunk_id}"
+            f"\n[Rank #{rank}]  Score: {score:.4f}  |  Page: {chunk.page_id}  |  ID: {chunk.chunk_id}"
         )
         print(f'"{snippet}"')
         print("-" * 80)
@@ -604,9 +676,13 @@ def run_benchmark() -> None:
     else:
         print("Running in online mode or using local environment packages.", flush=True)
 
-    # 1. Load source pages
+    # 1. Load source pages and gold tasks
     pages = load_source_pages()
-    print(f"Loaded {len(pages)} source pages for chunking benchmarks.", flush=True)
+    tasks = load_gold_tasks()
+    print(
+        f"Loaded {len(pages)} source pages and {len(tasks)} gold evaluation tasks.",
+        flush=True,
+    )
 
     # 2. Benchmark Chunking Strategies
     chunk_suites = {
@@ -628,7 +704,7 @@ def run_benchmark() -> None:
     print("\n=== Chunking Strategies Comparison ===")
     print(json.dumps(chunk_summary, indent=2))
 
-    # 3. Benchmark Embedding Models on 256/32 Baseline Chunks
+    # 3. Benchmark Embedding Models & Accuracy on Baseline Chunks
     eval_chunks = chunk_suites["fixed_256_32"]
     candidate_models = ["sentence-transformers/all-MiniLM-L6-v2"]
 
@@ -646,15 +722,20 @@ def run_benchmark() -> None:
 
     for model_path in candidate_models:
         try:
-            emb, met = benchmark_embedding_model(
+            model_obj, emb, met = benchmark_embedding_model(
                 model_path, eval_chunks, device=device, batch_size=32
             )
+            # Evaluate retrieval quality against tasks.jsonl
+            if tasks:
+                accuracy = evaluate_retrieval_accuracy(model_obj, eval_chunks, tasks)
+                met.update(accuracy)
+
             embed_summary.append(met)
             embeddings_store[met["model"]] = emb
         except Exception as e:
             print(f"Could not benchmark {model_path}: {e}")
 
-    print("\n=== Embedding Models Comparison ===")
+    print("\n=== Embedding Models Comparison (Speed + Retrieval Accuracy) ===")
     print(json.dumps(embed_summary, indent=2))
 
     # 4. Benchmark Vector Indexes
@@ -663,7 +744,6 @@ def run_benchmark() -> None:
         base_embeddings = embeddings_store[first_model]
         from sentence_transformers import SentenceTransformer
 
-        # Find matching model path
         matching_path = next(
             (m for m in candidate_models if Path(m).name == first_model), first_model
         )
@@ -671,8 +751,15 @@ def run_benchmark() -> None:
             st_model = SentenceTransformer(matching_path, device=device, trust_remote_code=True)
         except Exception:
             st_model = SentenceTransformer(matching_path, device=device)
-        query_texts = [q["query"] for q in BENCHMARK_QUERIES]
-        query_vectors = st_model.encode(query_texts, normalize_embeddings=True).astype(np.float32)
+
+        eval_queries = (
+            [t["question"] for t in tasks if t.get("gold_pages")]
+            if tasks
+            else ["What are the symptoms and remedies for catarrh?"]
+        )
+        query_vectors = st_model.encode(eval_queries[:10], normalize_embeddings=True).astype(
+            np.float32
+        )
 
         faiss_summary = benchmark_faiss_indexes(
             base_embeddings,
@@ -689,6 +776,7 @@ def run_benchmark() -> None:
     full_report = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "source_pages": len(pages),
+        "gold_tasks_evaluated": len(tasks),
         "chunking_comparison": chunk_summary,
         "embedding_models_comparison": embed_summary,
         "faiss_index_comparison": faiss_summary,
@@ -711,8 +799,8 @@ if __name__ == "__main__":
 
 
 # %% [markdown]
-# # 🎯 Interactive Vector Retrieval Playground
-# Run this cell anytime to ask any custom question and inspect the top retrieved passages, scores, and page citations!
+# # Interactive Vector Retrieval Playground
+# Run this cell anytime to ask any custom question and inspect the top retrieved passages, scores, and page citations.
 
 # %%
 MY_QUERY = "What are the medicinal preparations and healing properties of Golden Seal?"
