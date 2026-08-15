@@ -129,6 +129,7 @@ REQUIREMENTS = [
     "sentence-transformers>=3.0.0,<4",
     "transformers>=4.44.0,<5",
     "faiss-cpu>=1.8.0,<2",
+    "llama-cpp-python>=0.2.80,<1",
     "tiktoken>=0.7.0,<1",
     "safetensors>=0.4.0,<1",
     "accelerate>=0.30.0,<2",
