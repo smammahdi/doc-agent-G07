@@ -8,22 +8,21 @@
 #   kernelspec: {display_name: Python 3, language: python, name: python3}
 # ---
 # %% [markdown]
-# # Stage 4 Comprehensive Knowledge Base & Retrieval Benchmark Suite
+# # Stage 4 Knowledge Base & Dense Retrieval Benchmark Suite
 #
-# A complete evaluation across all 5 dimensions of the Knowledge Base & Retrieval architecture:
-# 1. **Chunking Strategies**: Fixed 128/16, Fixed 256/32, Fixed 512/64,
+# Clean, focused benchmark of the core Stage 4 Knowledge Base pipeline:
+# 1. **Chunking Strategies**: Fixed-size token windows (128/16, 256/32, 512/64),
 #    Hierarchical Parent-Child (128 child -> 512 parent), Structural Section/Header-Aware,
 #    Multimodal Figure-Graph Linkage, and Semantic Recursive splitting.
 # 2. **Embedding Models**: all-MiniLM-L6-v2 (384-d), bge-small-en-v1.5 (384-d),
 #    nomic-embed-text-v1.5 (768-d), Qwen3-Embedding-0.6B (1024-d),
 #    Qwen3-Embedding-0.6B-GGUF (Q4_K_M), Qwen3-Embedding-4B-GGUF (Q4_K_M),
 #    Qwen3-VL-Embedding-2B (1536-d), and BAAI/bge-m3 (1024-d).
-# 3. **Retrieval Pipelines**: Pure Dense (FAISS) vs. Pure Sparse (BM25) vs.
-#    Hybrid (BM25 + Dense RRF) vs. Two-Stage (Hybrid + Cross-Encoder Reranker).
-# 4. **Cross-Encoder Rerankers (Stage 5)**: ms-marco-MiniLM-L6-v2 vs. Qwen3-Reranker-0.6B.
-# 5. **Vector Index Architectures**: IndexFlatIP (exact) vs. IndexHNSWFlat (graph ANN)
+# 3. **Retrieval Accuracy Evaluation**: Evaluates Recall@1, Recall@3, Recall@5, Recall@10, and MRR
+#    against the 25 verified gold tasks in `grading_kit/tasks.jsonl`.
+# 4. **Vector Index Architectures**: IndexFlatIP (exact) vs. IndexHNSWFlat (graph ANN)
 #    vs. IndexIVFFlat (inverted cluster).
-# 6. **Interactive Retrieval Playground**: Query custom questions and inspect retrieved passages with scores and page citations.
+# 5. **Interactive Retrieval Playground**: Query custom questions and inspect retrieved passages with scores and page citations.
 #
 # 100% offline compliant when attached to offline assets.
 
@@ -586,187 +585,7 @@ def evaluate_retrieval_accuracy(
 
 
 # %% [markdown]
-# ### 3. Cross-Encoder Reranker Benchmark (Stage 5 Precision)
-
-
-# %%
-def benchmark_cross_encoder_reranking(
-    reranker_name_or_path: str,
-    base_model: Any,
-    chunks: list[BenchmarkChunk],
-    tasks: list[dict[str, Any]],
-    top_candidates: int = 20,
-    top_k: int = 3,
-    device: str = "cpu",
-) -> dict[str, Any]:
-    """Benchmarks Stage 5 Cross-Encoder re-ranking precision on top-20 retrieved candidates."""
-    import faiss
-    from sentence_transformers import CrossEncoder
-
-    eval_tasks = [t for t in tasks if t.get("gold_pages")]
-    if not eval_tasks:
-        return {}
-
-    print(f"\n--- Benchmarking Cross-Encoder Reranker: {reranker_name_or_path} ---")
-    start_load = time.perf_counter()
-    try:
-        reranker = CrossEncoder(
-            reranker_name_or_path,
-            device=device,
-            trust_remote_code=True,
-            local_files_only=True,
-        )
-    except Exception:
-        try:
-            reranker = CrossEncoder(reranker_name_or_path, device=device, local_files_only=True)
-        except Exception:
-            reranker = CrossEncoder(reranker_name_or_path, device=device)
-    load_time = time.perf_counter() - start_load
-
-    # Build Stage 1 dense index
-    texts = [c.text for c in chunks]
-    embeddings = base_model.encode(
-        texts, normalize_embeddings=True, show_progress_bar=False
-    ).astype(np.float32)
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
-
-    queries = [t["question"] for t in eval_tasks]
-    q_vecs = base_model.encode(queries, normalize_embeddings=True, show_progress_bar=False).astype(
-        np.float32
-    )
-    scores_stage1, indices_stage1 = index.search(q_vecs, top_candidates)
-
-    mrr_stage1 = 0.0
-    mrr_stage2 = 0.0
-    recall1_stage1 = 0.0
-    recall1_stage2 = 0.0
-    start_rerank = time.perf_counter()
-
-    for i, t in enumerate(eval_tasks):
-        gold_pages = set(t["gold_pages"])
-        cand_indices = indices_stage1[i]
-        cand_chunks = [chunks[idx] for idx in cand_indices if 0 <= idx < len(chunks)]
-
-        # Stage 1 metrics
-        st1_pages = [c.page_id for c in cand_chunks]
-        if st1_pages and st1_pages[0] in gold_pages:
-            recall1_stage1 += 1.0
-        for r, p in enumerate(st1_pages, 1):
-            if p in gold_pages:
-                mrr_stage1 += 1.0 / r
-                break
-
-        # Stage 2: Cross-Encoder Scoring
-        pairs = [(t["question"], c.text) for c in cand_chunks]
-        cross_scores = reranker.predict(pairs)
-        ranked_order = np.argsort(cross_scores)[::-1]
-        st2_pages = [cand_chunks[idx].page_id for idx in ranked_order]
-
-        if st2_pages and st2_pages[0] in gold_pages:
-            recall1_stage2 += 1.0
-        for r, p in enumerate(st2_pages, 1):
-            if p in gold_pages:
-                mrr_stage2 += 1.0 / r
-                break
-
-    rerank_time = time.perf_counter() - start_rerank
-    n = len(eval_tasks)
-
-    return {
-        "reranker": Path(reranker_name_or_path).name,
-        "load_time_seconds": round(load_time, 3),
-        "rerank_latency_ms_per_query": round((rerank_time / n) * 1000, 2),
-        "stage1_recall@1": round(recall1_stage1 / n, 4),
-        "stage2_reranked_recall@1": round(recall1_stage2 / n, 4),
-        "stage1_mrr": round(mrr_stage1 / n, 4),
-        "stage2_reranked_mrr": round(mrr_stage2 / n, 4),
-        "mrr_improvement": round((mrr_stage2 - mrr_stage1) / n, 4),
-    }
-
-
-# %% [markdown]
-# ### 4. Hybrid Dense + Sparse BM25 Benchmark (Reciprocal Rank Fusion)
-
-
-# %%
-def benchmark_hybrid_retrieval(
-    dense_model: Any,
-    chunks: list[BenchmarkChunk],
-    tasks: list[dict[str, Any]],
-    k: int = 5,
-) -> dict[str, Any]:
-    """Evaluates Pure Dense vs. Pure BM25 vs. Hybrid RRF (Dense + BM25)."""
-    import faiss
-    from rank_bm25 import BM25Okapi
-
-    eval_tasks = [t for t in tasks if t.get("gold_pages")]
-    if not eval_tasks:
-        return {}
-
-    # Dense index
-    texts = [c.text for c in chunks]
-    embeddings = dense_model.encode(
-        texts, normalize_embeddings=True, show_progress_bar=False
-    ).astype(np.float32)
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
-
-    # BM25 tokenized corpus
-    tokenized_corpus = [c.text.lower().split() for c in chunks]
-    bm25 = BM25Okapi(tokenized_corpus)
-
-    queries = [t["question"] for t in eval_tasks]
-    q_vecs = dense_model.encode(queries, normalize_embeddings=True, show_progress_bar=False).astype(
-        np.float32
-    )
-    _, dense_indices = index.search(q_vecs, 20)
-
-    dense_recalls = 0.0
-    bm25_recalls = 0.0
-    hybrid_recalls = 0.0
-    rrf_k = 60
-
-    for i, t in enumerate(eval_tasks):
-        gold_pages = set(t["gold_pages"])
-        q_tokens = t["question"].lower().split()
-
-        # Dense ranking
-        d_ranked = [chunks[idx].page_id for idx in dense_indices[i] if 0 <= idx < len(chunks)]
-        if gold_pages.intersection(set(d_ranked[:k])):
-            dense_recalls += 1.0
-
-        # BM25 ranking
-        bm25_scores = bm25.get_scores(q_tokens)
-        bm25_order = np.argsort(bm25_scores)[::-1][:20]
-        b_ranked = [chunks[idx].page_id for idx in bm25_order]
-        if gold_pages.intersection(set(b_ranked[:k])):
-            bm25_recalls += 1.0
-
-        # RRF Fusion
-        rrf_scores: dict[int, float] = {}
-        for rank, idx in enumerate(dense_indices[i][:20], 1):
-            rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (rrf_k + rank))
-        for rank, idx in enumerate(bm25_order, 1):
-            rrf_scores[idx] = rrf_scores.get(idx, 0.0) + (1.0 / (rrf_k + rank))
-
-        hybrid_order = sorted(rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True)
-        h_ranked = [chunks[idx].page_id for idx in hybrid_order[:k]]
-        if gold_pages.intersection(set(h_ranked)):
-            hybrid_recalls += 1.0
-
-    n = len(eval_tasks)
-    return {
-        "evaluated_tasks": n,
-        f"pure_dense_recall@{k}": round(dense_recalls / n, 4),
-        f"pure_sparse_bm25_recall@{k}": round(bm25_recalls / n, 4),
-        f"hybrid_rrf_recall@{k}": round(hybrid_recalls / n, 4),
-        "hybrid_lift_vs_dense": round((hybrid_recalls - dense_recalls) / n, 4),
-    }
-
-
-# %% [markdown]
-# ### 5. FAISS Vector Index Architecture Benchmarking
+# ### 3. FAISS Vector Index Architecture Benchmarking
 
 
 # %%
@@ -998,33 +817,34 @@ def load_gold_tasks() -> list[dict[str, Any]]:
 
 def discover_all_candidate_models(
     asset_roots: list[tuple[Path, dict[str, Any]]],
-) -> tuple[list[str], list[str]]:
-    """Discovers all embedding models (dense/GGUF) and cross-encoder rerankers."""
+) -> list[str]:
+    """Discovers all dense and GGUF embedding models (filters out cross-encoder rerankers)."""
     embed_models: list[str] = []
-    reranker_models: list[str] = []
     seen_names: set[str] = set()
 
     for asset_dir, _ in asset_roots:
         models_dir = asset_dir / "models"
         if models_dir.is_dir():
             for m_dir in sorted(models_dir.iterdir()):
-                if m_dir.is_dir() and m_dir.name not in seen_names:
+                if (
+                    m_dir.is_dir()
+                    and m_dir.name not in seen_names
+                    and "reranker" not in m_dir.name.lower()
+                ):
                     seen_names.add(m_dir.name)
-                    if "reranker" in m_dir.name.lower():
-                        reranker_models.append(str(m_dir))
-                    else:
-                        embed_models.append(str(m_dir))
+                    embed_models.append(str(m_dir))
 
     if not embed_models and INPUT_ROOT.is_dir():
         for m_dir in sorted(INPUT_ROOT.rglob("models/*")):
-            if m_dir.is_dir() and m_dir.name not in seen_names:
+            if (
+                m_dir.is_dir()
+                and m_dir.name not in seen_names
+                and "reranker" not in m_dir.name.lower()
+            ):
                 seen_names.add(m_dir.name)
-                if "reranker" in m_dir.name.lower():
-                    reranker_models.append(str(m_dir))
-                else:
-                    embed_models.append(str(m_dir))
+                embed_models.append(str(m_dir))
 
-    return embed_models, reranker_models
+    return embed_models
 
 
 # %%
@@ -1236,7 +1056,7 @@ def run_benchmark() -> None:
 
     # 3. Benchmark Embedding Models on Baseline Chunks
     eval_chunks = chunk_suites["fixed_256_32"]
-    candidate_embeds, candidate_rerankers = discover_all_candidate_models(asset_roots)
+    candidate_embeds = discover_all_candidate_models(asset_roots)
 
     if not candidate_embeds:
         candidate_embeds = ["sentence-transformers/all-MiniLM-L6-v2"]
@@ -1247,8 +1067,6 @@ def run_benchmark() -> None:
 
     embed_summary = []
     embeddings_store = {}
-    best_model_obj = None
-    best_model_name = None
 
     for model_path in candidate_embeds:
         try:
@@ -1261,8 +1079,6 @@ def run_benchmark() -> None:
 
             embed_summary.append(met)
             embeddings_store[met["model"]] = emb
-            if best_model_obj is None:
-                best_model_obj = model_obj
         except Exception as e:
             print(f"Could not benchmark {model_path}: {e}")
 
@@ -1300,46 +1116,7 @@ def run_benchmark() -> None:
         )
     print("=" * 115)
 
-    # 4. Benchmark Cross-Encoder Rerankers (Stage 5 Precision)
-    rerank_summary = []
-    if best_model_obj and candidate_rerankers and tasks:
-        for r_path in candidate_rerankers:
-            try:
-                r_metrics = benchmark_cross_encoder_reranking(
-                    r_path,
-                    best_model_obj,
-                    eval_chunks,
-                    tasks,
-                    top_candidates=20,
-                    top_k=3,
-                    device=device,
-                )
-                rerank_summary.append(r_metrics)
-            except Exception as e:
-                print(f"Could not benchmark reranker {r_path}: {e}")
-
-        if rerank_summary:
-            print("\n" + "=" * 105)
-            print("STAGE 5 CROSS-ENCODER RERANKING BENCHMARK (Top-20 -> Top-3)")
-            print("=" * 105)
-            r_head = f"{'Reranker Name':<28} {'Latency/Query':<16} {'Stage 1 MRR':<14} {'Stage 2 MRR':<14} {'MRR Boost'}"
-            print(r_head)
-            print("-" * 105)
-            for rm in rerank_summary:
-                print(
-                    f"{rm['reranker']:<28} {rm['rerank_latency_ms_per_query']:.1f}ms{'':<10}"
-                    f" {rm['stage1_mrr']:<14.4f} {rm['stage2_reranked_mrr']:<14.4f} +{rm['mrr_improvement']:.4f}"
-                )
-            print("=" * 105)
-
-    # 5. Benchmark Hybrid Retrieval (Dense vs BM25 vs Hybrid RRF)
-    hybrid_summary = {}
-    if best_model_obj and tasks:
-        hybrid_summary = benchmark_hybrid_retrieval(best_model_obj, eval_chunks, tasks, k=5)
-        print("\n=== Hybrid Dense + Sparse BM25 Retrieval Comparison ===")
-        print(json.dumps(hybrid_summary, indent=2))
-
-    # 6. Benchmark Vector Indexes
+    # 4. Benchmark Vector Indexes
     if embeddings_store:
         first_model = list(embeddings_store.keys())[0]
         base_embeddings = embeddings_store[first_model]
@@ -1389,15 +1166,13 @@ def run_benchmark() -> None:
     else:
         faiss_summary = {}
 
-    # 7. Save Artifacts
+    # 5. Save Artifacts
     full_report = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "source_pages": len(pages),
         "gold_tasks_evaluated": len(tasks),
         "chunking_comparison": chunk_summary,
         "embedding_models_comparison": embed_summary,
-        "cross_encoder_rerankers": rerank_summary,
-        "hybrid_retrieval_comparison": hybrid_summary,
         "faiss_index_comparison": faiss_summary,
     }
 
