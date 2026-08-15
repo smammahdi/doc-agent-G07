@@ -61,7 +61,14 @@ def test_embedding_normalization_and_shape():
         Chunk(id="c1", doc_id="d1", text="First passage about anatomy.", page_ids=["p1"]),
         Chunk(id="c2", doc_id="d1", text="Second passage about physiology.", page_ids=["p1"]),
     ]
-    cfg = {"embed": {"model": "Qwen/Qwen3-Embedding-0.6B", "dim": 1024, "batch_size": 32}}
+    cfg = {
+        "embed": {
+            "model": "Qwen/Qwen3-Embedding-0.6B",
+            "revision": "test-revision",
+            "dim": 1024,
+            "batch_size": 32,
+        }
+    }
 
     mock_vectors = np.random.randn(2, 1024).astype(np.float32)
     with patch("doc_agent.index.embed._encode_texts", return_value=mock_vectors) as mock_encode:
@@ -116,7 +123,9 @@ def test_store_load_count_mismatch_fails_closed(tmp_path: Path):
     store.build(chunks, np.random.randn(1, 1024).astype(np.float32), cfg)
 
     meta_path = tmp_path / "mismatch_idx" / "metadata.json"
-    meta_path.write_text(json.dumps({"index_type": "faiss:flat_ip", "dimension": 1024, "count": 999}))
+    meta_path.write_text(
+        json.dumps({"index_type": "faiss:flat_ip", "dimension": 1024, "count": 999})
+    )
 
     with pytest.raises(ValueError, match="disagree"):
         store.load(cfg)

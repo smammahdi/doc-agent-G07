@@ -7,7 +7,7 @@ from typing import Any
 from ..contracts import Chunk
 
 
-def _settings(cfg: dict[str, Any]) -> tuple[str, int, int]:
+def _settings(cfg: dict[str, Any]) -> tuple[str, str, int, int]:
     if not isinstance(cfg, dict):
         raise TypeError("cfg must be a mapping")
     embed_cfg = cfg.get("embed", {})
@@ -16,13 +16,16 @@ def _settings(cfg: dict[str, Any]) -> tuple[str, int, int]:
     model = embed_cfg.get("model")
     if not isinstance(model, str) or not model:
         raise ValueError("embed.model must be a non-empty model name")
+    revision = embed_cfg.get("revision")
+    if not isinstance(revision, str) or not revision:
+        raise ValueError("embed.revision must be a pinned non-empty revision")
     dim = embed_cfg.get("dim")
     if isinstance(dim, bool) or not isinstance(dim, int) or dim <= 0:
         raise ValueError("embed.dim must be a positive integer")
     batch_size = embed_cfg.get("batch_size", 32)
     if isinstance(batch_size, bool) or not isinstance(batch_size, int) or batch_size <= 0:
         raise ValueError("embed.batch_size must be a positive integer")
-    return model, dim, batch_size
+    return model, revision, dim, batch_size
 
 
 def get_query_prefix(model_name: str) -> str:
@@ -48,6 +51,7 @@ def get_doc_prefix(model_name: str) -> str:
 def _encode_texts(
     texts: list[str],
     model_name: str,
+    revision: str,
     expected_dim: int,
     batch_size: int = 32,
     device: str | None = None,
@@ -63,7 +67,12 @@ def _encode_texts(
     try:
         from sentence_transformers import SentenceTransformer
 
-        model = SentenceTransformer(model_name, device=device, trust_remote_code=True)
+        model = SentenceTransformer(
+            model_name,
+            device=device,
+            revision=revision,
+            trust_remote_code=True,
+        )
         vectors = model.encode(
             texts,
             batch_size=batch_size,
@@ -80,17 +89,32 @@ def _encode_texts(
 
             try:
                 tokenizer = AutoTokenizer.from_pretrained(
-                    model_name, use_fast=False, trust_remote_code=True
+                    model_name,
+                    revision=revision,
+                    use_fast=False,
+                    trust_remote_code=True,
                 )
             except Exception:
-                tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+                tokenizer = AutoTokenizer.from_pretrained(
+                    model_name,
+                    revision=revision,
+                    trust_remote_code=True,
+                )
 
             try:
-                hf_model = AutoModel.from_pretrained(model_name, trust_remote_code=True)
+                hf_model = AutoModel.from_pretrained(
+                    model_name,
+                    revision=revision,
+                    trust_remote_code=True,
+                )
             except Exception:
                 if is_qwen:
-                    qwen_cfg = Qwen2Config.from_pretrained(model_name)
-                    hf_model = Qwen2Model.from_pretrained(model_name, config=qwen_cfg)
+                    qwen_cfg = Qwen2Config.from_pretrained(model_name, revision=revision)
+                    hf_model = Qwen2Model.from_pretrained(
+                        model_name,
+                        revision=revision,
+                        config=qwen_cfg,
+                    )
                 else:
                     raise
 
@@ -114,18 +138,14 @@ def _encode_texts(
                         pooled = hidden[torch.arange(hidden.size(0)), seq_lens]
                     else:
                         # Mean pooling for standard BERT / RoBERTa models
-                        mask = (
-                            encoded["attention_mask"].unsqueeze(-1).expand(hidden.size()).float()
-                        )
+                        mask = encoded["attention_mask"].unsqueeze(-1).expand(hidden.size()).float()
                         sum_emb = torch.sum(hidden * mask, dim=1)
                         sum_mask = torch.clamp(mask.sum(dim=1), min=1e-9)
                         pooled = sum_emb / sum_mask
                     pooled = torch.nn.functional.normalize(pooled, p=2, dim=1)
                     all_embs.append(pooled.cpu().to(torch.float32).numpy())
             matrix = (
-                np.vstack(all_embs)
-                if all_embs
-                else np.empty((0, expected_dim), dtype="float32")
+                np.vstack(all_embs) if all_embs else np.empty((0, expected_dim), dtype="float32")
             )
         except Exception as exc:
             raise RuntimeError(
@@ -153,7 +173,7 @@ def encode(chunks: list[Chunk], cfg: dict[str, Any]) -> Any:
     checks does not download a checkpoint. A real build raises the original model
     or dependency error instead of silently producing placeholder vectors.
     """
-    model_name, expected_dim, batch_size = _settings(cfg)
+    model_name, revision, expected_dim, batch_size = _settings(cfg)
     if not isinstance(chunks, list) or any(not isinstance(chunk, Chunk) for chunk in chunks):
         raise TypeError("chunks must be a list of Chunk contracts")
     if not chunks:
@@ -163,12 +183,18 @@ def encode(chunks: list[Chunk], cfg: dict[str, Any]) -> Any:
 
     doc_prefix = get_doc_prefix(model_name)
     texts = [f"{doc_prefix}{chunk.text}" for chunk in chunks]
-    return _encode_texts(texts, model_name, expected_dim, batch_size=batch_size)
+    return _encode_texts(
+        texts,
+        model_name,
+        revision,
+        expected_dim,
+        batch_size=batch_size,
+    )
 
 
 def encode_queries(queries: list[str], cfg: dict[str, Any]) -> Any:
     """Encode search queries using model-specific instruction prefix and L2 normalization."""
-    model_name, expected_dim, batch_size = _settings(cfg)
+    model_name, revision, expected_dim, batch_size = _settings(cfg)
     if not isinstance(queries, list):
         raise TypeError("queries must be a list of strings")
     if not queries:
@@ -178,4 +204,10 @@ def encode_queries(queries: list[str], cfg: dict[str, Any]) -> Any:
 
     q_prefix = get_query_prefix(model_name)
     formatted = [f"{q_prefix}{q}" for q in queries]
-    return _encode_texts(formatted, model_name, expected_dim, batch_size=batch_size)
+    return _encode_texts(
+        formatted,
+        model_name,
+        revision,
+        expected_dim,
+        batch_size=batch_size,
+    )
