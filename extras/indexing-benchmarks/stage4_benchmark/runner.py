@@ -57,15 +57,27 @@ def run_stage4_dev_grid(
     all_dev_logs: list[dict[str, Any]] = []
 
     # 4. Evaluate all 5x5 = 25 cells on grounded dev queries
+    cell_count = 0
+    total_cells = len(discovered) * len(chunk_suites)
+    print(f"Starting Phase 1: 5x5 Dev Grid evaluation across all {total_cells} cells...", flush=True)
     for c_id, (_, m_path) in discovered.items():
         adapter = EmbeddingModelAdapter(m_path, canonical_id=c_id, device=device)
         for s_name, c_list in chunk_suites.items():
+            cell_count += 1
+            t_c0 = time.perf_counter()
             is_pc = (s_name == "parent_child_128_512")
             metrics, logs = evaluate_retrieval_suite(
                 adapter, c_list, dev_grounded, top_k=10, is_parent_child=is_pc
             )
             grid_results.append(metrics)
             all_dev_logs.extend(logs)
+            t_cell = time.perf_counter() - t_c0
+            print(
+                f"  [{cell_count:02d}/{total_cells}] {c_id:<22} + {s_name:<22} | "
+                f"R@5: {metrics['single_page_recall@5']:.3f} | MRR: {metrics['single_page_mrr@10']:.3f} | "
+                f"Cov: {metrics['multi_page_coverage@10']:.3f} ({t_cell:.1f}s)",
+                flush=True,
+            )
 
     if len(grid_results) != 25:
         raise RuntimeError(f"Expected exactly 25 grid results, but got {len(grid_results)}. Incomplete run!")
