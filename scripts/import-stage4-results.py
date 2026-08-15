@@ -68,8 +68,12 @@ def validate_dev_selection(zf: zipfile.ZipFile) -> None:
     # 1. Validate Corpus Stats
     corpus_stats = json.loads(zf.read("corpus-stats.json").decode("utf-8"))
     if corpus_stats.get("pdf_total_pages") != 1034:
-        raise ValueError(f"Corpus page count mismatch: expected 1034, got {corpus_stats.get('pdf_total_pages')}")
-    print(f"Corpus Validation: PASS (1,034 total pages, {corpus_stats.get('nonempty_indexed_pages')} non-empty, {corpus_stats.get('total_corpus_words'):,} words)")
+        raise ValueError(
+            f"Corpus page count mismatch: expected 1034, got {corpus_stats.get('pdf_total_pages')}"
+        )
+    print(
+        f"Corpus Validation: PASS (1,034 total pages, {corpus_stats.get('nonempty_indexed_pages')} non-empty, {corpus_stats.get('total_corpus_words'):,} words)"
+    )
 
     # 2. Validate Grid Cells (Exactly 25)
     grid_results = json.loads(zf.read("dev-grid-results.json").decode("utf-8"))
@@ -85,7 +89,9 @@ def validate_dev_selection(zf: zipfile.ZipFile) -> None:
     }
     found_models = {r.get("canonical_model_id") or r.get("model") for r in grid_results}
     if found_models != expected_models:
-        raise ValueError(f"Model ID mismatch in grid. Expected: {expected_models}, Found: {found_models}")
+        raise ValueError(
+            f"Model ID mismatch in grid. Expected: {expected_models}, Found: {found_models}"
+        )
 
     expected_strategies = {
         "fixed_128_16",
@@ -96,7 +102,9 @@ def validate_dev_selection(zf: zipfile.ZipFile) -> None:
     }
     found_strategies = {r.get("strategy") for r in grid_results}
     if found_strategies != expected_strategies:
-        raise ValueError(f"Chunking strategy mismatch in grid. Expected: {expected_strategies}, Found: {found_strategies}")
+        raise ValueError(
+            f"Chunking strategy mismatch in grid. Expected: {expected_strategies}, Found: {found_strategies}"
+        )
 
     print("Factorial Grid: PASS (25/25 cells verified without fallbacks)")
 
@@ -105,7 +113,9 @@ def validate_dev_selection(zf: zipfile.ZipFile) -> None:
     print("\n--- Development Candidate Lock ---")
     print(f"Winning Embedding Model: {lock['winning_model_id']} ({lock['dimension']}-d)")
     print(f"Winning Chunking Strategy: {lock['winning_chunk_strategy']}")
-    print(f"Dev Unique-Page Recall@5: {lock['dev_recall@5']:.4f} (95% CI: {lock['dev_recall@5_ci_95']})")
+    print(
+        f"Dev Unique-Page Recall@5: {lock['dev_recall@5']:.4f} (95% CI: {lock['dev_recall@5_ci_95']})"
+    )
     print(f"Dev MRR@10: {lock['dev_mrr@10']:.4f}")
 
 
@@ -129,23 +139,37 @@ def validate_final_evidence(zf: zipfile.ZipFile) -> None:
 
     print("\n--- Final Untouched Test Set Performance ---")
     print(f"Final Single-Page Recall@1: {final_results.get('single_page_recall@1'):.4f}")
-    print(f"Final Single-Page Recall@5: {final_results.get('single_page_recall@5'):.4f} (95% CI: {final_results.get('recall@5_ci_95')})")
+    print(
+        f"Final Single-Page Recall@5: {final_results.get('single_page_recall@5'):.4f} (95% CI: {final_results.get('recall@5_ci_95')})"
+    )
     print(f"Final Single-Page MRR@10:  {final_results.get('single_page_mrr@10'):.4f}")
     print(f"Final Multi-Page Coverage@10: {final_results.get('multi_page_coverage@10'):.4f}")
     print(f"Final Multi-Page All-Found@10: {final_results.get('multi_page_all_found@10'):.4f}")
 
     print("\n--- FAISS Vector Search Parity ---")
     for name, info in faiss_comp.items():
-        print(f" - {name:<16}: build={info['build_time_s']:.4f}s, P50={info['p50_query_latency_ms']:.3f}ms, Top-10 Agreement={info['top10_agreement_with_flat']*100:.1f}%")
+        print(
+            f" - {name:<16}: build={info['build_time_s']:.4f}s, P50={info['p50_query_latency_ms']:.3f}ms, Top-10 Agreement={info['top10_agreement_with_flat']*100:.1f}%"
+        )
 
     print("\n" + "=" * 80)
     print("A2 FORM VALUE REFERENCE SHEET (Stage 4 / Knowledge Base)")
     print("=" * 80)
-    print(f"1. Options Compared: 5 Embedding Models (MiniLM, BGE-small, BGE-M3, Nomic-v1.5, Qwen3-0.6B) x 5 Chunkers across 1,034 pages.")
-    print(f"2. Justified Choice: {idx_stats.get('embedding_model')} + {idx_stats.get('index_type')}")
-    print(f"3. Index Parameters: dim={idx_stats.get('embedding_dimension')}, total_chunks={idx_stats.get('total_chunks')}, metric=INNER_PRODUCT")
-    print(f"4. Index Statistics: 1034 source pages, 1016 non-empty, index_size={idx_stats.get('index_size_bytes')} bytes")
-    print(f"5. Single-Page Recall@5: {final_results.get('single_page_recall@5'):.4f} (95% CI: {final_results.get('recall@5_ci_95')})")
+    print(
+        "1. Options Compared: 5 Embedding Models (MiniLM, BGE-small, BGE-M3, Nomic-v1.5, Qwen3-0.6B) x 5 Chunkers across 1,034 pages."
+    )
+    print(
+        f"2. Justified Choice: {idx_stats.get('embedding_model')} + {idx_stats.get('index_type')}"
+    )
+    print(
+        f"3. Index Parameters: dim={idx_stats.get('embedding_dimension')}, total_chunks={idx_stats.get('total_chunks')}, metric=INNER_PRODUCT"
+    )
+    print(
+        f"4. Index Statistics: 1034 source pages, 1016 non-empty, index_size={idx_stats.get('index_size_bytes')} bytes"
+    )
+    print(
+        f"5. Single-Page Recall@5: {final_results.get('single_page_recall@5'):.4f} (95% CI: {final_results.get('recall@5_ci_95')})"
+    )
     print("=" * 80)
 
 
