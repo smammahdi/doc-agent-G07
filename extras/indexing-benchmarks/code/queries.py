@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -18,6 +19,7 @@ class RetrievalQuery:
     span_start: int
     span_end: int
     manually_verified: bool
+    per_page_evidence: list[dict[str, Any]] | None = None
 
 
 def load_retrieval_queries(search_root: Path | None = None) -> list[RetrievalQuery]:
@@ -59,6 +61,7 @@ def load_retrieval_queries(search_root: Path | None = None) -> list[RetrievalQue
                                 span_start=item.get("span_start", 0),
                                 span_end=item.get("span_end", 0),
                                 manually_verified=item.get("manually_verified", False),
+                                per_page_evidence=item.get("per_page_evidence"),
                             )
                         )
                 if len(queries) >= 50:

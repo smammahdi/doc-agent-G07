@@ -31,8 +31,8 @@ def run_stage4_dev_grid(
     all_queries = load_retrieval_queries(search_root)
 
     dev_queries = [q for q in all_queries if q.split == "dev"]
-    if len(dev_queries) != 30:
-        raise ValueError(f"Expected exactly 30 development queries, found {len(dev_queries)}")
+    if len(dev_queries) != 80:
+        raise ValueError(f"Expected exactly 80 development queries, found {len(dev_queries)}")
 
     # 2. Build 5 Chunking Suites
     chunk_suites = build_chunk_suites(pages)
