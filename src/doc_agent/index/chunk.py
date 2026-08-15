@@ -26,14 +26,15 @@ def _settings(cfg: dict[str, Any]) -> tuple[int, int]:
     index_cfg = cfg.get("index", {})
     if not isinstance(index_cfg, dict):
         raise ValueError("cfg['index'] must be a mapping")
-    size = index_cfg.get("chunk_tokens", 256)
-    overlap = index_cfg.get("overlap", 32)
+    # Honest naming: chunk by whitespace words (supports chunk_words, falling back to chunk_tokens)
+    size = index_cfg.get("chunk_words", index_cfg.get("chunk_tokens", 128))
+    overlap = index_cfg.get("overlap", 16)
     if isinstance(size, bool) or not isinstance(size, int) or size <= 0:
-        raise ValueError("chunk_tokens must be a positive integer")
+        raise ValueError("chunk_words must be a positive integer")
     if isinstance(overlap, bool) or not isinstance(overlap, int) or overlap < 0:
         raise ValueError("overlap must be a non-negative integer")
     if overlap >= size:
-        raise ValueError("overlap must be smaller than chunk_tokens")
+        raise ValueError("overlap must be smaller than chunk size")
     return size, overlap
 
 

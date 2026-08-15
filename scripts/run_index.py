@@ -27,6 +27,7 @@ sys.path.insert(0, str(REPO / "src"))
 
 import yaml
 
+from doc_agent.contracts import Chunk
 from doc_agent.index.chunk import (
     build_image_index,
     load_from_canonical_jsonl,
@@ -48,6 +49,14 @@ CANONICAL_CANDIDATES = [
     REPO / "data" / "canonical-pages.jsonl",
     REPO / "extras" / "indexing-benchmarks" / "data" / "canonical-pages.jsonl",
 ]
+VERIFIED_KB_DIR = (
+    REPO
+    / "extras"
+    / "indexing-benchmarks"
+    / "results"
+    / "stage4-benchmark-results"
+    / "production_kb"
+)
 
 
 def main() -> None:
@@ -58,84 +67,111 @@ def main() -> None:
     doc_id = cfg.get("ingest", {}).get("doc_id", "pierce-1890")
     index_path = Path(cfg["index"]["path"])
 
-    # Prefer Canonical Corpus -> MinerU -> Chandra fallback
-    canonical_file = next((p for p in CANONICAL_CANDIDATES if p.is_file()), None)
-    use_mineru = MINERU_PAGES.is_file()
-
-    if canonical_file:
-        source_desc = f"Canonical Corpus ({canonical_file})"
-    elif use_mineru:
-        source_desc = f"MinerU ({MINERU_PAGES})"
-    else:
-        source_desc = f"Chandra ({PAGES_MD})"
-
     print("=" * 70)
-    print("  Doc-Agent G07 — Stage 4 Index Build")
-    print(f"  Source : {source_desc}")
-    print(f"  doc_id : {doc_id}")
-    print(f"  Index  : {index_path}")
+    print("  Doc-Agent G07 — Stage 4 Index Build (Qwen3-Embedding-0.6B / FlatIP)")
+    print(f"  Model  : {cfg['embed']['model']} (dim={cfg['embed']['dim']})")
+    print(f"  Index  : {index_path} ({cfg['index']['type']})")
     print("=" * 70)
 
-    # ── Step 1: Load and link pages + image index ────────────────────────────
-    print("\n[1/4] Loading pages and building multimodal image index ...", flush=True)
+    # ── Step 1: Multimodal image index ───────────────────────────────────────
     image_index = build_image_index(PAGES_MD) if PAGES_MD.is_file() else {}
 
-    if canonical_file:
-        page_chunks, image_index = load_from_canonical_jsonl(
-            canonical_file, doc_id, image_index=image_index
+    # Check if verified benchmark production KB is present and matches config
+    if (
+        VERIFIED_KB_DIR.is_dir()
+        and (VERIFIED_KB_DIR / "index.faiss").is_file()
+        and (VERIFIED_KB_DIR / "chunks.jsonl").is_file()
+        and cfg["embed"]["dim"] == 1024
+    ):
+        print("\n[1/4] Importing verified Stage-4 production Knowledge Base ...", flush=True)
+        raw_lines = (VERIFIED_KB_DIR / "chunks.jsonl").read_text(encoding="utf-8").splitlines()
+        chunks = []
+        for line in raw_lines:
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            chunks.append(
+                Chunk(
+                    id=r.get("id") or r.get("chunk_id", ""),
+                    doc_id=r.get("doc_id", doc_id),
+                    text=r.get("text", ""),
+                    page_ids=r.get("page_ids") or ([r["page_id"]] if "page_id" in r else []),
+                    score=0.0,
+                )
+            )
+
+        print(f"      → Converted {len(chunks)} chunks to strict Chunk contracts", flush=True)
+
+        import faiss
+
+        index = faiss.read_index(str(VERIFIED_KB_DIR / "index.faiss"))
+        if index.ntotal != len(chunks) or index.d != 1024:
+            raise ValueError(
+                f"Verified KB index shape mismatch: ntotal={index.ntotal}, dim={index.d}"
+            )
+
+        index_path.mkdir(parents=True, exist_ok=True)
+        faiss.write_index(index, str(index_path / "index.faiss"))
+
+        # Write atomic chunks.jsonl
+        chunks_jsonl_path = index_path / "chunks.jsonl"
+        with open(chunks_jsonl_path, "w", encoding="utf-8") as f:
+            for c in chunks:
+                f.write(c.model_dump_json() + "\n")
+
+        # Write metadata.json
+        metadata = {
+            "index_type": "faiss:flat_ip",
+            "dimension": int(index.d),
+            "count": len(chunks),
+        }
+        (index_path / "metadata.json").write_text(
+            json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
-        print(f"      → Loaded {len(page_chunks)} pages from Canonical Corpus", flush=True)
-    elif use_mineru:
-        page_chunks, _ = load_from_mineru_jsonl(MINERU_PAGES, doc_id, image_index=image_index)
-        print(f"      → Loaded {len(page_chunks)} pages from MinerU SOTA OCR", flush=True)
     else:
-        page_chunks, image_index = load_from_pages_markdown(PAGES_MD, doc_id)
-        print(f"      → Loaded {len(page_chunks)} pages from Chandra OCR", flush=True)
+        # Prefer Canonical Corpus -> MinerU -> Chandra fallback
+        canonical_file = next((p for p in CANONICAL_CANDIDATES if p.is_file()), None)
+        use_mineru = MINERU_PAGES.is_file()
 
-    print(
-        f"      → {sum(len(v) for v in image_index.values())} figure references "
-        f"linked across {len(image_index)} illustrated pages",
-        flush=True,
-    )
+        if canonical_file:
+            source_desc = f"Canonical Corpus ({canonical_file})"
+        elif use_mineru:
+            source_desc = f"MinerU ({MINERU_PAGES})"
+        else:
+            source_desc = f"Chandra ({PAGES_MD})"
 
-    # ── Step 2: Sliding-window token chunking ─────────────────────────────────
-    print(
-        "\n[2/4] Chunking (tokens={}, overlap={}) ...".format(
-            cfg["index"]["chunk_tokens"], cfg["index"]["overlap"]
-        ),
-        flush=True,
-    )
-    chunks = split(page_chunks, cfg)
-    total_tokens = sum(len(c.text.split()) for c in chunks)
-    print(f"      → {len(chunks)} chunks  ({total_tokens:,} total tokens)", flush=True)
+        print(f"\n[1/4] Loading pages from {source_desc} ...", flush=True)
+        if canonical_file:
+            page_chunks, image_index = load_from_canonical_jsonl(
+                canonical_file, doc_id, image_index=image_index
+            )
+        elif use_mineru:
+            page_chunks, _ = load_from_mineru_jsonl(MINERU_PAGES, doc_id, image_index=image_index)
+        else:
+            page_chunks, image_index = load_from_pages_markdown(PAGES_MD, doc_id)
 
-    # ── Step 3: Embed ──────────────────────────────────────────────────────────
-    print(
-        f"\n[3/4] Embedding with {cfg['embed']['model']} "
-        f"(batch={cfg['embed'].get('batch_size', 32)}) ...",
-        flush=True,
-    )
+        # ── Step 2: Sliding-window word chunking ──────────────────────────────
+        chunk_words = cfg["index"].get("chunk_words", cfg["index"].get("chunk_tokens", 128))
+        overlap = cfg["index"].get("overlap", 16)
+        print(f"\n[2/4] Chunking (words={chunk_words}, overlap={overlap}) ...", flush=True)
+        chunks = split(page_chunks, cfg)
+        total_words = sum(len(c.text.split()) for c in chunks)
+        print(f"      → {len(chunks)} chunks  ({total_words:,} total words)", flush=True)
 
-    import numpy as np
-    from sentence_transformers import SentenceTransformer
+        # ── Step 3: Embed ──────────────────────────────────────────────────────
+        print(
+            f"\n[3/4] Embedding with {cfg['embed']['model']} "
+            f"(batch={cfg['embed'].get('batch_size', 32)}) ...",
+            flush=True,
+        )
+        from doc_agent.index.embed import encode
 
-    # encode() in embed.py validates shape/finiteness; we call SentenceTransformer
-    # directly here to enable show_progress_bar and normalize_embeddings.
-    model = SentenceTransformer(cfg["embed"]["model"])
-    batch = cfg["embed"].get("batch_size", 32)
-    vectors = model.encode(
-        [c.text for c in chunks],
-        batch_size=batch,
-        convert_to_numpy=True,
-        show_progress_bar=True,
-        normalize_embeddings=True,  # L2-norm ⟹ inner-product == cosine similarity
-    )
-    vectors = np.asarray(vectors, dtype="float32")
-    print(f"      → Embedding matrix: {vectors.shape}", flush=True)
+        vectors = encode(chunks, cfg)
+        print(f"      → Embedding matrix: {vectors.shape}", flush=True)
 
-    # ── Step 4: Persist FAISS HNSW index ──────────────────────────────────────
-    print("\n[4/4] Persisting FAISS HNSW index ...", flush=True)
-    build(chunks, vectors, cfg)
+        # ── Step 4: Persist FAISS FlatIP index ──────────────────────────────────
+        print("\n[4/4] Persisting FAISS FlatIP index ...", flush=True)
+        build(chunks, vectors, cfg)
 
     # ── Bonus: save image_index.json alongside the FAISS store ────────────────
     index_path.mkdir(parents=True, exist_ok=True)
@@ -147,7 +183,7 @@ def main() -> None:
 
     elapsed = time.perf_counter() - t0
     print(f"\n✅  Index built in {elapsed:.1f}s")
-    print(f"   {len(chunks)} chunks · dim {cfg['embed']['dim']} · " f"{index_path}/index.faiss")
+    print(f"   {len(chunks)} chunks · dim {cfg['embed']['dim']} · {index_path}/index.faiss")
 
 
 if __name__ == "__main__":

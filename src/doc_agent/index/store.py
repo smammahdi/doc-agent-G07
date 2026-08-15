@@ -1,4 +1,4 @@
-"""Stage 4: persist and load a FAISS HNSW index with chunk metadata."""
+"""Stage 4: persist and load a FAISS FlatIP index with chunk metadata."""
 
 from __future__ import annotations
 
@@ -15,9 +15,9 @@ def _settings(cfg: dict[str, Any]) -> tuple[Path, int]:
     index_cfg = cfg.get("index", {})
     if not isinstance(index_cfg, dict):
         raise ValueError("cfg['index'] must be a mapping")
-    index_type = index_cfg.get("type", "faiss:hnsw")
-    if index_type != "faiss:hnsw":
-        raise ValueError("the A2 store supports only index.type='faiss:hnsw'")
+    index_type = index_cfg.get("type", "faiss:flat_ip")
+    if index_type not in ("faiss:flat_ip", "faiss:hnsw"):
+        raise ValueError("the A2 store supports index.type='faiss:flat_ip' or 'faiss:hnsw'")
     path_value = index_cfg.get("path", "data/processed/index")
     if not isinstance(path_value, str) or not path_value:
         raise ValueError("index.path must be a non-empty path")
