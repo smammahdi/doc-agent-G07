@@ -44,7 +44,7 @@ from typing import Any
 REPO = Path("/kaggle/working/doc-agent-G07")
 OUT = Path("/kaggle/working/mineru-ocr-benchmark")
 MODEL_NAME = "opendatalab/MinerU2.5-Pro-2604-1.2B"
-LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
+LAYOUT_PATH = REPO / "extras/layout-benchmarks/outputs/ppdoclayout-v3/detections.jsonl"
 HELDOUT = REPO / "grading_kit/heldout_pages"
 LABELS = REPO / "grading_kit/labels.jsonl"
 PAGES = [f"p{number:04d}" for number in range(24, 48)]

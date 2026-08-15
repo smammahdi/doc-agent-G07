@@ -48,7 +48,7 @@ from typing import Any
 REPO = Path("/kaggle/working/doc-agent-G07")
 OUT = Path("/kaggle/working/deepseek-ocr-benchmark")
 MODEL_NAME = "deepseek-ai/DeepSeek-OCR-2"
-LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
+LAYOUT_PATH = REPO / "extras/layout-benchmarks/outputs/ppdoclayout-v3/detections.jsonl"
 MODES = ("full-page", "ppdoclayout-v3")
 FULL_PAGE_PROMPT = "<image>\n<|grounding|>Convert the document to markdown."
 REGION_PROMPT = "<image>\nFree OCR."

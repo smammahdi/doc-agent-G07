@@ -41,14 +41,14 @@ All work is now based on `7e1a11b` (tip of `origin/main`, which merges Mahdi's f
 
 ### Branch: `a2/heldout-ocr` (Package 1)
 
-#### [NEW] [heldout_pages](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/grading_kit/heldout_pages)
+#### [NEW] [`grading_kit/heldout_pages/`](../../grading_kit/heldout_pages)
 - Populate `grading_kit/heldout_pages/` with 5-10 real, rendered JPEG page scans from R. V. Pierce's "The People's Common Sense Medical Adviser" (e.g., `p0005.jpg`, `p0012.jpg`, `p0025.jpg`, `p0050.jpg`, `p0100.jpg`).
 
-#### [MODIFY] [labels.jsonl](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/grading_kit/labels.jsonl)
+#### [MODIFY] [`grading_kit/labels.jsonl`](../../grading_kit/labels.jsonl)
 - Replace placeholder line with hand-verified, high-precision ground truth transcriptions for each held-out page.
 - Format: `{"page_id": "p0005", "text": "<exact ground truth text>"}`.
 
-#### [MODIFY] [test_ocr.py](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/tests/test_ocr.py)
+#### [MODIFY] [`tests/test_ocr.py`](../../tests/test_ocr.py)
 - Implement unit tests evaluating OCR transcription performance against `grading_kit/labels.jsonl`.
 - Compute CER (Character Error Rate), WER (Word Error Rate), and Word F1 score.
 - Assert exact page ID alignment between images, manifest, and ground truth labels.
@@ -58,26 +58,26 @@ All work is now based on `7e1a11b` (tip of `origin/main`, which merges Mahdi's f
 
 ### Branch: `a2/index-demo-ci` (Package 2)
 
-#### [MODIFY] [chunk.py](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/src/doc_agent/index/chunk.py)
+#### [MODIFY] [`src/doc_agent/index/chunk.py`](../../src/doc_agent/index/chunk.py)
 - Implement `split(chunks: list[Chunk], cfg: dict) -> list[Chunk]`.
 - Re-chunk text according to `cfg['index']['chunk_tokens']` (e.g., 256) and `cfg['index']['overlap']` (e.g., 32), preserving doc and page provenance.
 
-#### [MODIFY] [embed.py](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/src/doc_agent/index/embed.py)
+#### [MODIFY] [`src/doc_agent/index/embed.py`](../../src/doc_agent/index/embed.py)
 - Implement `encode(chunks: list[Chunk], cfg: dict)` using `SentenceTransformer` with `cfg['embed']['model']` (e.g. `sentence-transformers/all-MiniLM-L6-v2`).
 - Return numpy array or torch tensor of embeddings matching chunk indices.
 
-#### [MODIFY] [store.py](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/src/doc_agent/index/store.py)
+#### [MODIFY] [`src/doc_agent/index/store.py`](../../src/doc_agent/index/store.py)
 - Implement `build(chunks, vectors, cfg: dict) -> None`: Create FAISS HNSW/L2 vector index and serialize index + metadata payload to `data/processed/index/`.
 - Implement `load(cfg: dict)`: Load serialized FAISS index and chunk lookup table from disk.
 
-#### [MODIFY] [build_index.sh](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/scripts/build_index.sh)
+#### [MODIFY] [`scripts/build_index.sh`](../../scripts/build_index.sh)
 - Complete bash script to run the end-to-end knowledge base construction pipeline over the full Pierce corpus.
 
-#### [MODIFY] [kb_demo.ipynb](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/notebooks/kb_demo.ipynb)
+#### [MODIFY] [`notebooks/kb_demo.ipynb`](../../notebooks/kb_demo.ipynb)
 - Create executed demonstration notebook loading the saved FAISS vector store.
 - Perform 1 verified real medical domain retrieval query and display retrieved text with page citations.
 
-#### [NEW] [.bandit.yaml](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/.bandit.yaml) & [uv.lock](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/uv.lock)
+#### [NEW] [`.bandit.yaml`](../../.bandit.yaml) & [`uv.lock`](../../uv.lock)
 - Generate synced `uv.lock` ensuring `uv sync --frozen --extra dev` succeeds in CI.
 - Configure `.bandit.yaml` to exclude `src/doc_agent/hooks.py` (which contains necessary `assert` statements in uneditable pre-commit hook architecture).
 

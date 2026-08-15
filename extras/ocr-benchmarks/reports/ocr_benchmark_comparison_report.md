@@ -1,5 +1,8 @@
 # Pierce 1890 Medical Adviser — OCR Benchmark Report
 
+> [!WARNING]
+> **SUPERSEDED REPORT**: This early 3-engine exploratory report has been superseded by the canonical 18-engine benchmark in [`output_reports/ocr-benchmark-comparison-22-pages.md`](output_reports/ocr-benchmark-comparison-22-pages.md) and [`extras/research-notes/ocr_benchmark.md`](../../research-notes/ocr_benchmark.md).
+
 **Prepared for**: Team G07 / Medical Adviser RAG Project
 **Corpus**: *The People's Common Sense Medical Adviser* (1890, R. V. Pierce)
 **Evaluation Set**: **22 Text-Bearing Ground Truth Pages (Excluding Full-Page Figure Outliers `p0041` & `p0043`)**

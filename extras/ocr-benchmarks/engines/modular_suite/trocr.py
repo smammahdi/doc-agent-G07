@@ -43,7 +43,7 @@ from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 
 REPO = Path("/kaggle/working/doc-agent-G07")
 OUT = Path("/kaggle/working/trocr-ocr-benchmark")
-LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
+LAYOUT_PATH = REPO / "extras/layout-benchmarks/outputs/ppdoclayout-v3/detections.jsonl"
 HELDOUT = REPO / "grading_kit/heldout_pages"
 LABELS = REPO / "grading_kit/labels.jsonl"
 PAGES = [f"p{i:04d}" for i in range(24, 48)]

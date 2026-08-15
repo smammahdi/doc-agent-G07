@@ -11,7 +11,7 @@ The system combines **MinerU SOTA text extraction** (**98.28% Word-F1**) with **
 ```mermaid
 graph TD
     subgraph "1. Source Data Ingestion"
-        A["MinerU Full-Page OCR<br/>(extras/output/mineru-ocr-full-book/full-page/pages.jsonl)<br/>1,013 non-empty pages · 98.28% Word-F1"]
+        A["MinerU Full-Page OCR<br/>(extras/ocr-benchmarks/outputs/full-book/mineru/full-page/pages.jsonl)<br/>1,013 non-empty pages · 98.28% Word-F1"]
         B["Chandra Visual Catalog<br/>(chandra/*.webp)<br/>350 extracted figure engravings"]
     end
 
@@ -57,7 +57,7 @@ graph TD
 ## 2. Step-by-Step Breakdown
 
 ### Step 1: Ingestion & Image Mapping
-* **Text Source**: `extras/output/mineru-ocr-full-book/full-page/pages.jsonl` contains clean, paragraph-structured OCR text for all 1,034 book pages.
+* **Text Source**: `extras/ocr-benchmarks/outputs/full-book/mineru/full-page/pages.jsonl` contains clean, paragraph-structured OCR text for all 1,034 book pages.
 * **Visual Source**: `chandra/*.webp` contains 348 high-resolution figure crops.
 * **Image Registry**: `build_image_index()` creates `data/processed/index/image_index.json`:
   ```json
@@ -133,7 +133,7 @@ bash scripts/build_index.sh
 ```
 
 ### 2. Run the Interactive Graded Demo Notebook:
-Open and run [`notebooks/kb_demo.ipynb`](file:///Users/mehemudazad/Desktop/DL_project/doc-agent-7/notebooks/kb_demo.ipynb) in Jupyter/VSCode.
+Open and run [`notebooks/kb_demo.ipynb`](../../notebooks/kb_demo.ipynb) in Jupyter/VSCode.
 
 ### 3. Run Automated CI & Security Tests:
 ```bash

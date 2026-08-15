@@ -1,4 +1,7 @@
-# OCR comparison
+# OCR comparison (22 Pages with Raw Qwen Chunks Variant)
+
+> [!NOTE]
+> This variant report scores raw unlinearized Qwen chunks. The canonical report is [`ocr-benchmark-comparison-22-pages.md`](ocr-benchmark-comparison-22-pages.md) and [`extras/research-notes/ocr_benchmark.md`](../../../research-notes/ocr_benchmark.md).
 
 Normalization: HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace.
 CER/WER are lower-is-better; Word-F1 is higher-is-better.

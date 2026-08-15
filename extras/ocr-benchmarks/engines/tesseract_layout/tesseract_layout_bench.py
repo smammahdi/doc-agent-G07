@@ -88,7 +88,7 @@ except ImportError:
 
 # ── 2. Configure Paths ────────────────────────────────────────────────────────
 KAGGLE_DET_PATH = Path("/kaggle/input/datasets/kmazd1110/ocr-layout-dataset/ocr-layout-dataset/ppdoclayout-v3/detections.jsonl")
-LOCAL_DET_PATH = Path("extras/output/ppdoclayout-v3/detections.jsonl")
+LOCAL_DET_PATH = Path("extras/layout-benchmarks/outputs/ppdoclayout-v3/detections.jsonl")
 
 KAGGLE_LABELS_PATH = Path("/kaggle/input/datasets/kmazd1110/gt-ocr-dl-dataset/ocr-gt-labels/labels.jsonl")
 LOCAL_LABELS_PATH = Path("grading_kit/labels.jsonl")

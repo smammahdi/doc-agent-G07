@@ -11,13 +11,13 @@ scoring.
 
 Example::
 
-    python extras/ocr-benchmarks/compare-results.py \
+    python extras/ocr-benchmarks/engines/modular_suite/compare-results.py \
       --labels grading_kit/labels.jsonl \
-      --engine "Chandra=extras/output/chandra/chunks.jsonl" \
-      --engine "MinerU 2605=extras/output/mineru-ocr-full-book/full-page/pages.jsonl" \
-      --engine "Tesseract full=extras/tesseract_fullpage_bench/result/tesseract_fullpage_results.jsonl" \
-      --engine "TrOCR layout=extras/output_reports/trocr-ocr-benchmark/ppdoclayout-v3/pages.jsonl" \
-      --qwen-raw "Qwen3.5 raw=extras/ocr_results/qwen3.5-ocr.txt" \
+      --engine "Chandra=extras/ocr-benchmarks/outputs/full-book/chandra/chunks.jsonl" \
+      --engine "MinerU 2605=extras/ocr-benchmarks/outputs/full-book/mineru/full-page/pages.jsonl" \
+      --engine "Tesseract layout=extras/ocr-benchmarks/outputs/heldout/tesseract/layout_results.jsonl" \
+      --engine "TrOCR layout=extras/ocr-benchmarks/outputs/heldout/trocr/ppdoclayout-v3/pages.jsonl" \
+      --engine "Qwen3.5=extras/ocr-benchmarks/outputs/heldout/qwen/pages.jsonl" \
       --json /tmp/ocr-comparison.json \
       --markdown /tmp/ocr-comparison.md
 

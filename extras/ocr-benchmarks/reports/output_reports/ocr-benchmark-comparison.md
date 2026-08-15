@@ -1,4 +1,7 @@
-# OCR comparison
+# OCR comparison (24 Pages)
+
+> [!WARNING]
+> **SUPERSEDED REPORT**: This 24-page report includes the full-page illustration outliers `p0041` and `p0043`. It has been superseded by the canonical 22-page benchmark in [`ocr-benchmark-comparison-22-pages.md`](ocr-benchmark-comparison-22-pages.md) and [`extras/research-notes/ocr_benchmark.md`](../../../research-notes/ocr_benchmark.md).
 
 Normalization: HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace.
 CER/WER are lower-is-better; Word-F1 is higher-is-better.

@@ -4,7 +4,7 @@
 You are tasked with generating a high-quality, independently verified **evaluation dataset of 20–25 question-answer pairs** for the Group 07 (**G07**) Document Agent pipeline.
 
 The evaluation dataset must be authored and saved strictly into:
-👉 [**`grading_kit/tasks.jsonl`**](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/grading_kit/tasks.jsonl)
+👉 [**`grading_kit/tasks.jsonl`**](../../grading_kit/tasks.jsonl)
 
 This dataset directly measures and benchmarks:
 1. **Stage 4 & 5 Information Retrieval**: `Recall@1`, `Recall@5`, `Recall@10`, and `MRR`.
@@ -19,10 +19,10 @@ This dataset directly measures and benchmarks:
 The source corpus is **R. V. Pierce, *The People's Common Sense Medical Adviser* (1890)** (1,034 pages of historical medical advice, anatomy, physiology, and herbal remedies).
 
 Traverse and read evidence from these locations:
-- **Verified Ground-Truth Held-Out Text**: [`grading_kit/labels.jsonl`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/grading_kit/labels.jsonl) (contains clean transcriptions for `p0024` through `p0047`).
-- **Scanned Page Images**: [`grading_kit/heldout_pages/`](file:///Users/smammahdi/CSE_stuffs/Project/DL%20Project/doc-agent-starter/grading_kit/heldout_pages) (contains high-resolution page scan JPEGs).
+- **Verified Ground-Truth Held-Out Text**: [`grading_kit/labels.jsonl`](../../grading_kit/labels.jsonl) (contains clean transcriptions for `p0024` through `p0047`).
+- **Scanned Page Images**: [`grading_kit/heldout_pages/`](../../grading_kit/heldout_pages/) (contains high-resolution page scan JPEGs).
 - **Chandra OCR Markdown & Blocks**: `data/raw/` or `development/chandra_kaggle/` (or parsed text in `src/doc_agent/index/chunk.py`).
-- **Figure & Diagram Index**: `data/processed/index/image_index.json` or `extras/output/layout-pdfs/` (350 medical illustration boxes across 252 pages, e.g., Fig. 4 cell nucleus, Fig. 10 skull bones, Fig. 15 pelvic structure, Fig. 28 stomach coats).
+- **Figure & Diagram Index**: `data/processed/index/image_index.json` or `extras/layout-benchmarks/outputs/heldout-visualizations/` (350 medical illustration boxes across 252 pages, e.g., Fig. 4 cell nucleus, Fig. 10 skull bones, Fig. 15 pelvic structure, Fig. 28 stomach coats).
 
 ---
 

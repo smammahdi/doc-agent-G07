@@ -31,7 +31,7 @@ os.environ["PYTHONUNBUFFERED"] = "1"
 REPO = Path("/kaggle/working/doc-agent-G07")
 OUT  = Path("/kaggle/working/paddleocr-vl-benchmark")
 
-LAYOUT_PATH = REPO / "extras/output/ppdoclayout-v3/detections.jsonl"
+LAYOUT_PATH = REPO / "extras/layout-benchmarks/outputs/ppdoclayout-v3/detections.jsonl"
 HELDOUT     = REPO / "grading_kit/heldout_pages"
 LABELS      = REPO / "grading_kit/labels.jsonl"
 PAGES       = [f"p{n:04d}" for n in range(24, 48)]
