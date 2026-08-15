@@ -1769,18 +1769,19 @@ def run_benchmark() -> None:
             model_obj, emb, met = benchmark_embedding_model(
                 model_path, baseline_chunks, device=device, batch_size=BATCH_SIZE
             )
-            if tasks:
-                accuracy, score_logs = evaluate_retrieval_accuracy(
-                    model_obj, baseline_chunks, tasks
-                )
-                met.update(accuracy)
-                if not all_score_logs:
-                    all_score_logs = score_logs
+            if model_obj is not None and met:
+                if tasks:
+                    accuracy, score_logs = evaluate_retrieval_accuracy(
+                        model_obj, baseline_chunks, tasks
+                    )
+                    met.update(accuracy)
+                    if not all_score_logs:
+                        all_score_logs = score_logs
 
-            embed_summary.append(met)
-            embeddings_store[met["model"]] = emb
-            if best_model_obj is None:
-                best_model_obj = model_obj
+                embed_summary.append(met)
+                embeddings_store[met["model"]] = emb
+                if best_model_obj is None:
+                    best_model_obj = model_obj
         except Exception as e:
             print(f"[ERROR] Failed to benchmark {model_path}: {e}")
             import traceback

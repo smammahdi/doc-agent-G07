@@ -1,0 +1,990 @@
+4.4s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+4.4s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+4.4s 3 0.00s - to python to disable frozen modules.
+4.4s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+4.7s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+4.7s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+4.7s 7 0.00s - to python to disable frozen modules.
+4.7s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+9.0s 9 Execution environment: PyTorch device = CUDA (USE_GPU=True)
+9.0s 10 Discovered offline asset: 'qwen3-embedding-reranker-assets' at /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets
+9.1s 11 Discovered offline asset: 'embedding-indexing-offline-assets' at /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets
+9.6s 12 Installing 61 unique offline wheels...
+44.4s 13 Loaded 1028 FULL BOOK pages reconstructed from /kaggle/input/datasets/cruelangelssprint/indexing-benchmark-bundle/chunks.jsonl
+44.4s 14 Loaded 25 curated Q&A tasks from /kaggle/input/datasets/cruelangelssprint/indexing-benchmark-bundle/tasks.jsonl
+44.4s 15 Loaded 1028 source pages and 25 curated evaluation Q&A tasks.
+44.8s 16 
+44.8s 17 =========================================================================================================
+44.8s 18 EMBEDDING MODEL DISCOVERY & ASSET ATTACHMENT AUDIT
+44.8s 19 =========================================================================================================
+44.8s 20 Model ID                   Format          Status       Dataset Source / Location
+44.8s 21 ---------------------------------------------------------------------------------------------------------
+44.8s 22 all-minilm-l6-v2           PyTorch-Dense   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2
+44.8s 23 bge-small-en-v1-5          PyTorch-Dense   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5
+44.8s 24 nomic-embed-text-v1-5      PyTorch-Dense   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5
+44.8s 25 bge-m3                     PyTorch-Dense   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3
+45.0s 26 qwen3-embedding-0-6b       PyTorch-Dense   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b
+45.0s 27 qwen3-embedding-0-6b-gguf  GGUF-Q4_K_M     ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf
+45.0s 28 qwen3-embedding-4b-gguf    GGUF-Q4_K_M     ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf
+45.0s 29 qwen3-vl-embedding-2b      Multimodal-VL   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-vl-embedding-2b
+45.0s 30 Qwen3-Embedding-0.6B-Q8_0.gguf GGUF-Q4_K_M     ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf
+45.0s 31 Qwen3-Embedding-4B-Q4_K_M.gguf GGUF-Q4_K_M     ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf
+45.0s 32 ms-marco-minilm-l6-v2      PyTorch-Dense   ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/ms-marco-minilm-l6-v2
+45.0s 33 Qwen3-Embedding-0.6B-Q8_0.gguf GGUF-Q4_K_M     ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf
+45.0s 34 Qwen3-Embedding-4B-Q4_K_M.gguf GGUF-Q4_K_M     ATTACHED     /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf
+45.3s 35 =========================================================================================================
+45.3s 36 
+45.3s 37 
+45.3s 38 Discovered 13 candidate embedding models to benchmark:
+45.3s 39 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2
+45.3s 40 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5
+45.3s 41 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5
+45.3s 42 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3
+45.3s 43 - /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b
+45.3s 44 - /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf
+45.3s 45 - /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf
+45.3s 46 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-vl-embedding-2b
+45.3s 47 - /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf
+45.3s 48 - /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf
+45.3s 49 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/ms-marco-minilm-l6-v2
+45.3s 50 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf
+45.3s 51 - /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf
+45.3s 52 
+45.3s 53 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/all-minilm-l6-v2 (CUDA) ---
+65.1s 54 
+65.1s 55 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-small-en-v1-5 (CUDA) ---
+69.3s 56 
+69.3s 57 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5 (CUDA) ---
+69.3s 58 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5: nomic-ai/nomic-bert-2048 You can inspect the repository content at https://hf.co//kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5.
+69.3s 59 Please pass the argument `trust_remote_code=True` to allow custom code to be run.
+69.3s 60 
+69.3s 61 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/bge-m3 (CUDA) ---
+69.4s 62 Traceback (most recent call last):
+69.4s 63 File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 479, in cached_files
+69.4s 64 hf_hub_download(
+69.4s 65 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+69.4s 66 return fn(*args, **kwargs)
+69.4s 67 ^^^^^^^^^^^^^^^^^^^
+69.4s 68 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+69.4s 69 return _hf_hub_download_to_cache_dir(
+69.4s 70 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 71 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1121, in _hf_hub_download_to_cache_dir
+69.4s 72 _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+69.4s 73 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1653, in _raise_on_head_call_error
+69.4s 74 raise LocalEntryNotFoundError(
+69.4s 75 huggingface_hub.errors.LocalEntryNotFoundError: Cannot find the requested files in the disk cache and outgoing traffic has been disabled. To enable hf.co look-ups and downloads online, set 'local_files_only' to False.
+69.4s 76 
+69.4s 77 The above exception was the direct cause of the following exception:
+69.4s 78 
+69.4s 79 Traceback (most recent call last):
+69.4s 80 File "/tmp/ipykernel_65/1446437333.py", line 71, in benchmark_embedding_model
+69.4s 81 model = SentenceTransformer(
+69.4s 82 ^^^^^^^^^^^^^^^^^^^^
+69.4s 83 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+69.4s 84 modules, self.module_kwargs = self._load_sbert_model(
+69.4s 85 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 86 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1739, in _load_sbert_model
+69.4s 87 module = module_class(model_name_or_path, cache_dir=cache_folder, backend=self.backend, **kwargs)
+69.4s 88 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 89 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 80, in __init__
+69.4s 90 config, is_peft_model = self._load_config(model_name_or_path, cache_dir, backend, config_args)
+69.4s 91 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 92 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 145, in _load_config
+69.4s 93 return AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir), False
+69.4s 94 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 95 File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1346, in from_pretrained
+69.4s 96 config_class = get_class_from_dynamic_module(
+69.4s 97 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 98 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 604, in get_class_from_dynamic_module
+69.4s 99 final_module = get_cached_module_file(
+69.4s 100 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 101 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 406, in get_cached_module_file
+69.4s 102 resolved_module_file = cached_file(
+69.4s 103 ^^^^^^^^^^^^
+69.4s 104 File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 322, in cached_file
+69.4s 105 file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+69.4s 106 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 107 File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 553, in cached_files
+69.4s 108 raise OSError(
+69.4s 109 OSError: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+69.4s 110 Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
+69.4s 111 
+69.4s 112 During handling of the above exception, another exception occurred:
+69.4s 113 
+69.4s 114 Traceback (most recent call last):
+69.4s 115 File "/tmp/ipykernel_65/1446437333.py", line 79, in benchmark_embedding_model
+69.4s 116 model = SentenceTransformer(
+69.4s 117 ^^^^^^^^^^^^^^^^^^^^
+69.4s 118 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+69.4s 119 modules, self.module_kwargs = self._load_sbert_model(
+69.4s 120 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 121 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1739, in _load_sbert_model
+69.4s 122 module = module_class(model_name_or_path, cache_dir=cache_folder, backend=self.backend, **kwargs)
+69.4s 123 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 124 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 80, in __init__
+69.4s 125 config, is_peft_model = self._load_config(model_name_or_path, cache_dir, backend, config_args)
+69.4s 126 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 127 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 145, in _load_config
+69.4s 128 return AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir), False
+69.4s 129 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 130 File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1341, in from_pretrained
+69.4s 131 trust_remote_code = resolve_trust_remote_code(
+69.4s 132 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 133 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 782, in resolve_trust_remote_code
+69.4s 134 raise ValueError(
+69.4s 135 ValueError: nomic-ai/nomic-bert-2048 You can inspect the repository content at https://hf.co//kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5.
+69.4s 136 Please pass the argument `trust_remote_code=True` to allow custom code to be run.
+69.4s 137 
+69.4s 138 During handling of the above exception, another exception occurred:
+69.4s 139 
+69.4s 140 Traceback (most recent call last):
+69.4s 141 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+69.4s 142 model_obj, emb, met = benchmark_embedding_model(
+69.4s 143 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 144 File "/tmp/ipykernel_65/1446437333.py", line 85, in benchmark_embedding_model
+69.4s 145 model = SentenceTransformer(model_name_or_path, device=device)
+69.4s 146 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 147 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+69.4s 148 modules, self.module_kwargs = self._load_sbert_model(
+69.4s 149 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 150 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1739, in _load_sbert_model
+69.4s 151 module = module_class(model_name_or_path, cache_dir=cache_folder, backend=self.backend, **kwargs)
+69.4s 152 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 153 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 80, in __init__
+69.4s 154 config, is_peft_model = self._load_config(model_name_or_path, cache_dir, backend, config_args)
+69.4s 155 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 156 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 145, in _load_config
+69.4s 157 return AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir), False
+69.4s 158 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 159 File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1341, in from_pretrained
+69.4s 160 trust_remote_code = resolve_trust_remote_code(
+69.4s 161 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 162 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 782, in resolve_trust_remote_code
+69.4s 163 raise ValueError(
+69.4s 164 ValueError: nomic-ai/nomic-bert-2048 You can inspect the repository content at https://hf.co//kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5.
+69.4s 165 Please pass the argument `trust_remote_code=True` to allow custom code to be run.
+69.4s 166 
+69.4s 167 Traceback (most recent call last):
+69.4s 168 File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 479, in cached_files
+69.4s 169 hf_hub_download(
+69.4s 170 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+69.4s 171 return fn(*args, **kwargs)
+69.4s 172 ^^^^^^^^^^^^^^^^^^^
+69.4s 173 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+69.4s 174 return _hf_hub_download_to_cache_dir(
+69.4s 175 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 176 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1121, in _hf_hub_download_to_cache_dir
+69.4s 177 _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+69.4s 178 File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1653, in _raise_on_head_call_error
+69.4s 179 raise LocalEntryNotFoundError(
+69.4s 180 huggingface_hub.errors.LocalEntryNotFoundError: Cannot find the requested files in the disk cache and outgoing traffic has been disabled. To enable hf.co look-ups and downloads online, set 'local_files_only' to False.
+69.4s 181 
+69.4s 182 The above exception was the direct cause of the following exception:
+69.4s 183 
+69.4s 184 Traceback (most recent call last):
+69.4s 185 File "/tmp/ipykernel_65/1446437333.py", line 71, in benchmark_embedding_model
+69.4s 186 model = SentenceTransformer(
+69.4s 187 ^^^^^^^^^^^^^^^^^^^^
+69.4s 188 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+69.4s 189 modules, self.module_kwargs = self._load_sbert_model(
+69.4s 190 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 191 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1739, in _load_sbert_model
+69.4s 192 module = module_class(model_name_or_path, cache_dir=cache_folder, backend=self.backend, **kwargs)
+69.4s 193 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 194 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 80, in __init__
+69.4s 195 config, is_peft_model = self._load_config(model_name_or_path, cache_dir, backend, config_args)
+69.4s 196 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 197 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 145, in _load_config
+69.4s 198 return AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir), False
+69.4s 199 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 200 File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1346, in from_pretrained
+69.4s 201 config_class = get_class_from_dynamic_module(
+69.4s 202 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 203 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 604, in get_class_from_dynamic_module
+69.4s 204 final_module = get_cached_module_file(
+69.4s 205 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 206 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 406, in get_cached_module_file
+69.4s 207 resolved_module_file = cached_file(
+69.4s 208 ^^^^^^^^^^^^
+69.4s 209 File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 322, in cached_file
+69.4s 210 file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+69.4s 211 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 212 File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 553, in cached_files
+69.4s 213 raise OSError(
+69.4s 214 OSError: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+69.4s 215 Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
+69.4s 216 
+69.4s 217 During handling of the above exception, another exception occurred:
+69.4s 218 
+69.4s 219 Traceback (most recent call last):
+69.4s 220 File "/tmp/ipykernel_65/1446437333.py", line 79, in benchmark_embedding_model
+69.4s 221 model = SentenceTransformer(
+69.4s 222 ^^^^^^^^^^^^^^^^^^^^
+69.4s 223 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+69.4s 224 modules, self.module_kwargs = self._load_sbert_model(
+69.4s 225 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 226 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1739, in _load_sbert_model
+69.4s 227 module = module_class(model_name_or_path, cache_dir=cache_folder, backend=self.backend, **kwargs)
+69.4s 228 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 229 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 80, in __init__
+69.4s 230 config, is_peft_model = self._load_config(model_name_or_path, cache_dir, backend, config_args)
+69.4s 231 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 232 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 145, in _load_config
+69.4s 233 return AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir), False
+69.4s 234 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 235 File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1341, in from_pretrained
+69.4s 236 trust_remote_code = resolve_trust_remote_code(
+69.4s 237 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 238 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 782, in resolve_trust_remote_code
+69.4s 239 raise ValueError(
+69.4s 240 ValueError: nomic-ai/nomic-bert-2048 You can inspect the repository content at https://hf.co//kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5.
+69.4s 241 Please pass the argument `trust_remote_code=True` to allow custom code to be run.
+69.4s 242 
+69.4s 243 During handling of the above exception, another exception occurred:
+69.4s 244 
+69.4s 245 Traceback (most recent call last):
+69.4s 246 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+69.4s 247 model_obj, emb, met = benchmark_embedding_model(
+69.4s 248 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 249 File "/tmp/ipykernel_65/1446437333.py", line 85, in benchmark_embedding_model
+69.4s 250 model = SentenceTransformer(model_name_or_path, device=device)
+69.4s 251 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 252 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+69.4s 253 modules, self.module_kwargs = self._load_sbert_model(
+69.4s 254 ^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 255 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1739, in _load_sbert_model
+69.4s 256 module = module_class(model_name_or_path, cache_dir=cache_folder, backend=self.backend, **kwargs)
+69.4s 257 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 258 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 80, in __init__
+69.4s 259 config, is_peft_model = self._load_config(model_name_or_path, cache_dir, backend, config_args)
+69.4s 260 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 261 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/models/Transformer.py", line 145, in _load_config
+69.4s 262 return AutoConfig.from_pretrained(model_name_or_path, **config_args, cache_dir=cache_dir), False
+69.4s 263 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 264 File "/usr/local/lib/python3.12/dist-packages/transformers/models/auto/configuration_auto.py", line 1341, in from_pretrained
+69.4s 265 trust_remote_code = resolve_trust_remote_code(
+69.4s 266 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+69.4s 267 File "/usr/local/lib/python3.12/dist-packages/transformers/dynamic_module_utils.py", line 782, in resolve_trust_remote_code
+69.4s 268 raise ValueError(
+69.4s 269 ValueError: nomic-ai/nomic-bert-2048 You can inspect the repository content at https://hf.co//kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/nomic-embed-text-v1-5.
+69.4s 270 Please pass the argument `trust_remote_code=True` to allow custom code to be run.
+104.2s 271 
+104.2s 272 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b (CUDA) ---
+144.2s 273 Traceback (most recent call last):
+144.2s 274 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 275 from llama_cpp import Llama
+144.2s 276 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 277 
+144.2s 278 The above exception was the direct cause of the following exception:
+144.2s 279 
+144.2s 280 Traceback (most recent call last):
+144.2s 281 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 282 model_obj, emb, met = benchmark_embedding_model(
+144.2s 283 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 284 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 285 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 286 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 287 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 288 raise ImportError(
+144.2s 289 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 290 Traceback (most recent call last):
+144.2s 291 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 292 from llama_cpp import Llama
+144.2s 293 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 294 
+144.2s 295 The above exception was the direct cause of the following exception:
+144.2s 296 
+144.2s 297 Traceback (most recent call last):
+144.2s 298 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 299 model_obj, emb, met = benchmark_embedding_model(
+144.2s 300 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 301 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 302 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 303 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 304 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 305 raise ImportError(
+144.2s 306 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 307 WARNING:sentence_transformers.SentenceTransformer:You try to use a model that was created with version 5.4.0, however, your version is 3.4.1. This might cause unexpected behavior or errors. In that case, try to update to the latest version.
+144.2s 308 
+144.2s 309 
+144.2s 310 
+144.2s 311 
+144.2s 312 Traceback (most recent call last):
+144.2s 313 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 314 from llama_cpp import Llama
+144.2s 315 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 316 
+144.2s 317 The above exception was the direct cause of the following exception:
+144.2s 318 
+144.2s 319 Traceback (most recent call last):
+144.2s 320 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 321 model_obj, emb, met = benchmark_embedding_model(
+144.2s 322 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 323 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 324 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 325 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 326 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 327 raise ImportError(
+144.2s 328 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 329 Traceback (most recent call last):
+144.2s 330 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 331 from llama_cpp import Llama
+144.2s 332 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 333 
+144.2s 334 The above exception was the direct cause of the following exception:
+144.2s 335 
+144.2s 336 Traceback (most recent call last):
+144.2s 337 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 338 model_obj, emb, met = benchmark_embedding_model(
+144.2s 339 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 340 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 341 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 342 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 343 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 344 raise ImportError(
+144.2s 345 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 346 WARNING:sentence_transformers.SentenceTransformer:You try to use a model that was created with version 5.4.0, however, your version is 3.4.1. This might cause unexpected behavior or errors. In that case, try to update to the latest version.
+144.2s 347 
+144.2s 348 
+144.2s 349 
+144.2s 350 WARNING:sentence_transformers.SentenceTransformer:You try to use a model that was created with version 5.4.0, however, your version is 3.4.1. This might cause unexpected behavior or errors. In that case, try to update to the latest version.
+144.2s 351 
+144.2s 352 
+144.2s 353 
+144.2s 354 
+144.2s 355 WARNING:sentence_transformers.SentenceTransformer:You try to use a model that was created with version 5.4.0, however, your version is 3.4.1. This might cause unexpected behavior or errors. In that case, try to update to the latest version.
+144.2s 356 
+144.2s 357 
+144.2s 358 
+144.2s 359 WARNING:sentence_transformers.SentenceTransformer:You try to use a model that was created with version 5.4.0, however, your version is 3.4.1. This might cause unexpected behavior or errors. In that case, try to update to the latest version.
+144.2s 360 
+144.2s 361 
+144.2s 362 
+144.2s 363 
+144.2s 364 WARNING:sentence_transformers.SentenceTransformer:You try to use a model that was created with version 5.4.0, however, your version is 3.4.1. This might cause unexpected behavior or errors. In that case, try to update to the latest version.
+144.2s 365 
+144.2s 366 
+144.2s 367 
+144.2s 368 Traceback (most recent call last):
+144.2s 369 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1140, in import_from_string
+144.2s 370 module = importlib.import_module(dotted_path)
+144.2s 371 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 372 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 373 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 374 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 375 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 376 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 377 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 378 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 379 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 380 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 381 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 382 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 383 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 384 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 385 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 386 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 387 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 388 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 389 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 390 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 391 
+144.2s 392 During handling of the above exception, another exception occurred:
+144.2s 393 
+144.2s 394 Traceback (most recent call last):
+144.2s 395 File "/tmp/ipykernel_65/1446437333.py", line 71, in benchmark_embedding_model
+144.2s 396 model = SentenceTransformer(
+144.2s 397 ^^^^^^^^^^^^^^^^^^^^
+144.2s 398 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+144.2s 399 modules, self.module_kwargs = self._load_sbert_model(
+144.2s 400 ^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 401 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1672, in _load_sbert_model
+144.2s 402 module_class = self._load_module_class_from_ref(
+144.2s 403 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 404 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1562, in _load_module_class_from_ref
+144.2s 405 return import_from_string(class_ref)
+144.2s 406 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 407 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1142, in import_from_string
+144.2s 408 module = importlib.import_module(module_path)
+144.2s 409 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 410 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 411 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 412 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 413 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 414 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 415 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 416 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 417 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 418 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 419 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 420 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 421 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 422 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 423 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 424 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 425 
+144.2s 426 During handling of the above exception, another exception occurred:
+144.2s 427 
+144.2s 428 Traceback (most recent call last):
+144.2s 429 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1140, in import_from_string
+144.2s 430 module = importlib.import_module(dotted_path)
+144.2s 431 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 432 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 433 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 434 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 435 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 436 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 437 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 438 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 439 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 440 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 441 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 442 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 443 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 444 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 445 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 446 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 447 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 448 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 449 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 450 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 451 
+144.2s 452 During handling of the above exception, another exception occurred:
+144.2s 453 
+144.2s 454 Traceback (most recent call last):
+144.2s 455 File "/tmp/ipykernel_65/1446437333.py", line 79, in benchmark_embedding_model
+144.2s 456 model = SentenceTransformer(
+144.2s 457 ^^^^^^^^^^^^^^^^^^^^
+144.2s 458 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+144.2s 459 modules, self.module_kwargs = self._load_sbert_model(
+144.2s 460 ^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 461 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1672, in _load_sbert_model
+144.2s 462 module_class = self._load_module_class_from_ref(
+144.2s 463 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 464 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1562, in _load_module_class_from_ref
+144.2s 465 return import_from_string(class_ref)
+144.2s 466 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 467 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1142, in import_from_string
+144.2s 468 module = importlib.import_module(module_path)
+144.2s 469 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 470 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 471 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 472 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 473 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 474 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 475 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 476 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 477 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 478 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 479 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 480 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 481 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 482 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 483 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 484 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 485 
+144.2s 486 During handling of the above exception, another exception occurred:
+144.2s 487 
+144.2s 488 Traceback (most recent call last):
+144.2s 489 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1140, in import_from_string
+144.2s 490 module = importlib.import_module(dotted_path)
+144.2s 491 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 492 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 493 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 494 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 495 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 496 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 497 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 498 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 499 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 500 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 501 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 502 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 503 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 504 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 505 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 506 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 507 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 508 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 509 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 510 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 511 
+144.2s 512 During handling of the above exception, another exception occurred:
+144.2s 513 
+144.2s 514 Traceback (most recent call last):
+144.2s 515 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 516 model_obj, emb, met = benchmark_embedding_model(
+144.2s 517 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 518 File "/tmp/ipykernel_65/1446437333.py", line 85, in benchmark_embedding_model
+144.2s 519 model = SentenceTransformer(model_name_or_path, device=device)
+144.2s 520 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 521 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+144.2s 522 modules, self.module_kwargs = self._load_sbert_model(
+144.2s 523 ^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 524 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1672, in _load_sbert_model
+144.2s 525 module_class = self._load_module_class_from_ref(
+144.2s 526 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 527 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1562, in _load_module_class_from_ref
+144.2s 528 return import_from_string(class_ref)
+144.2s 529 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 530 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1142, in import_from_string
+144.2s 531 module = importlib.import_module(module_path)
+144.2s 532 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 533 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 534 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 535 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 536 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 537 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 538 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 539 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 540 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 541 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 542 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 543 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 544 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 545 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 546 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 547 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 548 Traceback (most recent call last):
+144.2s 549 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 550 from llama_cpp import Llama
+144.2s 551 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 552 
+144.2s 553 The above exception was the direct cause of the following exception:
+144.2s 554 
+144.2s 555 Traceback (most recent call last):
+144.2s 556 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 557 model_obj, emb, met = benchmark_embedding_model(
+144.2s 558 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 559 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 560 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 561 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 562 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 563 raise ImportError(
+144.2s 564 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 565 Traceback (most recent call last):
+144.2s 566 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 567 from llama_cpp import Llama
+144.2s 568 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 569 
+144.2s 570 The above exception was the direct cause of the following exception:
+144.2s 571 
+144.2s 572 Traceback (most recent call last):
+144.2s 573 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 574 model_obj, emb, met = benchmark_embedding_model(
+144.2s 575 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 576 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 577 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 578 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 579 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 580 raise ImportError(
+144.2s 581 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 582 WARNING:sentence_transformers.SentenceTransformer:No sentence-transformers model found with name /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/ms-marco-minilm-l6-v2. Creating a new one with mean pooling.
+144.2s 583 
+144.2s 584 Traceback (most recent call last):
+144.2s 585 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1140, in import_from_string
+144.2s 586 module = importlib.import_module(dotted_path)
+144.2s 587 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 588 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 589 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 590 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 591 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 592 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 593 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 594 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 595 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 596 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 597 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 598 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 599 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 600 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 601 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 602 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 603 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 604 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 605 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 606 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 607 
+144.2s 608 During handling of the above exception, another exception occurred:
+144.2s 609 
+144.2s 610 Traceback (most recent call last):
+144.2s 611 File "/tmp/ipykernel_65/1446437333.py", line 71, in benchmark_embedding_model
+144.2s 612 model = SentenceTransformer(
+144.2s 613 ^^^^^^^^^^^^^^^^^^^^
+144.2s 614 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+144.2s 615 modules, self.module_kwargs = self._load_sbert_model(
+144.2s 616 ^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 617 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1672, in _load_sbert_model
+144.2s 618 module_class = self._load_module_class_from_ref(
+144.2s 619 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 620 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1562, in _load_module_class_from_ref
+144.2s 621 return import_from_string(class_ref)
+144.2s 622 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 623 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1142, in import_from_string
+144.2s 624 module = importlib.import_module(module_path)
+144.2s 625 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 626 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 627 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 628 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 629 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 630 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 631 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 632 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 633 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 634 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 635 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 636 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 637 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 638 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 639 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 640 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 641 
+144.2s 642 During handling of the above exception, another exception occurred:
+144.2s 643 
+144.2s 644 Traceback (most recent call last):
+144.2s 645 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1140, in import_from_string
+144.2s 646 module = importlib.import_module(dotted_path)
+144.2s 647 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 648 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 649 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 650 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 651 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 652 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 653 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 654 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 655 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 656 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 657 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 658 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 659 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 660 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 661 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 662 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 663 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 664 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 665 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 666 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 667 
+144.2s 668 During handling of the above exception, another exception occurred:
+144.2s 669 
+144.2s 670 Traceback (most recent call last):
+144.2s 671 File "/tmp/ipykernel_65/1446437333.py", line 79, in benchmark_embedding_model
+144.2s 672 model = SentenceTransformer(
+144.2s 673 ^^^^^^^^^^^^^^^^^^^^
+144.2s 674 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+144.2s 675 modules, self.module_kwargs = self._load_sbert_model(
+144.2s 676 ^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 677 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1672, in _load_sbert_model
+144.2s 678 module_class = self._load_module_class_from_ref(
+144.2s 679 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 680 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1562, in _load_module_class_from_ref
+144.2s 681 return import_from_string(class_ref)
+144.2s 682 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 683 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1142, in import_from_string
+144.2s 684 module = importlib.import_module(module_path)
+144.2s 685 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 686 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 687 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 688 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 689 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 690 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 691 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 692 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 693 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 694 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 695 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 696 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 697 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 698 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 699 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 700 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 701 
+144.2s 702 During handling of the above exception, another exception occurred:
+144.2s 703 
+144.2s 704 Traceback (most recent call last):
+144.2s 705 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1140, in import_from_string
+144.2s 706 module = importlib.import_module(dotted_path)
+144.2s 707 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 708 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 709 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 710 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 711 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 712 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 713 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 714 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 715 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 716 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 717 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 718 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 719 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 720 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 721 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 722 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 723 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 724 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 725 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 726 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 727 
+144.2s 728 During handling of the above exception, another exception occurred:
+144.2s 729 
+144.2s 730 Traceback (most recent call last):
+144.2s 731 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 732 model_obj, emb, met = benchmark_embedding_model(
+144.2s 733 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 734 File "/tmp/ipykernel_65/1446437333.py", line 85, in benchmark_embedding_model
+144.2s 735 model = SentenceTransformer(model_name_or_path, device=device)
+144.2s 736 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 737 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 308, in __init__
+144.2s 738 modules, self.module_kwargs = self._load_sbert_model(
+144.2s 739 ^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 740 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1672, in _load_sbert_model
+144.2s 741 module_class = self._load_module_class_from_ref(
+144.2s 742 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 743 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/SentenceTransformer.py", line 1562, in _load_module_class_from_ref
+144.2s 744 return import_from_string(class_ref)
+144.2s 745 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 746 File "/usr/local/lib/python3.12/dist-packages/sentence_transformers/util.py", line 1142, in import_from_string
+144.2s 747 module = importlib.import_module(module_path)
+144.2s 748 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 749 File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+144.2s 750 return _bootstrap._gcd_import(name[level:], package, level)
+144.2s 751 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 752 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 753 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 754 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 755 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 756 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 757 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 758 File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+144.2s 759 File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+144.2s 760 File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+144.2s 761 File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+144.2s 762 File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+144.2s 763 ModuleNotFoundError: No module named 'sentence_transformers.base'
+144.2s 764 Traceback (most recent call last):
+144.2s 765 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 766 from llama_cpp import Llama
+144.2s 767 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 768 
+144.2s 769 The above exception was the direct cause of the following exception:
+144.2s 770 
+144.2s 771 Traceback (most recent call last):
+144.2s 772 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 773 model_obj, emb, met = benchmark_embedding_model(
+144.2s 774 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 775 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 776 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 777 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 778 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 779 raise ImportError(
+144.2s 780 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 781 Traceback (most recent call last):
+144.2s 782 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+144.2s 783 from llama_cpp import Llama
+144.2s 784 ModuleNotFoundError: No module named 'llama_cpp'
+144.2s 785 
+144.2s 786 The above exception was the direct cause of the following exception:
+144.2s 787 
+144.2s 788 Traceback (most recent call last):
+144.2s 789 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+144.2s 790 model_obj, emb, met = benchmark_embedding_model(
+144.2s 791 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 792 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+144.2s 793 model = GGUFEmbeddingWrapper(model_name_or_path)
+144.2s 794 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144.2s 795 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+144.2s 796 raise ImportError(
+144.2s 797 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.2s 798 WARNING:sentence_transformers.SentenceTransformer:No sentence-transformers model found with name /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/ms-marco-minilm-l6-v2. Creating a new one with mean pooling.
+144.4s 799 
+144.4s 800 --- Benchmarking GGUF Model: /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf (CUDA) ---
+144.4s 801 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.4s 802 
+144.4s 803 --- Benchmarking GGUF Model: /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf (CUDA) ---
+144.4s 804 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.4s 805 
+144.4s 806 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-vl-embedding-2b (CUDA) ---
+144.4s 807 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-vl-embedding-2b: No module named 'sentence_transformers.base'
+144.4s 808 
+144.4s 809 --- Benchmarking GGUF Model: /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf (CUDA) ---
+144.4s 810 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.4s 811 
+144.4s 812 --- Benchmarking GGUF Model: /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf (CUDA) ---
+144.4s 813 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+144.4s 814 
+144.4s 815 --- Benchmarking PyTorch Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/ms-marco-minilm-l6-v2 (CUDA) ---
+147.0s 816 
+147.0s 817 --- Benchmarking GGUF Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf (CUDA) ---
+147.0s 818 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-0-6b-gguf/Qwen3-Embedding-0.6B-Q8_0.gguf: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+147.0s 819 
+147.0s 820 --- Benchmarking GGUF Model: /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf (CUDA) ---
+147.0s 821 [ERROR] Failed to benchmark /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets/models/qwen3-embedding-4b-gguf/Qwen3-Embedding-4B-Q4_K_M.gguf: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+147.0s 822 
+147.0s 823 =============================================================================================================================
+147.0s 824 EMBEDDING MODEL DECISION MATRIX (Ranked by Multi-Criteria Composite Score)
+147.0s 825 =============================================================================================================================
+147.0s 826 Rank  Model Name                 Dims   Tput (ch/s)   P50 Lat (ms)  Recall@1   Recall@5   MRR      Composite
+147.0s 827 -----------------------------------------------------------------------------------------------------------------------------
+147.0s 828 #1    all-minilm-l6-v2           384    2682.2        2.09          0.850      0.950      0.9071   0.9817
+147.0s 829 #2    bge-small-en-v1-5          384    1421.5        3.16          0.850      1.000      0.9167   0.9342
+147.0s 830 #3    bge-m3                     1024   177.2         5.68          0.900      1.000      0.9292   0.6211
+147.0s 831 #4    ms-marco-minilm-l6-v2      384    2245.3        2.02          0.000      0.000      0.0000   0.5388
+147.0s 832 #5    qwen3-embedding-0-6b       1024   111.8         14.70         0.800      1.000      0.8600   0.4240
+147.0s 833 =============================================================================================================================
+147.0s 834 
+147.0s 835 ===================================================================================================================
+147.0s 836 DOWNSTREAM RETRIEVAL EVALUATION ACROSS ALL CHUNKING STRATEGIES
+147.0s 837 ===================================================================================================================
+147.0s 838 Strategy Name              Chunks   Avg Tok   Recall@1   Recall@3   Recall@5   Recall@10   MRR
+147.0s 839 -------------------------------------------------------------------------------------------------------------------
+147.0s 840 Traceback (most recent call last):
+147.0s 841 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+147.0s 842 from llama_cpp import Llama
+147.0s 843 ModuleNotFoundError: No module named 'llama_cpp'
+147.0s 844 
+147.0s 845 The above exception was the direct cause of the following exception:
+147.0s 846 
+147.0s 847 Traceback (most recent call last):
+147.0s 848 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+147.0s 849 model_obj, emb, met = benchmark_embedding_model(
+147.0s 850 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 851 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+147.0s 852 model = GGUFEmbeddingWrapper(model_name_or_path)
+147.0s 853 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 854 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+147.0s 855 raise ImportError(
+147.0s 856 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+147.0s 857 Traceback (most recent call last):
+147.0s 858 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+147.0s 859 from llama_cpp import Llama
+147.0s 860 ModuleNotFoundError: No module named 'llama_cpp'
+147.0s 861 
+147.0s 862 The above exception was the direct cause of the following exception:
+147.0s 863 
+147.0s 864 Traceback (most recent call last):
+147.0s 865 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+147.0s 866 model_obj, emb, met = benchmark_embedding_model(
+147.0s 867 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 868 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+147.0s 869 model = GGUFEmbeddingWrapper(model_name_or_path)
+147.0s 870 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 871 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+147.0s 872 raise ImportError(
+147.0s 873 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+147.0s 874 
+147.0s 875 Traceback (most recent call last):
+147.0s 876 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+147.0s 877 from llama_cpp import Llama
+147.0s 878 ModuleNotFoundError: No module named 'llama_cpp'
+147.0s 879 
+147.0s 880 The above exception was the direct cause of the following exception:
+147.0s 881 
+147.0s 882 Traceback (most recent call last):
+147.0s 883 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+147.0s 884 model_obj, emb, met = benchmark_embedding_model(
+147.0s 885 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 886 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+147.0s 887 model = GGUFEmbeddingWrapper(model_name_or_path)
+147.0s 888 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 889 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+147.0s 890 raise ImportError(
+147.0s 891 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+147.0s 892 Traceback (most recent call last):
+147.0s 893 File "/tmp/ipykernel_65/1446437333.py", line 6, in __init__
+147.0s 894 from llama_cpp import Llama
+147.0s 895 ModuleNotFoundError: No module named 'llama_cpp'
+147.0s 896 
+147.0s 897 The above exception was the direct cause of the following exception:
+147.0s 898 
+147.0s 899 Traceback (most recent call last):
+147.0s 900 File "/tmp/ipykernel_65/429609425.py", line 56, in run_benchmark
+147.0s 901 model_obj, emb, met = benchmark_embedding_model(
+147.0s 902 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 903 File "/tmp/ipykernel_65/1446437333.py", line 63, in benchmark_embedding_model
+147.0s 904 model = GGUFEmbeddingWrapper(model_name_or_path)
+147.0s 905 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+147.0s 906 File "/tmp/ipykernel_65/1446437333.py", line 8, in __init__
+147.0s 907 raise ImportError(
+147.0s 908 ImportError: llama-cpp-python is required to run GGUF models. Ensure llama-cpp-python wheel is installed.
+147.9s 909 fixed_128_16               3773     110.3     0.800      1.000      1.000      1.000       0.8833
+148.7s 910 fixed_256_32               2024     199.6     0.850      0.950      0.950      1.000       0.9071
+149.2s 911 fixed_512_64               1115     338.8     0.700      0.900      0.900      0.950       0.7979
+150.1s 912 parent_child_128_512       3823     108.7     0.800      1.000      1.000      1.000       0.8833
+150.7s 913 section_header_aware       1763     223.8     0.750      0.950      1.000      1.000       0.8458
+151.5s 914 multimodal_figure_graph    2024     199.6     0.850      0.950      1.000      1.000       0.9100
+152.2s 915 semantic_recursive         2002     185.9     0.950      0.950      0.950      1.000       0.9556
+152.2s 916 ===================================================================================================================
+152.2s 917 
+152.2s 918 =========================================================================================================
+152.2s 919 FAISS VECTOR INDEX ARCHITECTURE BENCHMARK (2024 Vectors)
+152.2s 920 =========================================================================================================
+152.2s 921 Index Architecture     Index Type       Build Time (s)   Query Latency (ms)     Recall@10 vs Exact
+152.2s 922 ---------------------------------------------------------------------------------------------------------
+152.2s 923 IndexFlatIP            exact            0.0002           0.0180                 100.0%
+152.2s 924 IndexHNSWFlat          graph_ann        0.0049           0.0820                 100.0%
+152.2s 925 IndexIVFFlat           inverted_file    0.0055           0.0100                 94.0%
+152.2s 926 =========================================================================================================
+152.2s 927 
+152.2s 928 Generating publication-grade benchmark figures...
+152.5s 929 Generated visual artifact: /kaggle/working/indexing-benchmark-outputs/plots/plot1_chunk_length_distributions.png
+152.8s 930 Generated visual artifact: /kaggle/working/indexing-benchmark-outputs/plots/plot2_mrr_vs_throughput_pareto.png
+153.0s 931 Generated visual artifact: /kaggle/working/indexing-benchmark-outputs/plots/plot3_chunking_retrieval_accuracy.png
+153.0s 932 Generated visual artifact: /kaggle/working/indexing-benchmark-outputs/plots/plot4_retrieval_score_margin.png
+153.2s 933 Generated visual artifact: /kaggle/working/indexing-benchmark-outputs/plots/plot5_faiss_index_comparison.png
+153.2s 934 
+153.2s 935 === Displaying Benchmark Visualizations Inline ===
+153.4s 936 
+153.4s 937 Persisting candidate Knowledge Bases to /kaggle/working/indexing-benchmark-outputs/knowledge_bases...
+159.2s 938 Saved 7 experimental Knowledge Bases.
+159.2s 939 
+159.2s 940 Report written to: /kaggle/working/indexing-benchmark-outputs/indexing_comparison_results.json
+160.5s 941 Created final benchmark output archive with plots and KBs: /kaggle/working/indexing-benchmark-outputs.zip (30022.5 KB)
+160.5s 942 Discovered offline asset: 'qwen3-embedding-reranker-assets' at /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets
+160.5s 943 Discovered offline asset: 'embedding-indexing-offline-assets' at /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets
+160.6s 944 Installing 61 unique offline wheels...
+161.9s 945 Loaded 1028 FULL BOOK pages reconstructed from /kaggle/input/datasets/cruelangelssprint/indexing-benchmark-bundle/chunks.jsonl
+161.9s 946 Discovered offline asset: 'qwen3-embedding-reranker-assets' at /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets
+161.9s 947 Discovered offline asset: 'embedding-indexing-offline-assets' at /kaggle/input/notebooks/cruelangelssprint/package-embedding-models/embedding-indexing-offline-assets
+162.0s 948 
+162.0s 949 [Playground] Loading embedding model: /kaggle/input/notebooks/cruelangelssprint/package-qwen3-family/qwen3-embedding-reranker-assets/models/qwen3-embedding-0-6b on CUDA...
+162.6s 950 [Playground] Encoding 2024 chunks...
+180.6s 951 [Playground] Index ready with 2024 passages!
+180.6s 952 
+180.6s 953 ================================================================================
+180.6s 954 QUERY: "What are the medicinal preparations and healing properties of Golden Seal?"
+180.6s 955 MODEL: qwen3-embedding-0-6b | TOP-5 PASSAGES
+180.6s 956 ================================================================================
+180.6s 957 
+180.6s 958 [Rank #1]  Score: 0.7462  |  Page: p0360  |  ID: pierce-1890_p0360_c0616
+180.6s 959 "352 COMMON SENSE MEDICAL ADVISER. Golden Seal ( Hydrastis Canadensis ). Golden Seal is a powerful and most valuable tonic. It is a valuable local remedy when used as a general injection in leucorrhea. Dose --Of the Fig. 141. A detailed botanical line drawing of the Golden Seal pl..."
+180.6s 960 --------------------------------------------------------------------------------
+180.6s 961 
+180.6s 962 [Rank #2]  Score: 0.5734  |  Page: p0582  |  ID: pierce-1890_p0582_c1059
+180.6s 963 "diseases of the liver, but in a large number of ailments in which the blood becomes charged with morbid materials. The active remedial properties of the most efficient agents of the above classes of medicine now known, are scientifically combined in the Golden Medical Discovery, ..."
+180.6s 964 --------------------------------------------------------------------------------
+180.6s 965 
+180.6s 966 [Rank #3]  Score: 0.5326  |  Page: p0316  |  ID: pierce-1890_p0316_c0549
+180.6s 967 "308 COMMON SENSE MEDICAL ADVISER. THE COMPOUNDING OF ALTERATIVES. The efficacy of this class of remedies can be greatly increased by properly combining several of them into one compound. This requires a knowledge of Pharmaceutical Chemistry; i. e. , the preparation of compounds f..."
+180.6s 968 --------------------------------------------------------------------------------
+180.6s 969 
+180.6s 970 [Rank #4]  Score: 0.5138  |  Page: p0493  |  ID: pierce-1890_p0493_c0872
+180.6s 971 "CHRONIC NASAL CATARRH. 485 and lung diseases, weak stomach, catarrhal deafness, weak or inflamed eyes, impure blood, scrofulous and syphilitic taints, the wonderful virtues of the Golden Medical Discovery cannot be too highly extolled. It has a specific effect upon the lining muc..."
+180.6s 972 --------------------------------------------------------------------------------
+180.6s 973 
+180.6s 974 [Rank #5]  Score: 0.5125  |  Page: p0680  |  ID: pierce-1890_p0680_c1259
+180.6s 975 "hygienic observances, and, if tonics are necessary, the Golden Medical Discovery is advised. The eyes should frequently be bathed with milk and water, or a weak infusion of golden seal, or a lotion made from one or two grains of sulphate of zinc and one ounce of rose-water. Glyce..."
+180.6s 976 --------------------------------------------------------------------------------
+184.7s 977 /usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
+184.7s 978 cells[i][c] = re.sub('\\\\\|', '|', cell)
+184.8s 979 /usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
+184.8s 980 text = re.sub(r'_', '\_', text) # Escape underscores in display text
+185.1s 981 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
+185.2s 982 [NbConvertApp] Writing 1182977 bytes to __notebook__.ipynb
+186.4s 983 [NbConvertApp] Converting notebook __notebook__.ipynb to html
+186.9s 984 [NbConvertApp] Support files will be in __results___files/
+186.9s 985 [NbConvertApp] Making directory __results___files
+186.9s 986 [NbConvertApp] Making directory __results___files
+186.9s 987 [NbConvertApp] Making directory __results___files
+186.9s 988 [NbConvertApp] Making directory __results___files
+186.9s 989 [NbConvertApp] Making directory __results___files
+186.9s 990 [NbConvertApp] Writing 648252 bytes to __results__.html
