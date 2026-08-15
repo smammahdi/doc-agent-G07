@@ -148,6 +148,10 @@ class BenchmarkChunk:
     text: str
     token_count: int
     strategy: str
+    parent_id: str | None = None
+    parent_text: str | None = None
+    section_title: str | None = None
+    linked_figures: list[str] | None = None
 
 
 def fixed_window_token_chunking(
@@ -186,6 +190,128 @@ def fixed_window_token_chunking(
     return chunks
 
 
+def hierarchical_parent_child_chunking(
+    pages: list[dict[str, str]],
+    parent_size: int = 512,
+    child_size: int = 128,
+    child_overlap: int = 16,
+) -> list[BenchmarkChunk]:
+    """Hierarchical Small-to-Big chunking: Embeds 128-token child for precision, retrieves 512-token parent for context."""
+    chunks: list[BenchmarkChunk] = []
+    child_step = max(1, child_size - child_overlap)
+
+    for page in pages:
+        page_id = page.get("page_id", "p0001")
+        doc_id = page.get("doc_id", "pierce-1890")
+        text = page.get("text", "").strip()
+        words = text.split()
+        if not words:
+            continue
+
+        for p_idx, p_start in enumerate(range(0, len(words), parent_size)):
+            parent_words = words[p_start : p_start + parent_size]
+            parent_text = " ".join(parent_words)
+            parent_id = f"{doc_id}_{page_id}_p{p_idx:03d}"
+
+            # Create child chunks within parent window
+            for c_start in range(0, len(parent_words), child_step):
+                child_words = parent_words[c_start : c_start + child_size]
+                child_text = " ".join(child_words)
+                child_id = f"{parent_id}_c{len(chunks):04d}"
+                chunks.append(
+                    BenchmarkChunk(
+                        chunk_id=child_id,
+                        doc_id=doc_id,
+                        page_id=page_id,
+                        text=child_text,
+                        token_count=len(child_words),
+                        strategy="parent_child_128_512",
+                        parent_id=parent_id,
+                        parent_text=parent_text,
+                    )
+                )
+                if c_start + child_size >= len(parent_words):
+                    break
+
+    return chunks
+
+
+def section_header_aware_chunking(
+    pages: list[dict[str, str]],
+    max_section_tokens: int = 350,
+) -> list[BenchmarkChunk]:
+    """Structural chunking: Splits text cleanly along Markdown headers and anatomical titles."""
+    chunks: list[BenchmarkChunk] = []
+
+    # Regex detecting chapters, uppercase headings, and markdown headers
+    header_pattern = re.compile(
+        r"(?=^#{1,4}\s+|^CHAPTER\s+[IVXLCDM\d]+|^[A-Z\s]{4,}\.)", re.MULTILINE
+    )
+
+    for page in pages:
+        page_id = page.get("page_id", "p0001")
+        doc_id = page.get("doc_id", "pierce-1890")
+        text = page.get("text", "").strip()
+        if not text:
+            continue
+
+        sections = header_pattern.split(text)
+        for sec in sections:
+            sec = sec.strip()
+            if not sec:
+                continue
+
+            words = sec.split()
+            first_line = sec.split("\n")[0].strip()[:60]
+
+            if len(words) <= max_section_tokens:
+                chunks.append(
+                    BenchmarkChunk(
+                        chunk_id=f"{doc_id}_{page_id}_c{len(chunks):04d}",
+                        doc_id=doc_id,
+                        page_id=page_id,
+                        text=sec,
+                        token_count=len(words),
+                        strategy="section_header_aware",
+                        section_title=first_line,
+                    )
+                )
+            else:
+                # Sub-split long section by sentences
+                sub_chunks = fixed_window_token_chunking(
+                    [{"page_id": page_id, "doc_id": doc_id, "text": sec}],
+                    chunk_size=max_section_tokens,
+                    overlap=32,
+                )
+                for sc in sub_chunks:
+                    sc.strategy = "section_header_aware"
+                    sc.section_title = first_line
+                    chunks.append(sc)
+
+    return chunks
+
+
+def multimodal_figure_graph_chunking(
+    pages: list[dict[str, str]],
+    chunk_size: int = 256,
+    overlap: int = 32,
+) -> list[BenchmarkChunk]:
+    """Multimodal Graph Association: Links chunks with detected figure diagrams (Fig. X) and crop references."""
+    chunks = fixed_window_token_chunking(pages, chunk_size=chunk_size, overlap=overlap)
+    fig_pattern = re.compile(r"Fig\.\s*(\d+)", re.IGNORECASE)
+
+    for c in chunks:
+        c.strategy = "multimodal_figure_graph"
+        matches = fig_pattern.findall(c.text)
+        if matches:
+            c.linked_figures = [f"Fig_{m}" for m in set(matches)]
+            # Enrich chunk representation with explicit figure metadata tag
+            fig_tag = f"[FIGURE_LINKS: {', '.join(c.linked_figures)}] "
+            c.text = fig_tag + c.text
+
+    return chunks
+
+
 def recursive_semantic_chunking(
     pages: list[dict[str, str]],
     target_chunk_size: int = 256,
@@ -200,7 +326,6 @@ def recursive_semantic_chunking(
         if not text:
             continue
 
-        # Split on markdown headers or paragraph breaks
         paragraphs = re.split(r"\n\s*\n|(?=^#{1,3}\s)", text, flags=re.MULTILINE)
         current_words: list[str] = []
 
@@ -227,7 +352,6 @@ def recursive_semantic_chunking(
                     current_words = []
 
                 if len(p_words) > target_chunk_size:
-                    # Sub-split long paragraph by sentences
                     sentences = re.split(r"(?<=[.?!])\s+", " ".join(p_words))
                     for s in sentences:
                         s_words = s.strip().split()
@@ -727,6 +851,9 @@ def run_benchmark() -> None:
         "fixed_128_16": fixed_window_token_chunking(pages, 128, 16),
         "fixed_256_32": fixed_window_token_chunking(pages, 256, 32),
         "fixed_512_64": fixed_window_token_chunking(pages, 512, 64),
+        "parent_child_128_512": hierarchical_parent_child_chunking(pages, 512, 128, 16),
+        "section_header_aware": section_header_aware_chunking(pages, 350),
+        "multimodal_figure_graph": multimodal_figure_graph_chunking(pages, 256, 32),
         "semantic_recursive": recursive_semantic_chunking(pages, 256, 40),
     }
 
@@ -738,9 +865,26 @@ def run_benchmark() -> None:
             "avg_tokens": round(float(np.mean(lengths)), 1) if lengths else 0,
             "min_tokens": int(np.min(lengths)) if lengths else 0,
             "max_tokens": int(np.max(lengths)) if lengths else 0,
+            "has_parent_links": any(c.parent_id is not None for c in c_list),
+            "has_figure_links": any(c.linked_figures is not None for c in c_list),
         }
-    print("\n=== Chunking Strategies Comparison ===")
-    print(json.dumps(chunk_summary, indent=2))
+    print("\n" + "=" * 90)
+    print("CHUNKING STRATEGIES COMPARISON (Structural, Hierarchical & Graph Links)")
+    print("=" * 90)
+    header_chunk = f"{'Strategy Name':<26} {'Total Chunks':<14} {'Avg Tokens':<12} {'Min/Max Tokens':<16} {'Graph/Parent Links'}"
+    print(header_chunk)
+    print("-" * 90)
+    for s_name, s_met in chunk_summary.items():
+        min_max = f"{s_met['min_tokens']}/{s_met['max_tokens']}"
+        link_str = (
+            "Parent (128->512)"
+            if s_met["has_parent_links"]
+            else ("Figure Graph" if s_met["has_figure_links"] else "None")
+        )
+        print(
+            f"{s_name:<26} {s_met['total_chunks']:<14} {s_met['avg_tokens']:<12} {min_max:<16} {link_str}"
+        )
+    print("=" * 90)
 
     # 3. Benchmark Embedding Models & Accuracy on Baseline Chunks
     eval_chunks = chunk_suites["fixed_256_32"]
