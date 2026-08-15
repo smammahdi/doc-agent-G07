@@ -38,7 +38,7 @@
   "engines": [
     {
       "engine": "Chandra",
-      "source": "extras/output/chandra/chunks.jsonl",
+      "source": "extras/ocr-benchmarks/outputs/full-book/chandra/chunks.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.11469007993709868,
@@ -270,241 +270,8 @@
       ]
     },
     {
-      "engine": "Document AI",
-      "source": "extras/output/document-ai/words.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.1317782728344909,
-      "micro_wer": 0.1849294506154308,
-      "macro_cer": 0.15081618629811636,
-      "macro_wer": 0.20451634816430977,
-      "macro_word_f1": 0.9617826495102236,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.004354926510615134,
-          "wer": 0.012944983818770227,
-          "word_f1": 0.9935691318327975,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1845,
-          "hypothesis_words": 313
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.00799623706491063,
-          "wer": 0.01639344262295082,
-          "word_f1": 0.990450204638472,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2126,
-          "hypothesis_words": 367
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.0010095911155981827,
-          "wer": 0.012084592145015106,
-          "word_f1": 0.9909638554216867,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1983,
-          "hypothesis_words": 333
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.16280752532561504,
-          "wer": 0.22594142259414227,
-          "word_f1": 0.9670781893004115,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 1395,
-          "hypothesis_words": 247
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.12128418549346016,
-          "wer": 0.15714285714285714,
-          "word_f1": 0.9595782073813708,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 1697,
-          "hypothesis_words": 289
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.887434554973822,
-          "wer": 1.0253807106598984,
-          "word_f1": 0.8486238532110091,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 1653,
-          "hypothesis_words": 239
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.11231101511879049,
-          "wer": 0.17737003058103976,
-          "word_f1": 0.9593984962406015,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 1866,
-          "hypothesis_words": 338
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.11558044806517312,
-          "wer": 0.14366197183098592,
-          "word_f1": 0.9776536312849161,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1972,
-          "hypothesis_words": 361
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.42387267904509285,
-          "wer": 0.5681159420289855,
-          "word_f1": 0.8968481375358165,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 1882,
-          "hypothesis_words": 353
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.14309120699071545,
-          "wer": 0.19444444444444445,
-          "word_f1": 0.963302752293578,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1838,
-          "hypothesis_words": 330
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.3068105192178018,
-          "wer": 0.41403508771929826,
-          "word_f1": 0.9525423728813559,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 1534,
-          "hypothesis_words": 305
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.0021551724137931034,
-          "wer": 0.02444987775061125,
-          "word_f1": 0.9817739975698664,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2325,
-          "hypothesis_words": 414
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.01875732708089097,
-          "wer": 0.05921052631578947,
-          "word_f1": 0.970873786407767,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1723,
-          "hypothesis_words": 314
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.0017482517482517483,
-          "wer": 0.01808785529715762,
-          "word_f1": 0.9858429858429858,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2291,
-          "hypothesis_words": 390
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.06282722513089005,
-          "wer": 0.06926406926406926,
-          "word_f1": 0.9848812095032398,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 1336,
-          "hypothesis_words": 232
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.39516616314199393,
-          "wer": 0.49642857142857144,
-          "word_f1": 0.9326424870466321,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 1688,
-          "hypothesis_words": 299
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.22752420470262794,
-          "wer": 0.34552845528455284,
-          "word_f1": 0.9325396825396824,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 1460,
-          "hypothesis_words": 258
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.007145859604875998,
-          "wer": 0.03676470588235294,
-          "word_f1": 0.975669099756691,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2385,
-          "hypothesis_words": 414
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 975,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.14535768645357686,
-          "wer": 0.20168067226890757,
-          "word_f1": 0.9812889812889812,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 1323,
-          "hypothesis_words": 243
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.14520048602673147,
-          "wer": 0.19801980198019803,
-          "word_f1": 0.9721767594108018,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1651,
-          "hypothesis_words": 308
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.025520833333333333,
-          "wer": 0.10240963855421686,
-          "word_f1": 0.9415204678362574,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1954,
-          "hypothesis_words": 352
-        }
-      ]
-    },
-    {
-      "engine": "MinerU 2605 full",
-      "source": "extras/output/mineru-ocr-full-book/full-page/pages.jsonl",
+      "engine": "MinerU full-page",
+      "source": "extras/ocr-benchmarks/outputs/full-book/mineru/full-page/pages.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.11961735028174551,
@@ -736,8 +503,8 @@
       ]
     },
     {
-      "engine": "MinerU 2605 PP-DocLayout",
-      "source": "extras/output/mineru-ocr-full-book/ppdoclayout-v3/pages.jsonl",
+      "engine": "MinerU layout",
+      "source": "extras/ocr-benchmarks/outputs/full-book/mineru/ppdoclayout-v3/pages.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.11893591927663479,
@@ -969,940 +736,8 @@
       ]
     },
     {
-      "engine": "MinerU 2604 full",
-      "source": "extras/output_reports/mineru-ocr-benchmark/full-page/pages.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.12425632289346088,
-      "micro_wer": 0.1526568598018613,
-      "macro_cer": 0.13369086299467361,
-      "macro_wer": 0.1616521992944586,
-      "macro_word_f1": 0.9872871918359203,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.008709853021230268,
-          "wer": 0.03559870550161812,
-          "word_f1": 0.9754500818330606,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1823,
-          "hypothesis_words": 302
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.005644402634054563,
-          "wer": 0.040983606557377046,
-          "word_f1": 0.9696969696969697,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2124,
-          "hypothesis_words": 360
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1981,
-          "hypothesis_words": 331
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.15557163531114326,
-          "wer": 0.1799163179916318,
-          "word_f1": 0.9979123173277662,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 1385,
-          "hypothesis_words": 240
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.12128418549346016,
-          "wer": 0.1357142857142857,
-          "word_f1": 0.9893238434163701,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 1684,
-          "hypothesis_words": 282
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.16666666666666666,
-          "wer": 0.25888324873096447,
-          "word_f1": 0.9585492227979275,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 1129,
-          "hypothesis_words": 189
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.3488120950323974,
-          "wer": 0.3730886850152905,
-          "word_f1": 0.9954198473282444,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 1853,
-          "hypothesis_words": 328
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.1690427698574338,
-          "wer": 0.18309859154929578,
-          "word_f1": 0.9831460674157303,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1966,
-          "hypothesis_words": 357
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.2673740053050398,
-          "wer": 0.3130434782608696,
-          "word_f1": 0.9591836734693878,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 1871,
-          "hypothesis_words": 341
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.13762971054068815,
-          "wer": 0.1697530864197531,
-          "word_f1": 0.9876923076923076,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1834,
-          "hypothesis_words": 326
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.5064059339177344,
-          "wer": 0.5754385964912281,
-          "word_f1": 0.9964788732394366,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 1476,
-          "hypothesis_words": 283
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2320,
-          "hypothesis_words": 409
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.005861664712778429,
-          "wer": 0.013157894736842105,
-          "word_f1": 0.9900990099009901,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1700,
-          "hypothesis_words": 302
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2288,
-          "hypothesis_words": 387
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.05983545250560957,
-          "wer": 0.05194805194805195,
-          "word_f1": 1.0,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 1337,
-          "hypothesis_words": 231
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.37099697885196375,
-          "wer": 0.41785714285714287,
-          "word_f1": 0.9928571428571429,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 1653,
-          "hypothesis_words": 280
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.2206085753803596,
-          "wer": 0.2886178861788618,
-          "word_f1": 0.9634146341463414,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 1437,
-          "hypothesis_words": 246
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2379,
-          "hypothesis_words": 408
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 975,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.1796042617960426,
-          "wer": 0.2647058823529412,
-          "word_f1": 0.9937106918238993,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 1318,
-          "hypothesis_words": 239
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.21142162818955043,
-          "wer": 0.22442244224422442,
-          "word_f1": 0.9884678747940692,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1648,
-          "hypothesis_words": 304
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.005729166666666666,
-          "wer": 0.030120481927710843,
-          "word_f1": 0.9789156626506024,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1915,
-          "hypothesis_words": 332
-        }
-      ]
-    },
-    {
-      "engine": "MinerU 2604 PP-DocLayout",
-      "source": "extras/output_reports/mineru-ocr-benchmark/ppdoclayout-v3/pages.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.12624819813916918,
-      "micro_wer": 0.15100570399279495,
-      "macro_cer": 0.1439125780318063,
-      "macro_wer": 0.1701379837752287,
-      "macro_word_f1": 0.959668799788514,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.008165487207403375,
-          "wer": 0.02912621359223301,
-          "word_f1": 0.9803921568627452,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1824,
-          "hypothesis_words": 303
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.008466603951081843,
-          "wer": 0.04644808743169399,
-          "word_f1": 0.9696969696969697,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2124,
-          "hypothesis_words": 360
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.001514386673397274,
-          "wer": 0.0030211480362537764,
-          "word_f1": 0.9984871406959154,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1978,
-          "hypothesis_words": 330
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.4609261939218524,
-          "wer": 0.5648535564853556,
-          "word_f1": 0.8245614035087718,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 1871,
-          "hypothesis_words": 331
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.13317479191438764,
-          "wer": 0.1392857142857143,
-          "word_f1": 0.9750889679715302,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 1698,
-          "hypothesis_words": 282
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.6910994764397905,
-          "wer": 0.7411167512690355,
-          "word_f1": 0.8870523415977961,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 1015,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.005939524838012959,
-          "wer": 0.01529051987767584,
-          "word_f1": 0.9907975460122699,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 1843,
-          "hypothesis_words": 325
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.015784114052953158,
-          "wer": 0.02535211267605634,
-          "word_f1": 0.9845288326300984,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1974,
-          "hypothesis_words": 356
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.2562334217506631,
-          "wer": 0.33043478260869563,
-          "word_f1": 0.8706624605678234,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 1615,
-          "hypothesis_words": 289
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.1365374112506827,
-          "wer": 0.1697530864197531,
-          "word_f1": 0.9814241486068113,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1822,
-          "hypothesis_words": 322
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.027646662171274445,
-          "wer": 0.031578947368421054,
-          "word_f1": 0.983957219251337,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 1442,
-          "hypothesis_words": 276
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.02543103448275862,
-          "wer": 0.03178484107579462,
-          "word_f1": 0.9838509316770186,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2261,
-          "hypothesis_words": 396
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.13481828839390386,
-          "wer": 0.18421052631578946,
-          "word_f1": 0.9645868465430016,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1630,
-          "hypothesis_words": 289
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.0013111888111888112,
-          "wer": 0.002583979328165375,
-          "word_f1": 0.9987063389391979,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2285,
-          "hypothesis_words": 386
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.0643231114435303,
-          "wer": 0.06926406926406926,
-          "word_f1": 0.9827586206896551,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 1337,
-          "hypothesis_words": 233
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.3987915407854985,
-          "wer": 0.45,
-          "word_f1": 0.9820143884892086,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 1638,
-          "hypothesis_words": 276
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.15491009681881052,
-          "wer": 0.22357723577235772,
-          "word_f1": 0.8659340659340659,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 1234,
-          "hypothesis_words": 209
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.0012610340479192938,
-          "wer": 0.0024509803921568627,
-          "word_f1": 0.9987730061349693,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2376,
-          "hypothesis_words": 407
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.003076923076923077,
-          "wer": 0.006024096385542169,
-          "word_f1": 0.9969788519637462,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 972,
-          "hypothesis_words": 165
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.2298325722983257,
-          "wer": 0.23949579831932774,
-          "word_f1": 0.9473684210526315,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 1199,
-          "hypothesis_words": 218
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.14277035236938032,
-          "wer": 0.14521452145214522,
-          "word_f1": 0.964467005076142,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1576,
-          "hypothesis_words": 288
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.2640625,
-          "wer": 0.2921686746987952,
-          "word_f1": 0.9806259314456036,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1959,
-          "hypothesis_words": 339
-        }
-      ]
-    },
-    {
-      "engine": "GLM full",
-      "source": "extras/output_reports/glm-ocr-benchmark/full-page/pages.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.12320796750098284,
-      "micro_wer": 0.13959771840288202,
-      "macro_cer": 0.13480194981903018,
-      "macro_wer": 0.15012857869351254,
-      "macro_word_f1": 0.9347244662978038,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.01905280348394121,
-          "wer": 0.03559870550161812,
-          "word_f1": 0.977049180327869,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1802,
-          "hypothesis_words": 301
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.01599247412982126,
-          "wer": 0.0546448087431694,
-          "word_f1": 0.9625520110957004,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2102,
-          "hypothesis_words": 355
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.016153457849570924,
-          "wer": 0.015105740181268883,
-          "word_f1": 0.9923896499238966,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1949,
-          "hypothesis_words": 326
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.07670043415340087,
-          "wer": 0.08786610878661087,
-          "word_f1": 0.9540481400437637,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 1276,
-          "hypothesis_words": 218
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.07907253269916766,
-          "wer": 0.07857142857142857,
-          "word_f1": 0.9591078066914498,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 1549,
-          "hypothesis_words": 258
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.6675392670157068,
-          "wer": 0.7461928934010152,
-          "word_f1": 0.9558441558441558,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 1117,
-          "hypothesis_words": 188
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.27213822894168466,
-          "wer": 0.2966360856269113,
-          "word_f1": 0.8258527827648114,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 1348,
-          "hypothesis_words": 230
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.1945010183299389,
-          "wer": 0.22535211267605634,
-          "word_f1": 0.8716323296354992,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1585,
-          "hypothesis_words": 276
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.3787798408488064,
-          "wer": 0.41739130434782606,
-          "word_f1": 0.8268907563025211,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 1388,
-          "hypothesis_words": 250
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.08847624249044238,
-          "wer": 0.10185185185185185,
-          "word_f1": 0.9448051948051949,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1672,
-          "hypothesis_words": 292
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.27714093054619016,
-          "wer": 0.3087719298245614,
-          "word_f1": 0.8174273858921163,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 1072,
-          "hypothesis_words": 197
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.014655172413793103,
-          "wer": 0.014669926650366748,
-          "word_f1": 0.9926108374384237,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2286,
-          "hypothesis_words": 403
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.021101992966002344,
-          "wer": 0.023026315789473683,
-          "word_f1": 0.9867109634551494,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1673,
-          "hypothesis_words": 298
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.016608391608391608,
-          "wer": 0.020671834625323,
-          "word_f1": 0.9869791666666666,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2256,
-          "hypothesis_words": 381
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.035153328347045626,
-          "wer": 0.03896103896103896,
-          "word_f1": 0.9758241758241759,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 1292,
-          "hypothesis_words": 224
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.24471299093655588,
-          "wer": 0.22857142857142856,
-          "word_f1": 0.869215291750503,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 1251,
-          "hypothesis_words": 217
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.13692946058091288,
-          "wer": 0.15853658536585366,
-          "word_f1": 0.9118942731277532,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 1251,
-          "hypothesis_words": 208
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.013451029844472467,
-          "wer": 0.012254901960784314,
-          "word_f1": 0.9938347718865598,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2347,
-          "hypothesis_words": 403
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.03282051282051282,
-          "wer": 0.030120481927710843,
-          "word_f1": 0.9847094801223241,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 943,
-          "hypothesis_words": 161
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.10730593607305935,
-          "wer": 0.13445378151260504,
-          "word_f1": 0.927927927927928,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 1173,
-          "hypothesis_words": 206
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.12454434993924667,
-          "wer": 0.132013201320132,
-          "word_f1": 0.9228070175438596,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1447,
-          "hypothesis_words": 267
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.1328125,
-          "wer": 0.14156626506024098,
-          "word_f1": 0.9238249594813615,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1665,
-          "hypothesis_words": 285
-        }
-      ]
-    },
-    {
-      "engine": "GLM PP-DocLayout",
-      "source": "extras/output_reports/glm-ocr-benchmark/ppdoclayout-v3/pages.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.11993185689948893,
-      "micro_wer": 0.14199939957970578,
-      "macro_cer": 0.13730704477128278,
-      "macro_wer": 0.16129199282104842,
-      "macro_word_f1": 0.9705261574926904,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.0027218290691344584,
-          "wer": 0.025889967637540454,
-          "word_f1": 0.9853658536585367,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1834,
-          "hypothesis_words": 306
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.008466603951081843,
-          "wer": 0.04644808743169399,
-          "word_f1": 0.9696969696969697,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2124,
-          "hypothesis_words": 360
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1981,
-          "hypothesis_words": 331
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.4609261939218524,
-          "wer": 0.5648535564853556,
-          "word_f1": 0.8245614035087718,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 1871,
-          "hypothesis_words": 331
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.12841854934601665,
-          "wer": 0.1357142857142857,
-          "word_f1": 0.975177304964539,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 1706,
-          "hypothesis_words": 284
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.6893542757417103,
-          "wer": 0.7817258883248731,
-          "word_f1": 0.9214659685863875,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 1105,
-          "hypothesis_words": 185
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.003779697624190065,
-          "wer": 0.012232415902140673,
-          "word_f1": 0.9954198473282444,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 1853,
-          "hypothesis_words": 328
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.004582484725050916,
-          "wer": 0.014084507042253521,
-          "word_f1": 0.9929676511954993,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1966,
-          "hypothesis_words": 356
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.2663129973474801,
-          "wer": 0.32753623188405795,
-          "word_f1": 0.8811410459587955,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 1588,
-          "hypothesis_words": 286
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.14090660841070454,
-          "wer": 0.1728395061728395,
-          "word_f1": 0.9861325115562404,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1833,
-          "hypothesis_words": 325
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.04787592717464599,
-          "wer": 0.06315789473684211,
-          "word_f1": 0.9858657243816255,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 1474,
-          "hypothesis_words": 281
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2320,
-          "hypothesis_words": 409
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.0984759671746776,
-          "wer": 0.13815789473684212,
-          "word_f1": 1.0,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1706,
-          "hypothesis_words": 304
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.004370629370629371,
-          "wer": 0.0103359173126615,
-          "word_f1": 0.9948320413436692,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2290,
-          "hypothesis_words": 387
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.05983545250560957,
-          "wer": 0.05194805194805195,
-          "word_f1": 1.0,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 1337,
-          "hypothesis_words": 231
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.39939577039274926,
-          "wer": 0.45357142857142857,
-          "word_f1": 0.9820788530465949,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 1645,
-          "hypothesis_words": 278
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.1459197786998617,
-          "wer": 0.17479674796747968,
-          "word_f1": 0.9006622516556291,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 1240,
-          "hypothesis_words": 207
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2379,
-          "hypothesis_words": 408
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.0,
-          "wer": 0.0,
-          "word_f1": 1.0,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 975,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.1841704718417047,
-          "wer": 0.19327731092436976,
-          "word_f1": 0.9742489270386266,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 1258,
-          "hypothesis_words": 228
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.10753341433778858,
-          "wer": 0.09570957095709572,
-          "word_f1": 0.9983525535420099,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1649,
-          "hypothesis_words": 304
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.2677083333333333,
-          "wer": 0.286144578313253,
-          "word_f1": 0.983606557377049,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1966,
-          "hypothesis_words": 339
-        }
-      ]
-    },
-    {
-      "engine": "DeepSeek full",
-      "source": "extras/output_reports/deepseek-ocr-benchmark/full-page/pages.jsonl",
+      "engine": "DeepSeek-OCR full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/deepseek/full-page/pages.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.23637793211898833,
@@ -2134,8 +969,8 @@
       ]
     },
     {
-      "engine": "DeepSeek PP-DocLayout",
-      "source": "extras/output_reports/deepseek-ocr-benchmark/ppdoclayout-v3/pages.jsonl",
+      "engine": "DeepSeek-OCR layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/deepseek/ppdoclayout-v3/pages.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.7259336915214257,
@@ -2367,8 +1202,1406 @@
       ]
     },
     {
-      "engine": "Paddle full",
-      "source": "extras/output_reports/paddle-ocr-benchmark/full-page/pages.jsonl",
+      "engine": "EasyOCR full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/easyocr/fullpage_results.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.40361682610404925,
+      "micro_wer": 0.5486340438306815,
+      "macro_cer": 0.41167432224266,
+      "macro_wer": 0.5634278547822741,
+      "macro_word_f1": 0.8650966747915672,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.32389765922700053,
+          "wer": 0.4174757281553398,
+          "word_f1": 0.9628432956381261,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1843,
+          "hypothesis_words": 310
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.28410159924741296,
+          "wer": 0.37158469945355194,
+          "word_f1": 0.9482288828337875,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2132,
+          "hypothesis_words": 368
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.34124179707218577,
+          "wer": 0.40483383685800606,
+          "word_f1": 0.9279279279279279,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1987,
+          "hypothesis_words": 335
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.426917510853835,
+          "wer": 0.5899581589958159,
+          "word_f1": 0.9316770186335405,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1388,
+          "hypothesis_words": 244
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.36741973840665876,
+          "wer": 0.5107142857142857,
+          "word_f1": 0.888888888888889,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1676,
+          "hypothesis_words": 287
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.7268760907504364,
+          "wer": 1.1370558375634519,
+          "word_f1": 0.6975717439293598,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1247,
+          "hypothesis_words": 256
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.41576673866090713,
+          "wer": 0.5688073394495413,
+          "word_f1": 0.8623298033282905,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1858,
+          "hypothesis_words": 334
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.29938900203665986,
+          "wer": 0.38873239436619716,
+          "word_f1": 0.9439775910364145,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1968,
+          "hypothesis_words": 359
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.5352785145888594,
+          "wer": 0.7101449275362319,
+          "word_f1": 0.797142857142857,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1887,
+          "hypothesis_words": 355
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.3910431458219552,
+          "wer": 0.5339506172839507,
+          "word_f1": 0.8940092165898618,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1837,
+          "hypothesis_words": 327
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.4403236682400539,
+          "wer": 0.6140350877192983,
+          "word_f1": 0.8048780487804879,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1468,
+          "hypothesis_words": 289
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.2681034482758621,
+          "wer": 0.3422982885085575,
+          "word_f1": 0.9428918590522479,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2323,
+          "hypothesis_words": 414
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.37631887456037516,
+          "wer": 0.5789473684210527,
+          "word_f1": 0.7717569786535303,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1700,
+          "hypothesis_words": 305
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.3500874125874126,
+          "wer": 0.4470284237726098,
+          "word_f1": 0.9248704663212436,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2284,
+          "hypothesis_words": 385
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.48915482423335827,
+          "wer": 0.70995670995671,
+          "word_f1": 0.7319148936170212,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1335,
+          "hypothesis_words": 239
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.5619335347432024,
+          "wer": 0.7142857142857143,
+          "word_f1": 0.8780487804878048,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1675,
+          "hypothesis_words": 294
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.4343015214384509,
+          "wer": 0.6544715447154471,
+          "word_f1": 0.8326693227091633,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1457,
+          "hypothesis_words": 256
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.43673812526271544,
+          "wer": 0.5980392156862745,
+          "word_f1": 0.8195121951219512,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2377,
+          "hypothesis_words": 412
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.27897435897435896,
+          "wer": 0.35542168674698793,
+          "word_f1": 0.8982035928143712,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 977,
+          "hypothesis_words": 168
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.3949771689497717,
+          "wer": 0.5294117647058824,
+          "word_f1": 0.918580375782881,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1319,
+          "hypothesis_words": 241
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.4155528554070474,
+          "wer": 0.5676567656765676,
+          "word_f1": 0.7848932676518883,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1641,
+          "hypothesis_words": 306
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.4984375,
+          "wer": 0.6506024096385542,
+          "word_f1": 0.869309838472834,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1938,
+          "hypothesis_words": 349
+        }
+      ]
+    },
+    {
+      "engine": "EasyOCR layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/easyocr/layout_results.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.14066308478574235,
+      "micro_wer": 0.25412788952266585,
+      "macro_cer": 0.15831029409173103,
+      "macro_wer": 0.27593800778053335,
+      "macro_word_f1": 0.8548859982251202,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.00979858464888405,
+          "wer": 0.045307443365695796,
+          "word_f1": 0.9596122778675283,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1843,
+          "hypothesis_words": 310
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.017403574788334902,
+          "wer": 0.05737704918032787,
+          "word_f1": 0.9548563611491107,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2125,
+          "hypothesis_words": 365
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.015648662291771833,
+          "wer": 0.08459214501510574,
+          "word_f1": 0.9186746987951807,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1985,
+          "hypothesis_words": 333
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.47467438494934877,
+          "wer": 0.6569037656903766,
+          "word_f1": 0.763888888888889,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1874,
+          "hypothesis_words": 337
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.14209274673008324,
+          "wer": 0.225,
+          "word_f1": 0.8826619964973731,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1713,
+          "hypothesis_words": 291
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.6867364746945899,
+          "wer": 0.8781725888324873,
+          "word_f1": 0.7430025445292621,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1098,
+          "hypothesis_words": 196
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.05129589632829374,
+          "wer": 0.18960244648318042,
+          "word_f1": 0.8480243161094225,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1852,
+          "hypothesis_words": 331
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.02189409368635438,
+          "wer": 0.07887323943661972,
+          "word_f1": 0.9400278940027894,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1984,
+          "hypothesis_words": 362
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.27320954907161804,
+          "wer": 0.4144927536231884,
+          "word_f1": 0.754303599374022,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1611,
+          "hypothesis_words": 294
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.15510649918077554,
+          "wer": 0.25925925925925924,
+          "word_f1": 0.900459418070444,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1837,
+          "hypothesis_words": 329
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.10451786918408631,
+          "wer": 0.24561403508771928,
+          "word_f1": 0.8146853146853146,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1460,
+          "hypothesis_words": 287
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.01163793103448276,
+          "wer": 0.07090464547677261,
+          "word_f1": 0.9367396593673966,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2320,
+          "hypothesis_words": 413
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.13599062133645956,
+          "wer": 0.33223684210526316,
+          "word_f1": 0.7808896210873146,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1693,
+          "hypothesis_words": 303
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.021853146853146852,
+          "wer": 0.08785529715762273,
+          "word_f1": 0.9290322580645161,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2291,
+          "hypothesis_words": 388
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.12415856394913986,
+          "wer": 0.33766233766233766,
+          "word_f1": 0.715203426124197,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1339,
+          "hypothesis_words": 236
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.40483383685800606,
+          "wer": 0.5107142857142857,
+          "word_f1": 0.8987566607460036,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1646,
+          "hypothesis_words": 283
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.1715076071922545,
+          "wer": 0.34959349593495936,
+          "word_f1": 0.735930735930736,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1250,
+          "hypothesis_words": 216
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.031525851197982346,
+          "wer": 0.16666666666666666,
+          "word_f1": 0.8428745432399513,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2380,
+          "hypothesis_words": 413
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.013333333333333334,
+          "wer": 0.08433734939759036,
+          "word_f1": 0.9221556886227544,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 974,
+          "hypothesis_words": 168
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.19254185692541856,
+          "wer": 0.2647058823529412,
+          "word_f1": 0.905982905982906,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1258,
+          "hypothesis_words": 230
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.1433778857837181,
+          "wer": 0.297029702970297,
+          "word_f1": 0.7901639344262295,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1645,
+          "hypothesis_words": 307
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.2796875,
+          "wer": 0.43373493975903615,
+          "word_f1": 0.8695652173913043,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1963,
+          "hypothesis_words": 358
+        }
+      ]
+    },
+    {
+      "engine": "Florence-2 full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/florence2/fullpage_results.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.21782204167212685,
+      "micro_wer": 0.39927949564695286,
+      "macro_cer": 0.22697748775896776,
+      "macro_wer": 0.4066356602055325,
+      "macro_word_f1": 0.7673531591954238,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.05117038649972782,
+          "wer": 0.20711974110032363,
+          "word_f1": 0.8383838383838383,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1806,
+          "hypothesis_words": 285
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.08278457196613359,
+          "wer": 0.22131147540983606,
+          "word_f1": 0.8371428571428571,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2034,
+          "hypothesis_words": 334
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.0989399293286219,
+          "wer": 0.24471299093655588,
+          "word_f1": 0.8220472440944881,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1897,
+          "hypothesis_words": 304
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.2011577424023155,
+          "wer": 0.3472803347280335,
+          "word_f1": 0.8089887640449437,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1243,
+          "hypothesis_words": 206
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.1516052318668252,
+          "wer": 0.3535714285714286,
+          "word_f1": 0.7654784240150094,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1590,
+          "hypothesis_words": 253
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.6561954624781849,
+          "wer": 0.8274111675126904,
+          "word_f1": 0.6260387811634349,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1019,
+          "hypothesis_words": 164
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.2381209503239741,
+          "wer": 0.43730886850152906,
+          "word_f1": 0.7248322147651008,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1629,
+          "hypothesis_words": 269
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.21334012219959267,
+          "wer": 0.4169014084507042,
+          "word_f1": 0.766412213740458,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1749,
+          "hypothesis_words": 300
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.45570291777188326,
+          "wer": 0.6376811594202898,
+          "word_f1": 0.6262626262626263,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1427,
+          "hypothesis_words": 249
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.1916985253959585,
+          "wer": 0.38580246913580246,
+          "word_f1": 0.7689768976897688,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1688,
+          "hypothesis_words": 282
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.4059339177343223,
+          "wer": 0.6526315789473685,
+          "word_f1": 0.6666666666666666,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1303,
+          "hypothesis_words": 231
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.19181034482758622,
+          "wer": 0.34474327628361856,
+          "word_f1": 0.8020698576972833,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2108,
+          "hypothesis_words": 364
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.17878077373974208,
+          "wer": 0.3651315789473684,
+          "word_f1": 0.7824561403508772,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1577,
+          "hypothesis_words": 266
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.1346153846153846,
+          "wer": 0.32041343669250644,
+          "word_f1": 0.7862068965517242,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2109,
+          "hypothesis_words": 338
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.1406133133881825,
+          "wer": 0.2857142857142857,
+          "word_f1": 0.7953488372093023,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1232,
+          "hypothesis_words": 199
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.49123867069486404,
+          "wer": 0.6678571428571428,
+          "word_f1": 0.7153846153846154,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1556,
+          "hypothesis_words": 240
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.25380359612724757,
+          "wer": 0.5040650406504065,
+          "word_f1": 0.6939655172413792,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1364,
+          "hypothesis_words": 218
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.1164354770912148,
+          "wer": 0.27941176470588236,
+          "word_f1": 0.8145265888456551,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2196,
+          "hypothesis_words": 363
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.03282051282051282,
+          "wer": 0.1746987951807229,
+          "word_f1": 0.8544891640866874,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 965,
+          "hypothesis_words": 157
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.2450532724505327,
+          "wer": 0.42436974789915966,
+          "word_f1": 0.8104575163398693,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1288,
+          "hypothesis_words": 221
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.2023086269744836,
+          "wer": 0.39603960396039606,
+          "word_f1": 0.7875647668393783,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1592,
+          "hypothesis_words": 276
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.259375,
+          "wer": 0.45180722891566266,
+          "word_f1": 0.7880690737833593,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1817,
+          "hypothesis_words": 305
+        }
+      ]
+    },
+    {
+      "engine": "Florence-2 layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/florence2/layout_results.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.17641200366924387,
+      "micro_wer": 0.35259681777244073,
+      "macro_cer": 0.1892718275555386,
+      "macro_wer": 0.36723009602951073,
+      "macro_word_f1": 0.7865031086413515,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.017964071856287425,
+          "wer": 0.1553398058252427,
+          "word_f1": 0.8781302170283807,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1818,
+          "hypothesis_words": 290
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.013640639698965193,
+          "wer": 0.09562841530054644,
+          "word_f1": 0.9273743016759778,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2105,
+          "hypothesis_words": 350
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.38818778394750125,
+          "wer": 0.486404833836858,
+          "word_f1": 0.6565464895635673,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1233,
+          "hypothesis_words": 196
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.46888567293777134,
+          "wer": 0.6443514644351465,
+          "word_f1": 0.7791741472172352,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1848,
+          "hypothesis_words": 318
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.1611177170035672,
+          "wer": 0.3678571428571429,
+          "word_f1": 0.7751371115173674,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1684,
+          "hypothesis_words": 267
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.6893542757417103,
+          "wer": 0.8324873096446701,
+          "word_f1": 0.6067415730337079,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1048,
+          "hypothesis_words": 159
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.03185745140388769,
+          "wer": 0.25076452599388377,
+          "word_f1": 0.8056872037914692,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1833,
+          "hypothesis_words": 306
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.03615071283095723,
+          "wer": 0.23098591549295774,
+          "word_f1": 0.8180494905385735,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1956,
+          "hypothesis_words": 332
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.28063660477453584,
+          "wer": 0.527536231884058,
+          "word_f1": 0.6840390879478827,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1599,
+          "hypothesis_words": 269
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.16985253959584926,
+          "wer": 0.38271604938271603,
+          "word_f1": 0.8089171974522292,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1811,
+          "hypothesis_words": 304
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.11598111935266352,
+          "wer": 0.3684210526315789,
+          "word_f1": 0.7222222222222222,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1435,
+          "hypothesis_words": 255
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.20646551724137932,
+          "wer": 0.32273838630806845,
+          "word_f1": 0.776406035665295,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 1873,
+          "hypothesis_words": 320
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.14009378663540445,
+          "wer": 0.32894736842105265,
+          "word_f1": 0.8257191201353639,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1686,
+          "hypothesis_words": 287
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.0236013986013986,
+          "wer": 0.1937984496124031,
+          "word_f1": 0.8471849865951742,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2260,
+          "hypothesis_words": 359
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.08676140613313388,
+          "wer": 0.23376623376623376,
+          "word_f1": 0.8216704288939053,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1315,
+          "hypothesis_words": 212
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.41268882175226584,
+          "wer": 0.6464285714285715,
+          "word_f1": 0.7744360902255639,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1616,
+          "hypothesis_words": 252
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.18118948824343015,
+          "wer": 0.4878048780487805,
+          "word_f1": 0.6224256292906178,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1226,
+          "hypothesis_words": 191
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.017654476670870115,
+          "wer": 0.1642156862745098,
+          "word_f1": 0.8707653701380176,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2359,
+          "hypothesis_words": 389
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.01641025641025641,
+          "wer": 0.13855421686746988,
+          "word_f1": 0.8881987577639753,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 966,
+          "hypothesis_words": 156
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.2465753424657534,
+          "wer": 0.39915966386554624,
+          "word_f1": 0.7963800904977376,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1183,
+          "hypothesis_words": 204
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.17193195625759417,
+          "wer": 0.36633663366336633,
+          "word_f1": 0.7754385964912279,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1558,
+          "hypothesis_words": 267
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.2869791666666667,
+          "wer": 0.45481927710843373,
+          "word_f1": 0.8424242424242424,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1958,
+          "hypothesis_words": 328
+        }
+      ]
+    },
+    {
+      "engine": "GLM-OCR full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/glm/full-page/pages.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.12320796750098284,
+      "micro_wer": 0.13959771840288202,
+      "macro_cer": 0.13480194981903018,
+      "macro_wer": 0.15012857869351254,
+      "macro_word_f1": 0.9347244662978038,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.01905280348394121,
+          "wer": 0.03559870550161812,
+          "word_f1": 0.977049180327869,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1802,
+          "hypothesis_words": 301
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.01599247412982126,
+          "wer": 0.0546448087431694,
+          "word_f1": 0.9625520110957004,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2102,
+          "hypothesis_words": 355
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.016153457849570924,
+          "wer": 0.015105740181268883,
+          "word_f1": 0.9923896499238966,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1949,
+          "hypothesis_words": 326
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.07670043415340087,
+          "wer": 0.08786610878661087,
+          "word_f1": 0.9540481400437637,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1276,
+          "hypothesis_words": 218
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.07907253269916766,
+          "wer": 0.07857142857142857,
+          "word_f1": 0.9591078066914498,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1549,
+          "hypothesis_words": 258
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.6675392670157068,
+          "wer": 0.7461928934010152,
+          "word_f1": 0.9558441558441558,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1117,
+          "hypothesis_words": 188
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.27213822894168466,
+          "wer": 0.2966360856269113,
+          "word_f1": 0.8258527827648114,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1348,
+          "hypothesis_words": 230
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.1945010183299389,
+          "wer": 0.22535211267605634,
+          "word_f1": 0.8716323296354992,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1585,
+          "hypothesis_words": 276
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.3787798408488064,
+          "wer": 0.41739130434782606,
+          "word_f1": 0.8268907563025211,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1388,
+          "hypothesis_words": 250
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.08847624249044238,
+          "wer": 0.10185185185185185,
+          "word_f1": 0.9448051948051949,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1672,
+          "hypothesis_words": 292
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.27714093054619016,
+          "wer": 0.3087719298245614,
+          "word_f1": 0.8174273858921163,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1072,
+          "hypothesis_words": 197
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.014655172413793103,
+          "wer": 0.014669926650366748,
+          "word_f1": 0.9926108374384237,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2286,
+          "hypothesis_words": 403
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.021101992966002344,
+          "wer": 0.023026315789473683,
+          "word_f1": 0.9867109634551494,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1673,
+          "hypothesis_words": 298
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.016608391608391608,
+          "wer": 0.020671834625323,
+          "word_f1": 0.9869791666666666,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2256,
+          "hypothesis_words": 381
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.035153328347045626,
+          "wer": 0.03896103896103896,
+          "word_f1": 0.9758241758241759,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1292,
+          "hypothesis_words": 224
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.24471299093655588,
+          "wer": 0.22857142857142856,
+          "word_f1": 0.869215291750503,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1251,
+          "hypothesis_words": 217
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.13692946058091288,
+          "wer": 0.15853658536585366,
+          "word_f1": 0.9118942731277532,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1251,
+          "hypothesis_words": 208
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.013451029844472467,
+          "wer": 0.012254901960784314,
+          "word_f1": 0.9938347718865598,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2347,
+          "hypothesis_words": 403
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.03282051282051282,
+          "wer": 0.030120481927710843,
+          "word_f1": 0.9847094801223241,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 943,
+          "hypothesis_words": 161
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.10730593607305935,
+          "wer": 0.13445378151260504,
+          "word_f1": 0.927927927927928,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1173,
+          "hypothesis_words": 206
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.12454434993924667,
+          "wer": 0.132013201320132,
+          "word_f1": 0.9228070175438596,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1447,
+          "hypothesis_words": 267
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.1328125,
+          "wer": 0.14156626506024098,
+          "word_f1": 0.9238249594813615,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1665,
+          "hypothesis_words": 285
+        }
+      ]
+    },
+    {
+      "engine": "GLM-OCR layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/glm/ppdoclayout-v3/pages.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.11993185689948893,
+      "micro_wer": 0.14199939957970578,
+      "macro_cer": 0.13730704477128278,
+      "macro_wer": 0.16129199282104842,
+      "macro_word_f1": 0.9705261574926904,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.0027218290691344584,
+          "wer": 0.025889967637540454,
+          "word_f1": 0.9853658536585367,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1834,
+          "hypothesis_words": 306
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.008466603951081843,
+          "wer": 0.04644808743169399,
+          "word_f1": 0.9696969696969697,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2124,
+          "hypothesis_words": 360
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.0,
+          "wer": 0.0,
+          "word_f1": 1.0,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1981,
+          "hypothesis_words": 331
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.4609261939218524,
+          "wer": 0.5648535564853556,
+          "word_f1": 0.8245614035087718,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1871,
+          "hypothesis_words": 331
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.12841854934601665,
+          "wer": 0.1357142857142857,
+          "word_f1": 0.975177304964539,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1706,
+          "hypothesis_words": 284
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.6893542757417103,
+          "wer": 0.7817258883248731,
+          "word_f1": 0.9214659685863875,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1105,
+          "hypothesis_words": 185
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.003779697624190065,
+          "wer": 0.012232415902140673,
+          "word_f1": 0.9954198473282444,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1853,
+          "hypothesis_words": 328
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.004582484725050916,
+          "wer": 0.014084507042253521,
+          "word_f1": 0.9929676511954993,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1966,
+          "hypothesis_words": 356
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.2663129973474801,
+          "wer": 0.32753623188405795,
+          "word_f1": 0.8811410459587955,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1588,
+          "hypothesis_words": 286
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.14090660841070454,
+          "wer": 0.1728395061728395,
+          "word_f1": 0.9861325115562404,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1833,
+          "hypothesis_words": 325
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.04787592717464599,
+          "wer": 0.06315789473684211,
+          "word_f1": 0.9858657243816255,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1474,
+          "hypothesis_words": 281
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.0,
+          "wer": 0.0,
+          "word_f1": 1.0,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2320,
+          "hypothesis_words": 409
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.0984759671746776,
+          "wer": 0.13815789473684212,
+          "word_f1": 1.0,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1706,
+          "hypothesis_words": 304
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.004370629370629371,
+          "wer": 0.0103359173126615,
+          "word_f1": 0.9948320413436692,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2290,
+          "hypothesis_words": 387
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.05983545250560957,
+          "wer": 0.05194805194805195,
+          "word_f1": 1.0,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1337,
+          "hypothesis_words": 231
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.39939577039274926,
+          "wer": 0.45357142857142857,
+          "word_f1": 0.9820788530465949,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1645,
+          "hypothesis_words": 278
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.1459197786998617,
+          "wer": 0.17479674796747968,
+          "word_f1": 0.9006622516556291,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1240,
+          "hypothesis_words": 207
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.0,
+          "wer": 0.0,
+          "word_f1": 1.0,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2379,
+          "hypothesis_words": 408
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.0,
+          "wer": 0.0,
+          "word_f1": 1.0,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 975,
+          "hypothesis_words": 166
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.1841704718417047,
+          "wer": 0.19327731092436976,
+          "word_f1": 0.9742489270386266,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1258,
+          "hypothesis_words": 228
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.10753341433778858,
+          "wer": 0.09570957095709572,
+          "word_f1": 0.9983525535420099,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1649,
+          "hypothesis_words": 304
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.2677083333333333,
+          "wer": 0.286144578313253,
+          "word_f1": 0.983606557377049,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1966,
+          "hypothesis_words": 339
+        }
+      ]
+    },
+    {
+      "engine": "PaddleOCR full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/paddleocr/full-page/pages.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.14490892412527848,
@@ -2600,8 +2833,8 @@
       ]
     },
     {
-      "engine": "Paddle PP-DocLayout",
-      "source": "extras/output_reports/paddle-ocr-benchmark/ppdoclayout-v3/pages.jsonl",
+      "engine": "PaddleOCR layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/paddleocr/ppdoclayout-v3/pages.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.12192373214519722,
@@ -2833,474 +3066,8 @@
       ]
     },
     {
-      "engine": "TrOCR full",
-      "source": "extras/output_reports/trocr-ocr-benchmark/full-page/pages.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.3339536102738829,
-      "micro_wer": 0.4528670069048334,
-      "macro_cer": 0.35504309050850064,
-      "macro_wer": 0.46980946214614333,
-      "macro_word_f1": 0.6240693705990948,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.04627109417528579,
-          "wer": 0.14563106796116504,
-          "word_f1": 0.8631239935587761,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1847,
-          "hypothesis_words": 312
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.08795860771401694,
-          "wer": 0.1912568306010929,
-          "word_f1": 0.8333333333333333,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2193,
-          "hypothesis_words": 378
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.03735487127713276,
-          "wer": 0.12386706948640483,
-          "word_f1": 0.8795180722891567,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1972,
-          "hypothesis_words": 333
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.42547033285094066,
-          "wer": 0.5062761506276151,
-          "word_f1": 0.6326034063260341,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 955,
-          "hypothesis_words": 172
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.441141498216409,
-          "wer": 0.5321428571428571,
-          "word_f1": 0.6053811659192826,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 979,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.7513089005235603,
-          "wer": 0.8324873096446701,
-          "word_f1": 0.3125,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 323,
-          "hypothesis_words": 59
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.6258099352051836,
-          "wer": 0.7186544342507645,
-          "word_f1": 0.42794759825327516,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 751,
-          "hypothesis_words": 131
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.42209775967413443,
-          "wer": 0.5521126760563381,
-          "word_f1": 0.5958188153310104,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1259,
-          "hypothesis_words": 219
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.9214854111405836,
-          "wer": 0.9449275362318841,
-          "word_f1": 0.10242587601078168,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 149,
-          "hypothesis_words": 26
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.2168214090660841,
-          "wer": 0.36728395061728397,
-          "word_f1": 0.7243066884176184,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1638,
-          "hypothesis_words": 289
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.7275792312879299,
-          "wer": 0.8456140350877193,
-          "word_f1": 0.3093333333333333,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 490,
-          "hypothesis_words": 90
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.05517241379310345,
-          "wer": 0.16625916870415647,
-          "word_f1": 0.8526570048309179,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2342,
-          "hypothesis_words": 419
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.13071512309495897,
-          "wer": 0.29605263157894735,
-          "word_f1": 0.7628524046434494,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1673,
-          "hypothesis_words": 299
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.19667832167832167,
-          "wer": 0.330749354005168,
-          "word_f1": 0.7584541062801932,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2592,
-          "hypothesis_words": 441
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.43904263275991023,
-          "wer": 0.5800865800865801,
-          "word_f1": 0.5564304461942257,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 860,
-          "hypothesis_words": 150
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.5673716012084592,
-          "wer": 0.7071428571428572,
-          "word_f1": 0.4522144522144522,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 887,
-          "hypothesis_words": 149
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.6846473029045643,
-          "wer": 0.7723577235772358,
-          "word_f1": 0.39882697947214074,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 539,
-          "hypothesis_words": 95
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.08028583438419504,
-          "wer": 0.22549019607843138,
-          "word_f1": 0.7886977886977888,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2309,
-          "hypothesis_words": 406
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.038974358974358976,
-          "wer": 0.1566265060240964,
-          "word_f1": 0.8433734939759037,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 966,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.3706240487062405,
-          "wer": 0.5252100840336135,
-          "word_f1": 0.6308068459657702,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 982,
-          "hypothesis_words": 171
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.26913730255164037,
-          "wer": 0.40594059405940597,
-          "word_f1": 0.6896551724137931,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1362,
-          "hypothesis_words": 248
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.275,
-          "wer": 0.40963855421686746,
-          "word_f1": 0.7092651757188497,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1666,
-          "hypothesis_words": 294
-        }
-      ]
-    },
-    {
-      "engine": "TrOCR PP-DocLayout",
-      "source": "extras/output_reports/trocr-ocr-benchmark/ppdoclayout-v3/pages.jsonl",
-      "pages": 22,
-      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
-      "micro_cer": 0.17077709343467434,
-      "micro_wer": 0.25848093665565897,
-      "macro_cer": 0.18457964223483164,
-      "macro_wer": 0.2744746916626318,
-      "macro_word_f1": 0.8638762329042214,
-      "per_page": [
-        {
-          "page_id": "p0024",
-          "cer": 0.018508437670114317,
-          "wer": 0.08090614886731391,
-          "word_f1": 0.9255663430420712,
-          "reference_chars": 1837,
-          "reference_words": 309,
-          "hypothesis_chars": 1832,
-          "hypothesis_words": 309
-        },
-        {
-          "page_id": "p0025",
-          "cer": 0.019285042333019756,
-          "wer": 0.06830601092896176,
-          "word_f1": 0.9384404924760602,
-          "reference_chars": 2126,
-          "reference_words": 366,
-          "hypothesis_chars": 2116,
-          "hypothesis_words": 365
-        },
-        {
-          "page_id": "p0026",
-          "cer": 0.020191822311963654,
-          "wer": 0.08459214501510574,
-          "word_f1": 0.9186746987951807,
-          "reference_chars": 1981,
-          "reference_words": 331,
-          "hypothesis_chars": 1978,
-          "hypothesis_words": 333
-        },
-        {
-          "page_id": "p0027",
-          "cer": 0.5072358900144718,
-          "wer": 0.6820083682008368,
-          "word_f1": 0.7413793103448274,
-          "reference_chars": 1382,
-          "reference_words": 239,
-          "hypothesis_chars": 1903,
-          "hypothesis_words": 341
-        },
-        {
-          "page_id": "p0028",
-          "cer": 0.12187871581450654,
-          "wer": 0.18928571428571428,
-          "word_f1": 0.8904593639575972,
-          "reference_chars": 1682,
-          "reference_words": 280,
-          "hypothesis_chars": 1684,
-          "hypothesis_words": 286
-        },
-        {
-          "page_id": "p0029",
-          "cer": 0.680628272251309,
-          "wer": 0.8527918781725888,
-          "word_f1": 0.8195876288659794,
-          "reference_chars": 1146,
-          "reference_words": 197,
-          "hypothesis_chars": 1092,
-          "hypothesis_words": 191
-        },
-        {
-          "page_id": "p0030",
-          "cer": 0.37904967602591794,
-          "wer": 0.4709480122324159,
-          "word_f1": 0.6703499079189686,
-          "reference_chars": 1852,
-          "reference_words": 327,
-          "hypothesis_chars": 1224,
-          "hypothesis_words": 216
-        },
-        {
-          "page_id": "p0031",
-          "cer": 0.09470468431771895,
-          "wer": 0.16338028169014085,
-          "word_f1": 0.8805755395683453,
-          "reference_chars": 1964,
-          "reference_words": 355,
-          "hypothesis_chars": 1875,
-          "hypothesis_words": 340
-        },
-        {
-          "page_id": "p0032",
-          "cer": 0.4,
-          "wer": 0.47246376811594204,
-          "word_f1": 0.6869409660107334,
-          "reference_chars": 1885,
-          "reference_words": 345,
-          "hypothesis_chars": 1168,
-          "hypothesis_words": 214
-        },
-        {
-          "page_id": "p0033",
-          "cer": 0.1567449481157837,
-          "wer": 0.24691358024691357,
-          "word_f1": 0.9204892966360857,
-          "reference_chars": 1831,
-          "reference_words": 324,
-          "hypothesis_chars": 1837,
-          "hypothesis_words": 330
-        },
-        {
-          "page_id": "p0034",
-          "cer": 0.06271072151045179,
-          "wer": 0.12982456140350876,
-          "word_f1": 0.923076923076923,
-          "reference_chars": 1483,
-          "reference_words": 285,
-          "hypothesis_chars": 1474,
-          "hypothesis_words": 287
-        },
-        {
-          "page_id": "p0035",
-          "cer": 0.01810344827586207,
-          "wer": 0.09535452322738386,
-          "word_f1": 0.912621359223301,
-          "reference_chars": 2320,
-          "reference_words": 409,
-          "hypothesis_chars": 2320,
-          "hypothesis_words": 415
-        },
-        {
-          "page_id": "p0036",
-          "cer": 0.13071512309495897,
-          "wer": 0.24013157894736842,
-          "word_f1": 0.8968903436988543,
-          "reference_chars": 1706,
-          "reference_words": 304,
-          "hypothesis_chars": 1704,
-          "hypothesis_words": 307
-        },
-        {
-          "page_id": "p0037",
-          "cer": 0.06118881118881119,
-          "wer": 0.1421188630490956,
-          "word_f1": 0.8871989860583016,
-          "reference_chars": 2288,
-          "reference_words": 387,
-          "hypothesis_chars": 2352,
-          "hypothesis_words": 402
-        },
-        {
-          "page_id": "p0038",
-          "cer": 0.09573672400897532,
-          "wer": 0.18181818181818182,
-          "word_f1": 0.8639308855291576,
-          "reference_chars": 1337,
-          "reference_words": 231,
-          "hypothesis_chars": 1327,
-          "hypothesis_words": 232
-        },
-        {
-          "page_id": "p0039",
-          "cer": 0.4108761329305136,
-          "wer": 0.5285714285714286,
-          "word_f1": 0.8873239436619719,
-          "reference_chars": 1655,
-          "reference_words": 280,
-          "hypothesis_chars": 1662,
-          "hypothesis_words": 288
-        },
-        {
-          "page_id": "p0040",
-          "cer": 0.16597510373443983,
-          "wer": 0.3008130081300813,
-          "word_f1": 0.7904967602591794,
-          "reference_chars": 1446,
-          "reference_words": 246,
-          "hypothesis_chars": 1243,
-          "hypothesis_words": 217
-        },
-        {
-          "page_id": "p0042",
-          "cer": 0.07902480033627575,
-          "wer": 0.17401960784313725,
-          "word_f1": 0.8496894409937888,
-          "reference_chars": 2379,
-          "reference_words": 408,
-          "hypothesis_chars": 2264,
-          "hypothesis_words": 397
-        },
-        {
-          "page_id": "p0044",
-          "cer": 0.022564102564102566,
-          "wer": 0.09036144578313253,
-          "word_f1": 0.9096385542168675,
-          "reference_chars": 975,
-          "reference_words": 166,
-          "hypothesis_chars": 971,
-          "hypothesis_words": 166
-        },
-        {
-          "page_id": "p0045",
-          "cer": 0.1917808219178082,
-          "wer": 0.25210084033613445,
-          "word_f1": 0.8983050847457628,
-          "reference_chars": 1314,
-          "reference_words": 238,
-          "hypothesis_chars": 1276,
-          "hypothesis_words": 234
-        },
-        {
-          "page_id": "p0046",
-          "cer": 0.13061968408262453,
-          "wer": 0.18811881188118812,
-          "word_f1": 0.9067103109656302,
-          "reference_chars": 1646,
-          "reference_words": 303,
-          "hypothesis_chars": 1648,
-          "hypothesis_words": 308
-        },
-        {
-          "page_id": "p0047",
-          "cer": 0.29322916666666665,
-          "wer": 0.4036144578313253,
-          "word_f1": 0.8869309838472834,
-          "reference_chars": 1920,
-          "reference_words": 332,
-          "hypothesis_chars": 1967,
-          "hypothesis_words": 349
-        }
-      ]
-    },
-    {
-      "engine": "Tesseract full",
-      "source": "extras/tesseract_fullpage_bench/result/tesseract_fullpage_results.jsonl",
+      "engine": "Tesseract full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/tesseract/fullpage_results.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.1594024374262875,
@@ -3532,8 +3299,8 @@
       ]
     },
     {
-      "engine": "Tesseract PP-DocLayout",
-      "source": "extras/tesseract_layout_bench/result/tesseract_ppdoclayout_v3_results.jsonl",
+      "engine": "Tesseract layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/tesseract/layout_results.jsonl",
       "pages": 22,
       "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
       "micro_cer": 0.12357489188835015,
@@ -3761,6 +3528,705 @@
           "reference_words": 332,
           "hypothesis_chars": 1959,
           "hypothesis_words": 348
+        }
+      ]
+    },
+    {
+      "engine": "TrOCR full-page",
+      "source": "extras/ocr-benchmarks/outputs/heldout/trocr/full-page/pages.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.3339536102738829,
+      "micro_wer": 0.4528670069048334,
+      "macro_cer": 0.35504309050850064,
+      "macro_wer": 0.46980946214614333,
+      "macro_word_f1": 0.6240693705990948,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.04627109417528579,
+          "wer": 0.14563106796116504,
+          "word_f1": 0.8631239935587761,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1847,
+          "hypothesis_words": 312
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.08795860771401694,
+          "wer": 0.1912568306010929,
+          "word_f1": 0.8333333333333333,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2193,
+          "hypothesis_words": 378
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.03735487127713276,
+          "wer": 0.12386706948640483,
+          "word_f1": 0.8795180722891567,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1972,
+          "hypothesis_words": 333
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.42547033285094066,
+          "wer": 0.5062761506276151,
+          "word_f1": 0.6326034063260341,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 955,
+          "hypothesis_words": 172
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.441141498216409,
+          "wer": 0.5321428571428571,
+          "word_f1": 0.6053811659192826,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 979,
+          "hypothesis_words": 166
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.7513089005235603,
+          "wer": 0.8324873096446701,
+          "word_f1": 0.3125,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 323,
+          "hypothesis_words": 59
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.6258099352051836,
+          "wer": 0.7186544342507645,
+          "word_f1": 0.42794759825327516,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 751,
+          "hypothesis_words": 131
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.42209775967413443,
+          "wer": 0.5521126760563381,
+          "word_f1": 0.5958188153310104,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1259,
+          "hypothesis_words": 219
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.9214854111405836,
+          "wer": 0.9449275362318841,
+          "word_f1": 0.10242587601078168,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 149,
+          "hypothesis_words": 26
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.2168214090660841,
+          "wer": 0.36728395061728397,
+          "word_f1": 0.7243066884176184,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1638,
+          "hypothesis_words": 289
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.7275792312879299,
+          "wer": 0.8456140350877193,
+          "word_f1": 0.3093333333333333,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 490,
+          "hypothesis_words": 90
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.05517241379310345,
+          "wer": 0.16625916870415647,
+          "word_f1": 0.8526570048309179,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2342,
+          "hypothesis_words": 419
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.13071512309495897,
+          "wer": 0.29605263157894735,
+          "word_f1": 0.7628524046434494,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1673,
+          "hypothesis_words": 299
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.19667832167832167,
+          "wer": 0.330749354005168,
+          "word_f1": 0.7584541062801932,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2592,
+          "hypothesis_words": 441
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.43904263275991023,
+          "wer": 0.5800865800865801,
+          "word_f1": 0.5564304461942257,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 860,
+          "hypothesis_words": 150
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.5673716012084592,
+          "wer": 0.7071428571428572,
+          "word_f1": 0.4522144522144522,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 887,
+          "hypothesis_words": 149
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.6846473029045643,
+          "wer": 0.7723577235772358,
+          "word_f1": 0.39882697947214074,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 539,
+          "hypothesis_words": 95
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.08028583438419504,
+          "wer": 0.22549019607843138,
+          "word_f1": 0.7886977886977888,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2309,
+          "hypothesis_words": 406
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.038974358974358976,
+          "wer": 0.1566265060240964,
+          "word_f1": 0.8433734939759037,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 966,
+          "hypothesis_words": 166
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.3706240487062405,
+          "wer": 0.5252100840336135,
+          "word_f1": 0.6308068459657702,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 982,
+          "hypothesis_words": 171
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.26913730255164037,
+          "wer": 0.40594059405940597,
+          "word_f1": 0.6896551724137931,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1362,
+          "hypothesis_words": 248
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.275,
+          "wer": 0.40963855421686746,
+          "word_f1": 0.7092651757188497,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1666,
+          "hypothesis_words": 294
+        }
+      ]
+    },
+    {
+      "engine": "TrOCR layout",
+      "source": "extras/ocr-benchmarks/outputs/heldout/trocr/ppdoclayout-v3/pages.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.17077709343467434,
+      "micro_wer": 0.25848093665565897,
+      "macro_cer": 0.18457964223483164,
+      "macro_wer": 0.2744746916626318,
+      "macro_word_f1": 0.8638762329042214,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.018508437670114317,
+          "wer": 0.08090614886731391,
+          "word_f1": 0.9255663430420712,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1832,
+          "hypothesis_words": 309
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.019285042333019756,
+          "wer": 0.06830601092896176,
+          "word_f1": 0.9384404924760602,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2116,
+          "hypothesis_words": 365
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.020191822311963654,
+          "wer": 0.08459214501510574,
+          "word_f1": 0.9186746987951807,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1978,
+          "hypothesis_words": 333
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.5072358900144718,
+          "wer": 0.6820083682008368,
+          "word_f1": 0.7413793103448274,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1903,
+          "hypothesis_words": 341
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.12187871581450654,
+          "wer": 0.18928571428571428,
+          "word_f1": 0.8904593639575972,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1684,
+          "hypothesis_words": 286
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.680628272251309,
+          "wer": 0.8527918781725888,
+          "word_f1": 0.8195876288659794,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1092,
+          "hypothesis_words": 191
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.37904967602591794,
+          "wer": 0.4709480122324159,
+          "word_f1": 0.6703499079189686,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1224,
+          "hypothesis_words": 216
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.09470468431771895,
+          "wer": 0.16338028169014085,
+          "word_f1": 0.8805755395683453,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1875,
+          "hypothesis_words": 340
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.4,
+          "wer": 0.47246376811594204,
+          "word_f1": 0.6869409660107334,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1168,
+          "hypothesis_words": 214
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.1567449481157837,
+          "wer": 0.24691358024691357,
+          "word_f1": 0.9204892966360857,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1837,
+          "hypothesis_words": 330
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.06271072151045179,
+          "wer": 0.12982456140350876,
+          "word_f1": 0.923076923076923,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1474,
+          "hypothesis_words": 287
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.01810344827586207,
+          "wer": 0.09535452322738386,
+          "word_f1": 0.912621359223301,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2320,
+          "hypothesis_words": 415
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.13071512309495897,
+          "wer": 0.24013157894736842,
+          "word_f1": 0.8968903436988543,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1704,
+          "hypothesis_words": 307
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.06118881118881119,
+          "wer": 0.1421188630490956,
+          "word_f1": 0.8871989860583016,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2352,
+          "hypothesis_words": 402
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.09573672400897532,
+          "wer": 0.18181818181818182,
+          "word_f1": 0.8639308855291576,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1327,
+          "hypothesis_words": 232
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.4108761329305136,
+          "wer": 0.5285714285714286,
+          "word_f1": 0.8873239436619719,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1662,
+          "hypothesis_words": 288
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.16597510373443983,
+          "wer": 0.3008130081300813,
+          "word_f1": 0.7904967602591794,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1243,
+          "hypothesis_words": 217
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.07902480033627575,
+          "wer": 0.17401960784313725,
+          "word_f1": 0.8496894409937888,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2264,
+          "hypothesis_words": 397
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.022564102564102566,
+          "wer": 0.09036144578313253,
+          "word_f1": 0.9096385542168675,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 971,
+          "hypothesis_words": 166
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.1917808219178082,
+          "wer": 0.25210084033613445,
+          "word_f1": 0.8983050847457628,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1276,
+          "hypothesis_words": 234
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.13061968408262453,
+          "wer": 0.18811881188118812,
+          "word_f1": 0.9067103109656302,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1648,
+          "hypothesis_words": 308
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.29322916666666665,
+          "wer": 0.4036144578313253,
+          "word_f1": 0.8869309838472834,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1967,
+          "hypothesis_words": 349
+        }
+      ]
+    },
+    {
+      "engine": "Qwen3.5",
+      "source": "extras/ocr-benchmarks/outputs/heldout/qwen/pages.jsonl",
+      "pages": 22,
+      "normalization": "HTML-unescape, strip-tags, Unicode NFKC, casefold, letters/numbers only, collapsed whitespace",
+      "micro_cer": 0.1109160005241777,
+      "micro_wer": 0.1322425697988592,
+      "macro_cer": 0.12154708324112005,
+      "macro_wer": 0.1432337466999877,
+      "macro_word_f1": 0.9539885301295274,
+      "per_page": [
+        {
+          "page_id": "p0024",
+          "cer": 0.038649972781709306,
+          "wer": 0.061488673139158574,
+          "word_f1": 0.9602649006622516,
+          "reference_chars": 1837,
+          "reference_words": 309,
+          "hypothesis_chars": 1771,
+          "hypothesis_words": 295
+        },
+        {
+          "page_id": "p0025",
+          "cer": 0.013640639698965193,
+          "wer": 0.05191256830601093,
+          "word_f1": 0.963888888888889,
+          "reference_chars": 2126,
+          "reference_words": 366,
+          "hypothesis_chars": 2097,
+          "hypothesis_words": 354
+        },
+        {
+          "page_id": "p0026",
+          "cer": 0.016658253407370014,
+          "wer": 0.01812688821752266,
+          "word_f1": 0.9893455098934552,
+          "reference_chars": 1981,
+          "reference_words": 331,
+          "hypothesis_chars": 1949,
+          "hypothesis_words": 326
+        },
+        {
+          "page_id": "p0027",
+          "cer": 0.10781476121562952,
+          "wer": 0.11297071129707113,
+          "word_f1": 0.9401330376940134,
+          "reference_chars": 1382,
+          "reference_words": 239,
+          "hypothesis_chars": 1233,
+          "hypothesis_words": 212
+        },
+        {
+          "page_id": "p0028",
+          "cer": 0.028537455410225922,
+          "wer": 0.05,
+          "word_f1": 0.9690346083788706,
+          "reference_chars": 1682,
+          "reference_words": 280,
+          "hypothesis_chars": 1637,
+          "hypothesis_words": 269
+        },
+        {
+          "page_id": "p0029",
+          "cer": 0.643979057591623,
+          "wer": 0.7918781725888325,
+          "word_f1": 0.9393139841688655,
+          "reference_chars": 1146,
+          "reference_words": 197,
+          "hypothesis_chars": 1112,
+          "hypothesis_words": 182
+        },
+        {
+          "page_id": "p0030",
+          "cer": 0.024838012958963283,
+          "wer": 0.027522935779816515,
+          "word_f1": 0.9922958397534669,
+          "reference_chars": 1852,
+          "reference_words": 327,
+          "hypothesis_chars": 1820,
+          "hypothesis_words": 322
+        },
+        {
+          "page_id": "p0031",
+          "cer": 0.17973523421588594,
+          "wer": 0.2112676056338028,
+          "word_f1": 0.880503144654088,
+          "reference_chars": 1964,
+          "reference_words": 355,
+          "hypothesis_chars": 1614,
+          "hypothesis_words": 281
+        },
+        {
+          "page_id": "p0032",
+          "cer": 0.4026525198938992,
+          "wer": 0.48695652173913045,
+          "word_f1": 0.9632892804698971,
+          "reference_chars": 1885,
+          "reference_words": 345,
+          "hypothesis_chars": 1845,
+          "hypothesis_words": 336
+        },
+        {
+          "page_id": "p0033",
+          "cer": 0.1529219006007646,
+          "wer": 0.17901234567901234,
+          "word_f1": 0.975,
+          "reference_chars": 1831,
+          "reference_words": 324,
+          "hypothesis_chars": 1790,
+          "hypothesis_words": 316
+        },
+        {
+          "page_id": "p0034",
+          "cer": 0.052596089008766014,
+          "wer": 0.07017543859649122,
+          "word_f1": 0.9716312056737588,
+          "reference_chars": 1483,
+          "reference_words": 285,
+          "hypothesis_chars": 1453,
+          "hypothesis_words": 279
+        },
+        {
+          "page_id": "p0035",
+          "cer": 0.014655172413793103,
+          "wer": 0.014669926650366748,
+          "word_f1": 0.9926108374384237,
+          "reference_chars": 2320,
+          "reference_words": 409,
+          "hypothesis_chars": 2286,
+          "hypothesis_words": 403
+        },
+        {
+          "page_id": "p0036",
+          "cer": 0.01992966002344666,
+          "wer": 0.019736842105263157,
+          "word_f1": 0.9883913764510779,
+          "reference_chars": 1706,
+          "reference_words": 304,
+          "hypothesis_chars": 1675,
+          "hypothesis_words": 299
+        },
+        {
+          "page_id": "p0037",
+          "cer": 0.016608391608391608,
+          "wer": 0.020671834625323,
+          "word_f1": 0.9869791666666666,
+          "reference_chars": 2288,
+          "reference_words": 387,
+          "hypothesis_chars": 2256,
+          "hypothesis_words": 381
+        },
+        {
+          "page_id": "p0038",
+          "cer": 0.04338070306656694,
+          "wer": 0.04329004329004329,
+          "word_f1": 0.9736842105263157,
+          "reference_chars": 1337,
+          "reference_words": 231,
+          "hypothesis_chars": 1295,
+          "hypothesis_words": 225
+        },
+        {
+          "page_id": "p0039",
+          "cer": 0.24410876132930515,
+          "wer": 0.225,
+          "word_f1": 0.8732394366197184,
+          "reference_chars": 1655,
+          "reference_words": 280,
+          "hypothesis_chars": 1251,
+          "hypothesis_words": 217
+        },
+        {
+          "page_id": "p0040",
+          "cer": 0.17842323651452283,
+          "wer": 0.22764227642276422,
+          "word_f1": 0.9129511677282378,
+          "reference_chars": 1446,
+          "reference_words": 246,
+          "hypothesis_chars": 1347,
+          "hypothesis_words": 225
+        },
+        {
+          "page_id": "p0042",
+          "cer": 0.05632618747372846,
+          "wer": 0.0784313725490196,
+          "word_f1": 0.9555822328931571,
+          "reference_chars": 2379,
+          "reference_words": 408,
+          "hypothesis_chars": 2449,
+          "hypothesis_words": 425
+        },
+        {
+          "page_id": "p0044",
+          "cer": 0.03282051282051282,
+          "wer": 0.030120481927710843,
+          "word_f1": 0.9847094801223241,
+          "reference_chars": 975,
+          "reference_words": 166,
+          "hypothesis_chars": 943,
+          "hypothesis_words": 161
+        },
+        {
+          "page_id": "p0045",
+          "cer": 0.14840182648401826,
+          "wer": 0.1638655462184874,
+          "word_f1": 0.9107551487414187,
+          "reference_chars": 1314,
+          "reference_words": 238,
+          "hypothesis_chars": 1119,
+          "hypothesis_words": 199
+        },
+        {
+          "page_id": "p0046",
+          "cer": 0.12089914945321993,
+          "wer": 0.1188118811881188,
+          "word_f1": 0.9368421052631579,
+          "reference_chars": 1646,
+          "reference_words": 303,
+          "hypothesis_chars": 1447,
+          "hypothesis_words": 267
+        },
+        {
+          "page_id": "p0047",
+          "cer": 0.13645833333333332,
+          "wer": 0.14759036144578314,
+          "word_f1": 0.9273021001615508,
+          "reference_chars": 1920,
+          "reference_words": 332,
+          "hypothesis_chars": 1672,
+          "hypothesis_words": 287
         }
       ]
     }
