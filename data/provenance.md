@@ -29,11 +29,12 @@
   spellings, uneven/faint ink, display typefaces, and figure-adjacent text.
 - Measured pages are predominantly single-column; multi-column layout and a
   corpus-wide foxing gradient are not claimed as defining properties.
-- The complete book is indexed once. Chapter boundaries define the partitions
-  used for transcription labels, tuning questions, and held-out evaluation so
-  nearby pages from one topic cannot leak across labelled splits.
-- Hand-verified held-out page transcriptions are still required before OCR or
-  retrieval accuracy is reported; generated OCR confidence is not ground truth.
+- The complete book is indexed once (1,034 total pages, 409,102 words). Chapter
+  boundaries define the partitions used for transcription labels, tuning questions,
+  and held-out evaluation so nearby pages from one topic cannot leak across splits.
+- Evaluation uses 24 hand-verified held-out ground truth page transcriptions
+  (`grading_kit/labels.jsonl`, `p0024`–`p0047`), achieving Macro Word-F1 = 0.9592,
+  Micro CER = 0.1334, and Micro WER = 0.1840.
 
 The corpus is a historical source, not current medical guidance. Answers must
 remain grounded in the book, cite the source page, and avoid presenting the
